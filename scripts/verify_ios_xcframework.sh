@@ -10,8 +10,14 @@ if [[ -z "${xcframework}" || -z "${expected_version}" ]]; then
     exit 2
 fi
 
+# Expected simulator architectures mirror the build script's override knob
+# (fat by default; CI iteration builds arm64-only, which also changes the
+# slice directory name inside the XCFramework).
+expected_sim_archs="${SDL3_STATIC_EXTENSIONS_IOS_SIMULATOR_ARCHS:-arm64;x86_64}"
+
 device_library="${xcframework}/ios-arm64/libSDL3_static_extensions-iphoneos.a"
-simulator_library="${xcframework}/ios-arm64_x86_64-simulator/libSDL3_static_extensions-iphonesimulator.a"
+simulator_library="$(find "${xcframework}" -type f -path "*-simulator/*" \
+    -name "libSDL3_static_extensions-iphonesimulator.a" -print -quit)"
 
 test -f "${xcframework}/Info.plist"
 test -f "${device_library}"
@@ -21,9 +27,12 @@ device_arches="$(lipo -archs "${device_library}")"
 simulator_arches="$(lipo -archs "${simulator_library}")"
 [[ " ${device_arches} " == *" arm64 "* ]]
 [[ " ${simulator_arches} " == *" arm64 "* ]]
-[[ " ${simulator_arches} " == *" x86_64 "* ]]
+if [[ ";${expected_sim_archs};" == *";x86_64;"* ]]; then
+    [[ " ${simulator_arches} " == *" x86_64 "* ]]
+fi
 
-for identifier in ios-arm64 ios-arm64_x86_64-simulator; do
+simulator_identifier="$(basename "$(dirname "${simulator_library}")")"
+for identifier in ios-arm64 "${simulator_identifier}"; do
     header_root="${xcframework}/${identifier}/Headers/SDL3_static_extensions"
     test -f "${header_root}/version.hpp"
 done

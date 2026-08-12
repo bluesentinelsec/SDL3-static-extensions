@@ -8,6 +8,9 @@ configuration="${1:-Release}"
 configuration_lower="$(printf '%s' "${configuration}" | tr '[:upper:]' '[:lower:]')"
 output_root="${2:-${repository_root}/build/ios/${configuration_lower}}"
 deployment_target="${SDL3_STATIC_EXTENSIONS_IOS_DEPLOYMENT_TARGET:-13.0}"
+# Simulator architectures. Release/packaging builds keep the fat default;
+# CI iteration overrides to arm64-only for speed (see .github/workflows/ios.yml).
+simulator_archs="${SDL3_STATIC_EXTENSIONS_IOS_SIMULATOR_ARCHS:-arm64;x86_64}"
 
 case "${configuration}" in
     Debug|Release) ;;
@@ -79,7 +82,7 @@ combine_archives() {
 }
 
 configure_and_build iphoneos arm64 "${device_build}"
-configure_and_build iphonesimulator 'arm64;x86_64' "${simulator_build}"
+configure_and_build iphonesimulator "${simulator_archs}" "${simulator_build}"
 
 combine_archives "${device_build}" "${combined_root}/libSDL3_static_extensions-iphoneos.a"
 combine_archives "${simulator_build}" "${combined_root}/libSDL3_static_extensions-iphonesimulator.a"

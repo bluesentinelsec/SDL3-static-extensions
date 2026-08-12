@@ -19,6 +19,11 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 35
 
+    # CI iteration profile: Release only, simulator slice arm64-only (runners
+    # are arm64). The release workflow builds the full fat simulator slice.
+    env:
+      SDL3_STATIC_EXTENSIONS_IOS_SIMULATOR_ARCHS: arm64
+
     defaults:
       run:
         shell: bash
@@ -32,12 +37,6 @@ jobs:
         with:
           cmakeVersion: latest
           ninjaVersion: latest
-
-      - name: Build Debug XCFramework and consumer apps
-        run: |
-          bash scripts/build_ios_xcframework.sh Debug build/ios/debug
-          bash scripts/build_ios_test_apps.sh \
-            build/ios/debug/SDL3-static-extensions.xcframework Debug build/ios/consumer-debug
 
       - name: Build Release XCFramework and consumer apps
         run: |
