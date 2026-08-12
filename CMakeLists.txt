@@ -96,6 +96,10 @@ option(SDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS "Build benchmarks" ${SDL3_STATIC_
 # HTML5 canvas demo page for top-level Emscripten builds (see src/web/).
 option(SDL3_STATIC_EXTENSIONS_BUILD_WEB_DEMO "Build the web canvas demo (Emscripten only)" ${SDL3_STATIC_EXTENSIONS_IS_TOP_LEVEL})
 
+# SDL extension libraries (design: default ON; consumers disable what they
+# do not want). Each extension is a static library under SDLStatic::.
+option(SDLSTATIC_BUILD_IMAGE "Build the SDLStatic::Image extension" ON)
+
 if(ANDROID AND (SDL3_STATIC_EXTENSIONS_BUILD_APP OR SDL3_STATIC_EXTENSIONS_BUILD_TESTS OR SDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS))
   message(FATAL_ERROR
     "Android builds provide the SDL3_static_extensions Prefab library; set SDL3_STATIC_EXTENSIONS_BUILD_APP, "
@@ -192,6 +196,10 @@ cppboot_set_project_warnings(${PROJECT_NAME}_lib)
 # library code needs these deps.
 
 add_subdirectory(src)
+
+if(SDLSTATIC_BUILD_IMAGE)
+  add_subdirectory(image)
+endif()
 
 if(SDL3_STATIC_EXTENSIONS_BUILD_TESTS)
   enable_testing()

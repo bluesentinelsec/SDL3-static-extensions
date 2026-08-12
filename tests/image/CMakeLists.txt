@@ -1,0 +1,10 @@
+add_executable(SDL3_static_extensions_image_test
+  image_test.cpp
+)
+target_link_libraries(SDL3_static_extensions_image_test
+  PRIVATE
+    SDLStatic::Image
+    GTest::gtest_main
+)
+cppboot_set_project_warnings(SDL3_static_extensions_image_test)
+gtest_discover_tests(SDL3_static_extensions_image_test)

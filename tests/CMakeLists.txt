@@ -6,3 +6,6 @@ if(EMSCRIPTEN)
 endif()
 
 add_subdirectory(version)
+if(SDLSTATIC_BUILD_IMAGE)
+  add_subdirectory(image)
+endif()
