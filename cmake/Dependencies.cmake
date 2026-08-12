@@ -106,7 +106,7 @@ include(GoogleTest)
 # Pinned release tarball, SHA-256 verified, built static. Never vendored,
 # never a submodule; extensions never embed a second SDL3.
 # ---------------------------------------------------------------------------
-if(SDLSTATIC_BUILD_IMAGE)
+if(SDLSTATIC_BUILD_IMAGE OR SDLSTATIC_BUILD_TTF)
   set(SDL_SHARED OFF CACHE BOOL "" FORCE)
   set(SDL_STATIC ON CACHE BOOL "" FORCE)
   set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
@@ -120,4 +120,28 @@ if(SDLSTATIC_BUILD_IMAGE)
     URL_HASH SHA256=30d4aa2b3037718142b32dffd4e72f917ebb6cc5227150e7bb9c45efb2153aeb
   )
   FetchContent_MakeAvailable(SDL3)
+endif()
+
+# ---------------------------------------------------------------------------
+# FreeType — Phase-A backend for SDLStatic::TTF (see deps/FreeType.md).
+# Official release tarball, SHA-256 pinned, built static and minimal: every
+# optional dependency disabled (internal zlib; no bzip2/png/harfbuzz/brotli),
+# so it adds zero shared-library dependencies. License: FTL (attribution
+# required in shipped products — see deps/FreeType.md).
+# ---------------------------------------------------------------------------
+if(SDLSTATIC_BUILD_TTF)
+  set(FT_DISABLE_ZLIB ON CACHE BOOL "" FORCE)
+  set(FT_DISABLE_BZIP2 ON CACHE BOOL "" FORCE)
+  set(FT_DISABLE_PNG ON CACHE BOOL "" FORCE)
+  set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "" FORCE)
+  set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
+  set(SKIP_INSTALL_ALL ON)
+  FetchContent_Declare(
+    freetype
+    URL
+      https://download.savannah.gnu.org/releases/freetype/freetype-2.14.3.tar.xz
+      https://downloads.sourceforge.net/freetype/freetype-2.14.3.tar.xz
+    URL_HASH SHA256=36bc4f1cc413335368ee656c42afca65c5a3987e8768cc28cf11ba775e785a5f
+  )
+  FetchContent_MakeAvailable(freetype)
 endif()
