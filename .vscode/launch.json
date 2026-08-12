@@ -1,0 +1,24 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug SDL3-static-extensions",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/debug/bin/SDL3-static-extensions",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "Build Debug"
+    },
+    {
+      "name": "Debug SDL3-static-extensions (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/debug/bin/SDL3-static-extensions.exe",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "preLaunchTask": "Build Debug",
+      "console": "integratedTerminal"
+    }
+  ]
+}

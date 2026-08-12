@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/SDL3-static-extensionsTargets.cmake")
+
+check_required_components(SDL3-static-extensions)

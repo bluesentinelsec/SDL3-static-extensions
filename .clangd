@@ -1,0 +1,9 @@
+CompileFlags:
+  CompilationDatabase: .
+---
+If:
+  PathMatch: .*
+CompileFlags:
+  Add:
+    - -std=c++20
+    - -Iinclude

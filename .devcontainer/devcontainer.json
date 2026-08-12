@@ -1,0 +1,48 @@
+{
+  "name": "SDL3-static-extensions",
+  "image": "mcr.microsoft.com/devcontainers/cpp:1-ubuntu-24.04",
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "containerEnv": {
+    "CMAKE_GENERATOR": "Ninja",
+    "CMAKE_BUILD_PARALLEL_LEVEL": "4"
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "llvm-vs-code-extensions.vscode-clangd",
+        "ms-vscode.cmake-tools",
+        "vadimcn.vscode-lldb",
+        "matepek.vscode-catch2-test-adapter",
+        "twxs.cmake"
+      ],
+      "settings": {
+        "C_Cpp.intelliSenseEngine": "disabled",
+        "cmake.useCMakePresets": "always",
+        "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
+        "cmake.buildDirectory": "${workspaceFolder}/build/debug",
+        "testMate.cpp.test.executables": [
+          "${workspaceFolder}/build/debug/bin/*test*",
+          "${workspaceFolder}/build/debug/bin/*_test"
+        ],
+        "testMate.cpp.debug.configTemplate": {
+          "type": "lldb",
+          "request": "launch",
+          "program": "${exec}",
+          "args": "${argsArray}",
+          "cwd": "${workspaceFolder}"
+        }
+      }
+    }
+  },
+  "onCreateCommand": "bash .devcontainer/setup.sh deps",
+  "postCreateCommand": "bash .devcontainer/setup.sh build",
+  "postStartCommand": "cmake -E create_symlink build/debug/compile_commands.json compile_commands.json || true",
+  "remoteUser": "vscode",
+  "hostRequirements": {
+    "cpus": 2,
+    "memory": "4gb",
+    "storage": "32gb"
+  }
+}

@@ -1,0 +1,10 @@
+add_executable(SDL3_static_extensions_version_bench
+  version_bench.cpp
+)
+target_link_libraries(SDL3_static_extensions_version_bench
+  PRIVATE
+    ${PROJECT_NAME}_lib
+    benchmark::benchmark
+    benchmark::benchmark_main
+)
+cppboot_set_project_warnings(SDL3_static_extensions_version_bench)

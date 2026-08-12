@@ -1,0 +1,66 @@
+plugins {
+    id "com.android.application"
+}
+
+def testAbi = providers.gradleProperty("SDL3_static_extensionsTestAbi").getOrElse("x86_64")
+
+android {
+    namespace "com.example.sdl3staticextensions.test"
+    compileSdk 35
+    ndkVersion "27.2.12479018"
+
+    defaultConfig {
+        applicationId "com.example.sdl3staticextensions.test"
+        minSdk 21
+        targetSdk 35
+        versionCode 1
+        versionName "1.0"
+
+        ndk {
+            abiFilters testAbi
+        }
+
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=c++_shared"
+                targets "SDL3_static_extensions_android_test"
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    buildFeatures {
+        prefab true
+    }
+
+    packaging {
+        jniLibs {
+            // Prefab stages the imported AAR libraries beside the consumer's
+            // JNI target; both copies originate from this exact AAR/NDK build.
+            pickFirsts += ["**/libSDL3_static_extensions.so", "**/libc++_shared.so"]
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path rootProject.projectDir.toPath().resolve("../tests/android/CMakeLists.txt").toFile()
+            version "3.22.1"
+        }
+    }
+}
+
+dependencies {
+    debugImplementation files("../SDL3_static_extensions/build/outputs/aar/SDL3_static_extensions-debug.aar")
+    releaseImplementation files("../SDL3_static_extensions/build/outputs/aar/SDL3_static_extensions-release.aar")
+}

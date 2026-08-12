@@ -1,0 +1,9 @@
+#include "@PROJECT_NAMESPACE@/version.hpp"
+
+namespace @PROJECT_NAMESPACE@ {
+
+std::string_view Version() noexcept {
+  return "@PROJECT_VERSION_STRING@";
+}
+
+}  // namespace @PROJECT_NAMESPACE@

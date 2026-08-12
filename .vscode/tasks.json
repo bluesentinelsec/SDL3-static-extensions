@@ -1,0 +1,160 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Configure Debug",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--preset", "debug"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Reconfigure Debug (clean)",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "-E",
+        "rm",
+        "-rf",
+        "build/debug"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "Configure Debug (after clean)",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Reconfigure Debug (clean)",
+        "Configure Debug"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "Link compile_commands (Debug)",
+      "type": "shell",
+      "command": "cmake",
+      "args": [
+        "-E",
+        "create_symlink",
+        "build/debug/compile_commands.json",
+        "compile_commands.json"
+      ],
+      "windows": {
+        "command": "cmake",
+        "args": [
+          "-E",
+          "copy_if_different",
+          "build/debug/compile_commands.json",
+          "compile_commands.json"
+        ]
+      },
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Configure Debug",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "--preset", "debug", "--parallel"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "dependsOn": "Link compile_commands (Debug)",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "Build Debug (clean reconfigure)",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "Reconfigure Debug (clean)",
+        "Link compile_commands (Debug)",
+        "Build Debug core"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Debug core",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "--preset", "debug", "--parallel"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "Configure Release",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--preset", "release"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Build Release",
+      "type": "shell",
+      "command": "cmake",
+      "args": ["--build", "--preset", "release", "--parallel"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": "build",
+      "dependsOn": "Configure Release",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "Test",
+      "type": "shell",
+      "command": "ctest",
+      "args": [
+        "--test-dir",
+        "build/debug",
+        "--output-on-failure",
+        "--parallel"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "dependsOn": "Build Debug",
+      "problemMatcher": []
+    },
+    {
+      "label": "Bench",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "found=$(find build/release -type f \\( -name '*bench' -o -name '*_bench' -o -name '*bench.exe' -o -name '*_bench.exe' \\) 2>/dev/null | head -n 1); if [ -z \"$found\" ]; then echo 'No benchmark binaries found'; exit 0; fi; echo Running $found; \"$found\" --benchmark_min_time=0.01s"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": "Build Release",
+      "problemMatcher": []
+    }
+  ]
+}

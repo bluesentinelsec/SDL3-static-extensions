@@ -1,0 +1,98 @@
+plugins {
+    id "com.android.library"
+}
+
+def repositoryRoot = rootProject.projectDir.parentFile
+def prefabHeaders = file("${buildDir}/generated/prefab-headers")
+def packageVersion = new File(repositoryRoot, "VERSION").readLines()[0]
+        .replaceFirst(/^[vV]/, "")
+        .replaceFirst(/[ \t]*#.*$/, "")
+        .trim()
+
+version = packageVersion
+
+android {
+    namespace "com.example.sdl3staticextensions"
+    compileSdk 35
+    ndkVersion "27.2.12479018"
+
+    defaultConfig {
+        minSdk 21
+
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86_64"
+        }
+
+        externalNativeBuild {
+            cmake {
+                arguments "-DANDROID_STL=c++_shared",
+                          "-DSDL3_STATIC_EXTENSIONS_BUILD_APP=OFF",
+                          "-DSDL3_STATIC_EXTENSIONS_BUILD_TESTS=OFF",
+                          "-DSDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS=OFF",
+                          "-DSDL3_STATIC_EXTENSIONS_WITH_CLI11=OFF",
+                          "-DSDL3_STATIC_EXTENSIONS_WITH_JSON=OFF",
+                          "-DSDL3_STATIC_EXTENSIONS_WITH_SPDLOG=OFF"
+                targets "SDL3_static_extensions"
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    buildFeatures {
+        prefabPublishing true
+    }
+
+    prefab {
+        SDL3_static_extensions {
+            headers prefabHeaders.absolutePath
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path repositoryRoot.toPath().resolve("CMakeLists.txt").toFile()
+            version "3.22.1"
+        }
+    }
+}
+
+// Prefab ships a header snapshot with the AAR: the public include/ tree plus a
+// rendered version.hpp (Gradle-side equivalent of the CMake configure_file).
+tasks.register("preparePrefabHeaders") {
+    inputs.dir(new File(repositoryRoot, "include"))
+    inputs.file(new File(repositoryRoot, "VERSION"))
+    inputs.file(new File(repositoryRoot, "cmake/version.hpp.in"))
+    outputs.dir(prefabHeaders)
+
+    doLast {
+        delete(prefabHeaders)
+        copy {
+            from new File(repositoryRoot, "include")
+            into prefabHeaders
+            include "**/*.h", "**/*.hpp"
+        }
+
+        def components = packageVersion.tokenize(".-")
+        if (components.size() < 3 || !components.take(3).every { it ==~ /[0-9]+/ }) {
+            throw new GradleException("VERSION must begin with numeric major.minor.patch")
+        }
+
+        def versionHeader = new File(repositoryRoot, "cmake/version.hpp.in").text
+                .replace("@PROJECT_NAMESPACE@", "SDL3_static_extensions")
+                .replace("@PROJECT_VERSION_MAJOR@", components[0])
+                .replace("@PROJECT_VERSION_MINOR@", components[1])
+                .replace("@PROJECT_VERSION_PATCH@", components[2])
+        def output = new File(prefabHeaders, "SDL3_static_extensions/version.hpp")
+        output.parentFile.mkdirs()
+        output.text = versionHeader
+    }
+}
+
+tasks.named("preBuild").configure {
+    dependsOn("preparePrefabHeaders")
+}

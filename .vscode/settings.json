@@ -1,0 +1,57 @@
+{
+  "editor.formatOnSave": false,
+  "files.insertFinalNewline": true,
+  "files.trimTrailingWhitespace": true,
+  "C_Cpp.intelliSenseEngine": "disabled",
+  "clangd.path": "clangd",
+  "clangd.arguments": [
+    "--compile-commands-dir=${workspaceFolder}",
+    "--header-insertion=never",
+    "--background-index",
+    "--query-driver=/**/clang*,/**/g++,/**/gcc*,/**/c++,/**/cc,/**/clang-cl*"
+  ],
+  "clangd.onConfigChanged": "restart",
+  "cmake.configureOnOpen": true,
+  "cmake.useCMakePresets": "always",
+  "cmake.options.statusBarVisibility": "visible",
+  "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
+  "cmake.generator": "Ninja",
+  "cmake.buildDirectory": "${workspaceFolder}/build/debug",
+  "cmake.ctestArgs": [
+    "--output-on-failure",
+    "--parallel"
+  ],
+  "testMate.cpp.test.executables": [
+    "${workspaceFolder}/build/debug/bin/*test*",
+    "${workspaceFolder}/build/debug/bin/*_test",
+    "${workspaceFolder}/build/debug/bin/*_test.exe",
+    "${workspaceFolder}/build/debug/bin/*test*.exe"
+  ],
+  "testMate.cpp.test.advancedExecutables": [
+    {
+      "pattern": "${workspaceFolder}/build/debug/bin/*test*",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "GTEST_COLOR": "1"
+      }
+    }
+  ],
+  "testMate.cpp.debug.configTemplate": {
+    "type": "lldb",
+    "request": "launch",
+    "program": "${exec}",
+    "args": "${argsArray}",
+    "cwd": "${workspaceFolder}",
+    "sourceFileMap": {
+      "/__w/": "${workspaceFolder}/"
+    }
+  },
+  "testMate.cpp.test.workingDirectory": "${workspaceFolder}",
+  "testMate.cpp.log.logpanel": false,
+  "files.associations": {
+    "CMakeLists.txt": "cmake",
+    "*.hpp": "cpp",
+    "*.cpp": "cpp",
+    "*.cppm": "cpp"
+  }
+}
