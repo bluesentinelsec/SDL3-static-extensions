@@ -1,12 +1,10 @@
 # SDLStatic::Image — static-link-first build of the vendored SDL3_image
 # sources (upstream release-3.4.4; provenance in deps/SDL3_image.md).
 #
-# Only static-link-friendly formats are enabled. Format translation units for
-# heavy codecs (AVIF, JXL, WEBP, TIFF, libpng/libjpeg paths, WIC, ImageIO)
-# still compile, but without their LOAD_*/backend defines they reduce to
-# upstream's built-in "unsupported format" fallbacks and contribute no
-# link-time dependencies. Deleting those TUs outright (with the matching
-# dispatch-table surgery in src/IMG.c) is the planned removal pass.
+# Heavy-codec translation units (AVIF, JXL, WEBP, TIFF, libpng, WIC, ImageIO)
+# have been deleted outright along with their dispatch entries and public API
+# declarations — unsupported formats fail at build time, not runtime (design
+# no-stubs policy).
 #
 # Enabled loaders: BMP, GIF (incl. animation), JPG + PNG (stb_image backend),
 # LBM, PCX, PNM, QOI, SVG (nanosvg), TGA, XCF, XPM, XV.
@@ -18,16 +16,13 @@ enable_language(C)
 
 add_library(SDLStatic_Image STATIC
   src/IMG.c
-  src/IMG_WIC.c
   src/IMG_ani.c
   src/IMG_anim_encoder.c
   src/IMG_anim_decoder.c
-  src/IMG_avif.c
   src/IMG_bmp.c
   src/IMG_gif.c
   src/IMG_gpu.c
   src/IMG_jpg.c
-  src/IMG_jxl.c
   src/IMG_lbm.c
   src/IMG_pcx.c
   src/IMG_png.c
@@ -36,13 +31,9 @@ add_library(SDLStatic_Image STATIC
   src/IMG_stb.c
   src/IMG_svg.c
   src/IMG_tga.c
-  src/IMG_tif.c
-  src/IMG_webp.c
   src/IMG_xcf.c
   src/IMG_xpm.c
   src/IMG_xv.c
-  src/IMG_libpng.c
-  src/xmlman.c
 )
 add_library(SDLStatic::Image ALIAS SDLStatic_Image)
 

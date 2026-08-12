@@ -31,9 +31,21 @@
 
 ## Local modifications
 
-None yet. Format selection happens via compile definitions in
-`image/CMakeLists.txt` (static-friendly formats only). The planned removal
-pass will delete the heavy-codec translation units (`IMG_avif.c`, `IMG_jxl.c`,
-`IMG_webp.c`, `IMG_tif.c`, `IMG_libpng.c`, `IMG_WIC.c`, `IMG_ImageIO.m`) and
-their dispatch entries in `src/IMG.c` / public header, per the no-stubs API
-policy.
+Removal pass (no-stubs policy — removed formats fail at build time):
+
+- Deleted translation units and headers: `IMG_avif.*`, `IMG_jxl.c`,
+  `IMG_webp.*`, `IMG_tif.c`, `IMG_libpng.*`, `IMG_WIC.*`, `IMG_ImageIO.*`,
+  `xmlman.*`.
+- `src/IMG.c`: removed the AVIF/JXL/TIF/WEBP loader table rows, the
+  WEBP/AVIFS/APNG animation table rows, and the corresponding save-dispatch
+  branches.
+- `src/IMG_anim_encoder.c` / `src/IMG_anim_decoder.c`: removed the
+  AVIF/WEBP/APNG dispatch branches and public wrappers (APNG requires libpng;
+  the stb backend cannot provide it — GIF remains the animation format).
+- `include/SDL3_image/SDL_image.h`: removed all declarations (and AVIF
+  encoder/decoder property defines) for the deleted formats.
+- Dormant `#ifdef` branches for never-defined backends inside kept TUs
+  (e.g. libpng/WIC paths in `IMG_png.c`) are left in place for diff-minimal
+  vendoring; they compile to nothing.
+
+Test corpus provenance: see `tests/image/assets/README.md`.

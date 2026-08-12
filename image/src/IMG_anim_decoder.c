@@ -23,10 +23,7 @@
 
 #include "IMG_anim_decoder.h"
 #include "IMG_ani.h"
-#include "IMG_avif.h"
 #include "IMG_gif.h"
-#include "IMG_libpng.h"
-#include "IMG_webp.h"
 
 struct IMG_AnimationDecoderContext
 {
@@ -210,14 +207,8 @@ IMG_AnimationDecoder *IMG_CreateAnimationDecoderWithProperties(SDL_PropertiesID 
     bool result = false;
     if (SDL_strcasecmp(type, "ani") == 0) {
         result = IMG_CreateANIAnimationDecoder(decoder, props);
-    } else if (SDL_strcasecmp(type, "apng") == 0 || SDL_strcasecmp(type, "png") == 0) {
-        result = IMG_CreateAPNGAnimationDecoder(decoder, props);
-    } else if (SDL_strcasecmp(type, "avifs") == 0) {
-        result = IMG_CreateAVIFAnimationDecoder(decoder, props);
     } else if (SDL_strcasecmp(type, "gif") == 0) {
         result = IMG_CreateGIFAnimationDecoder(decoder, props);
-    } else if (SDL_strcasecmp(type, "webp") == 0) {
-        result = IMG_CreateWEBPAnimationDecoder(decoder, props);
     }
 
     if (!result) {
@@ -454,22 +445,8 @@ IMG_Animation *IMG_LoadANIAnimation_IO(SDL_IOStream *src)
     return IMG_DecodeAsAnimation(src, "ani", 0);
 }
 
-IMG_Animation *IMG_LoadAPNGAnimation_IO(SDL_IOStream *src)
-{
-    return IMG_DecodeAsAnimation(src, "png", 0);
-}
-
-IMG_Animation *IMG_LoadAVIFAnimation_IO(SDL_IOStream *src)
-{
-    return IMG_DecodeAsAnimation(src, "avifs", 0);
-}
-
 IMG_Animation *IMG_LoadGIFAnimation_IO(SDL_IOStream *src)
 {
     return IMG_DecodeAsAnimation(src, "gif", 0);
 }
 
-IMG_Animation *IMG_LoadWEBPAnimation_IO(SDL_IOStream *src)
-{
-    return IMG_DecodeAsAnimation(src, "webp", 0);
-}

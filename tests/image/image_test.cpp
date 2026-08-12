@@ -1,69 +1,202 @@
 /**
  * @file image_test.cpp
- * @brief Foundation tests for SDLStatic::Image (vendored SDL3_image).
+ * @brief Tests for SDLStatic::Image (vendored SDL3_image, static formats only).
  *
- * Proves the static library links, initializes against the FetchContent SDL3,
- * and decodes through the real IMG_Load path — the corpus-driven format tests
- * come with the removal/backend hardening passes.
+ * Covers: every enabled loader against the committed corpus, animation
+ * decoding, PNG/JPG save round-trips, and negative proof that the removed
+ * heavy-codec formats (AVIF/JXL/TIFF/WEBP) no longer load. The corpus lives
+ * in tests/image/assets/ (see its README for provenance).
  */
 
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <gtest/gtest.h>
 
-#include <array>
-#include <cstddef>
+#include <string>
+
+#ifndef IMAGE_TEST_ASSETS_DIR
+#error "IMAGE_TEST_ASSETS_DIR must be defined by the build"
+#endif
 
 namespace
 {
 
-// Minimal valid 24-bit BMP: 2x2 pixels (BGR rows padded to 4 bytes... 2*3=6 -> pad 2).
-constexpr std::array<unsigned char, 70> kTinyBmp = {
-    'B', 'M',              // signature
-    70,  0,   0,   0,      // file size
-    0,   0,   0,   0,      // reserved
-    54,  0,   0,   0,      // pixel data offset
-    40,  0,   0,   0,      // BITMAPINFOHEADER size
-    2,   0,   0,   0,      // width = 2
-    2,   0,   0,   0,      // height = 2
-    1,   0,               // planes
-    24,  0,               // bpp
-    0,   0,   0,   0,      // compression = BI_RGB
-    16,  0,   0,   0,      // image size (2 rows * 8 bytes)
-    0,   0,   0,   0,      // x ppm
-    0,   0,   0,   0,      // y ppm
-    0,   0,   0,   0,      // colors used
-    0,   0,   0,   0,      // important colors
-    // row 1 (bottom): blue, green + 2 pad bytes
-    255, 0,   0,   0,   255, 0,   0,   0,
-    // row 0 (top): red, white + 2 pad bytes
-    0,   0,   255, 255, 255, 255, 0,   0,
-};
-
-SDL_Surface *LoadTinyBmp()
+std::string AssetPath(const char *name)
 {
-    SDL_IOStream *io = SDL_IOFromConstMem(kTinyBmp.data(), kTinyBmp.size());
-    if (io == nullptr)
-    {
-        return nullptr;
-    }
-    return IMG_Load_IO(io, true);
+    return std::string(IMAGE_TEST_ASSETS_DIR) + "/" + name;
 }
 
-}  // namespace
+class ImageFormats : public ::testing::Test
+{
+  protected:
+    static void SetUpTestSuite()
+    {
+        ASSERT_TRUE(SDL_Init(0)) << SDL_GetError();
+    }
+    static void TearDownTestSuite()
+    {
+        SDL_Quit();
+    }
+};
 
-TEST(ImageFoundation, VersionIsWired)
+struct FormatCase
+{
+    const char *file;
+    bool same_dims_as_reference;  // upstream sample.* share one geometry
+};
+
+class LoadSupported : public ImageFormats, public ::testing::WithParamInterface<FormatCase>
+{
+};
+
+TEST_P(LoadSupported, Loads)
+{
+    SDL_Surface *surface = IMG_Load(AssetPath(GetParam().file).c_str());
+    ASSERT_NE(surface, nullptr) << GetParam().file << ": " << SDL_GetError();
+    EXPECT_GT(surface->w, 0) << GetParam().file;
+    EXPECT_GT(surface->h, 0) << GetParam().file;
+
+    if (GetParam().same_dims_as_reference)
+    {
+        SDL_Surface *reference = IMG_Load(AssetPath("sample.bmp").c_str());
+        ASSERT_NE(reference, nullptr) << SDL_GetError();
+        EXPECT_EQ(surface->w, reference->w) << GetParam().file;
+        EXPECT_EQ(surface->h, reference->h) << GetParam().file;
+        SDL_DestroySurface(reference);
+    }
+    SDL_DestroySurface(surface);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    Corpus, LoadSupported,
+    ::testing::Values(
+        FormatCase{"sample.bmp", true},
+        FormatCase{"sample.png", true},
+        FormatCase{"sample.jpg", true},
+        FormatCase{"sample.qoi", true},
+        FormatCase{"sample.pnm", true},
+        FormatCase{"sample.tga", true},
+        FormatCase{"sample.pcx", true},
+        FormatCase{"sample.xcf", true},
+        FormatCase{"sample.xpm", true},
+        FormatCase{"sample.cur", false},
+        FormatCase{"sample.ico", false},
+        FormatCase{"palette.gif", false},
+        FormatCase{"svg.svg", false},
+        FormatCase{"generated.lbm", false},
+        FormatCase{"generated.xv", false}),
+    [](const ::testing::TestParamInfo<FormatCase> &info) {
+        std::string name = info.param.file;
+        for (char &c : name)
+        {
+            if (c == '.' || c == '-')
+            {
+                c = '_';
+            }
+        }
+        return name;
+    });
+
+class LoadRemoved : public ImageFormats, public ::testing::WithParamInterface<const char *>
+{
+};
+
+TEST_P(LoadRemoved, DoesNotLoad)
+{
+    SDL_Surface *surface = IMG_Load(AssetPath(GetParam()).c_str());
+    EXPECT_EQ(surface, nullptr) << GetParam()
+                                << " loaded, but its format was removed from the build";
+    if (surface != nullptr)
+    {
+        SDL_DestroySurface(surface);
+    }
+}
+
+INSTANTIATE_TEST_SUITE_P(RemovedFormats, LoadRemoved,
+                         ::testing::Values("sample.avif", "sample.jxl", "sample.tif",
+                                           "rgbrgb.webp"),
+                         [](const ::testing::TestParamInfo<const char *> &info) {
+                             std::string name = info.param;
+                             for (char &c : name)
+                             {
+                                 if (c == '.' || c == '-')
+                                 {
+                                     c = '_';
+                                 }
+                             }
+                             return name;
+                         });
+
+TEST_F(ImageFormats, GifAnimationDecodes)
+{
+    IMG_Animation *anim = IMG_LoadAnimation(AssetPath("rgbrgb.gif").c_str());
+    ASSERT_NE(anim, nullptr) << SDL_GetError();
+    EXPECT_GE(anim->count, 3);  // rgbrgb = one frame per channel
+    EXPECT_GT(anim->w, 0);
+    EXPECT_GT(anim->h, 0);
+    IMG_FreeAnimation(anim);
+}
+
+TEST_F(ImageFormats, VersionIsWired)
 {
     EXPECT_GE(IMG_Version(), SDL_VERSIONNUM(3, 4, 4));
 }
 
-TEST(ImageFoundation, LoadsBmpFromMemory)
+SDL_Surface *MakeTestSurface()
 {
-    ASSERT_TRUE(SDL_Init(0)) << SDL_GetError();
-    SDL_Surface *surface = LoadTinyBmp();
-    ASSERT_NE(surface, nullptr) << SDL_GetError();
-    EXPECT_EQ(surface->w, 2);
-    EXPECT_EQ(surface->h, 2);
-    SDL_DestroySurface(surface);
-    SDL_Quit();
+    SDL_Surface *surface = SDL_CreateSurface(8, 8, SDL_PIXELFORMAT_RGBA32);
+    if (surface != nullptr)
+    {
+        SDL_FillSurfaceRect(surface, nullptr, SDL_MapSurfaceRGBA(surface, 200, 100, 50, 255));
+    }
+    return surface;
 }
+
+TEST_F(ImageFormats, PngSaveRoundTripsLosslessly)
+{
+    SDL_Surface *original = MakeTestSurface();
+    ASSERT_NE(original, nullptr) << SDL_GetError();
+
+    SDL_IOStream *io = SDL_IOFromDynamicMem();
+    ASSERT_NE(io, nullptr) << SDL_GetError();
+    ASSERT_TRUE(IMG_SavePNG_IO(original, io, false)) << SDL_GetError();
+
+    Sint64 size = SDL_GetIOSize(io);
+    ASSERT_GT(size, 0);
+    ASSERT_EQ(SDL_SeekIO(io, 0, SDL_IO_SEEK_SET), 0);
+    SDL_Surface *reloaded = IMG_Load_IO(io, true);
+    ASSERT_NE(reloaded, nullptr) << SDL_GetError();
+
+    EXPECT_EQ(reloaded->w, original->w);
+    EXPECT_EQ(reloaded->h, original->h);
+    Uint8 r = 0, g = 0, b = 0, a = 0;
+    ASSERT_TRUE(SDL_ReadSurfacePixel(reloaded, 4, 4, &r, &g, &b, &a));
+    EXPECT_EQ(r, 200);
+    EXPECT_EQ(g, 100);
+    EXPECT_EQ(b, 50);
+    EXPECT_EQ(a, 255);
+
+    SDL_DestroySurface(reloaded);
+    SDL_DestroySurface(original);
+}
+
+TEST_F(ImageFormats, JpgSaveRoundTrips)
+{
+    SDL_Surface *original = MakeTestSurface();
+    ASSERT_NE(original, nullptr) << SDL_GetError();
+
+    SDL_IOStream *io = SDL_IOFromDynamicMem();
+    ASSERT_NE(io, nullptr) << SDL_GetError();
+    ASSERT_TRUE(IMG_SaveJPG_IO(original, io, false, 90)) << SDL_GetError();
+
+    ASSERT_EQ(SDL_SeekIO(io, 0, SDL_IO_SEEK_SET), 0);
+    SDL_Surface *reloaded = IMG_Load_IO(io, true);
+    ASSERT_NE(reloaded, nullptr) << SDL_GetError();
+    EXPECT_EQ(reloaded->w, original->w);
+    EXPECT_EQ(reloaded->h, original->h);
+
+    SDL_DestroySurface(reloaded);
+    SDL_DestroySurface(original);
+}
+
+}  // namespace

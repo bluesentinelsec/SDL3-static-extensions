@@ -23,10 +23,7 @@
 
 #include "IMG_anim_encoder.h"
 #include "IMG_ani.h"
-#include "IMG_avif.h"
 #include "IMG_gif.h"
-#include "IMG_libpng.h"
-#include "IMG_webp.h"
 
 
 IMG_AnimationEncoder *IMG_CreateAnimationEncoder(const char *file)
@@ -138,14 +135,8 @@ IMG_AnimationEncoder *IMG_CreateAnimationEncoderWithProperties(SDL_PropertiesID 
     bool result = false;
     if (SDL_strcasecmp(type, "ani") == 0) {
         result = IMG_CreateANIAnimationEncoder(encoder, props);
-    } else if (SDL_strcasecmp(type, "apng") == 0 || SDL_strcasecmp(type, "png") == 0) {
-        result = IMG_CreateAPNGAnimationEncoder(encoder, props);
-    } else if (SDL_strcasecmp(type, "avifs") == 0) {
-        result = IMG_CreateAVIFAnimationEncoder(encoder, props);
     } else if (SDL_strcasecmp(type, "gif") == 0) {
         result = IMG_CreateGIFAnimationEncoder(encoder, props);
-    } else if (SDL_strcasecmp(type, "webp") == 0) {
-        result = IMG_CreateWEBPAnimationEncoder(encoder, props);
     } else {
         SDL_SetError("Unrecognized output type");
     }
@@ -266,22 +257,8 @@ bool IMG_SaveANIAnimation_IO(IMG_Animation *anim, SDL_IOStream *dst, bool closei
     return IMG_EncodeAnimation(anim, dst, closeio, "ani", -1);
 }
 
-bool IMG_SaveAPNGAnimation_IO(IMG_Animation *anim, SDL_IOStream *dst, bool closeio)
-{
-    return IMG_EncodeAnimation(anim, dst, closeio, "png", -1);
-}
-
-bool IMG_SaveAVIFAnimation_IO(IMG_Animation *anim, SDL_IOStream *dst, bool closeio, int quality)
-{
-    return IMG_EncodeAnimation(anim, dst, closeio, "avifs", quality);
-}
-
 bool IMG_SaveGIFAnimation_IO(IMG_Animation *anim, SDL_IOStream *dst, bool closeio)
 {
     return IMG_EncodeAnimation(anim, dst, closeio, "gif", -1);
 }
 
-bool IMG_SaveWEBPAnimation_IO(IMG_Animation *anim, SDL_IOStream *dst, bool closeio, int quality)
-{
-    return IMG_EncodeAnimation(anim, dst, closeio, "webp", quality);
-}
