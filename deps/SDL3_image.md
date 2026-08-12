@@ -48,4 +48,15 @@ Removal pass (no-stubs policy — removed formats fail at build time):
   (e.g. libpng/WIC paths in `IMG_png.c`) are left in place for diff-minimal
   vendoring; they compile to nothing.
 
+Hardening fixes to vendored code (candidates for upstreaming):
+
+- `src/IMG_anim_decoder.c`: the single-frame fallback no longer runs for
+  formats with a dedicated animation decoder — on malformed GIF headers the
+  fallback recursed (`IMG_LoadGIF_IO` → decoder → fallback → `IMG_LoadTyped_IO`
+  → `IMG_LoadGIF_IO` …) until stack overflow.
+- `src/IMG_gif.c`: the LZW decompressor's output stack is now bounds-checked
+  at every push; corrupted code tables with multi-entry cycles previously
+  wrote past the stack (heap-buffer-overflow). Both found by the
+  malformed-input test suite under ASan.
+
 Test corpus provenance: see `tests/image/assets/README.md`.

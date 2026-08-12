@@ -33,3 +33,34 @@ TEST(WebRuntime, RunsInsideBrowserJavaScriptEnvironment)
     ASSERT_NE(agent, nullptr);
     EXPECT_FALSE(std::string(agent).empty());
 }
+
+// --- SDLStatic::Image at browser runtime --------------------------------
+
+#include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+
+TEST(WebImage, DecodesEmbeddedPngInBrowser)
+{
+    ASSERT_TRUE(SDL_Init(0)) << SDL_GetError();
+    SDL_Surface *surface = IMG_Load("/assets/sample.png");
+    ASSERT_NE(surface, nullptr) << SDL_GetError();
+    EXPECT_GT(surface->w, 0);
+    EXPECT_GT(surface->h, 0);
+    SDL_DestroySurface(surface);
+    SDL_Quit();
+}
+
+TEST(WebImage, DecodesEmbeddedGifAnimationInBrowser)
+{
+    ASSERT_TRUE(SDL_Init(0)) << SDL_GetError();
+    IMG_Animation *anim = IMG_LoadAnimation("/assets/rgbrgb.gif");
+    ASSERT_NE(anim, nullptr) << SDL_GetError();
+    EXPECT_GE(anim->count, 3);
+    IMG_FreeAnimation(anim);
+    SDL_Quit();
+}
+
+TEST(WebImage, VersionIsWired)
+{
+    EXPECT_GE(IMG_Version(), SDL_VERSIONNUM(3, 4, 4));
+}

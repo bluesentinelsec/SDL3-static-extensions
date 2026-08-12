@@ -205,13 +205,21 @@ IMG_AnimationDecoder *IMG_CreateAnimationDecoderWithProperties(SDL_PropertiesID 
     }
 
     bool result = false;
+    bool dedicated = false;
     if (SDL_strcasecmp(type, "ani") == 0) {
+        dedicated = true;
         result = IMG_CreateANIAnimationDecoder(decoder, props);
     } else if (SDL_strcasecmp(type, "gif") == 0) {
+        dedicated = true;
         result = IMG_CreateGIFAnimationDecoder(decoder, props);
     }
 
-    if (!result) {
+    /* The single-frame fallback wraps IMG_LoadTyped_IO. For formats with a
+       dedicated animation decoder that FAILED (malformed data), falling back
+       recurses: the still-image loader delegates back to this decoder (e.g.
+       IMG_LoadGIF_IO), overflowing the stack. Only fall back for formats
+       without a dedicated decoder. (Local fix; upstream SDL_image 3.4.4.) */
+    if (!result && !dedicated) {
         if (SDL_SeekIO(decoder->src, decoder->start, SDL_IO_SEEK_SET) != decoder->start) {
             goto error;
         }

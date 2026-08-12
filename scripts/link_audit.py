@@ -28,9 +28,11 @@ FORBIDDEN = [
 
 # OS-built-in locations / names that a static-first binary may depend on.
 MACOS_ALLOWED_PREFIXES = ("/usr/lib/", "/System/Library/")
+# Sanitizer runtimes appear in instrumented builds (dev/CI only, never ship).
+SANITIZER_RT = re.compile(r"libclang_rt\.|^libasan|^libubsan|^liblsan|^libtsan")
 LINUX_ALLOWED = re.compile(
     r"^(linux-vdso|ld-linux|ld-musl|libc|libm|libpthread|libdl|librt|"
-    r"libgcc_s|libstdc\+\+|libatomic)"
+    r"libgcc_s|libstdc\+\+|libatomic|libresolv)"  # libresolv: glibc, pulled by ASan
 )
 
 
@@ -60,7 +62,7 @@ def audit(binary: str) -> list[str]:
             name = dep.rsplit("/", 1)[-1].lower()
             if any(f in name for f in FORBIDDEN):
                 problems.append(f"forbidden codec/font dependency: {dep}")
-            elif not dep.startswith(MACOS_ALLOWED_PREFIXES):
+            elif not dep.startswith(MACOS_ALLOWED_PREFIXES) and not SANITIZER_RT.search(name):
                 problems.append(f"non-OS dependency: {dep}")
     elif sys.platform.startswith("linux"):
         deps = deps_linux(binary)
@@ -68,7 +70,7 @@ def audit(binary: str) -> list[str]:
             name = dep.rsplit("/", 1)[-1].lower()
             if any(f in name for f in FORBIDDEN):
                 problems.append(f"forbidden codec/font dependency: {dep}")
-            elif not LINUX_ALLOWED.match(name):
+            elif not LINUX_ALLOWED.match(name) and not SANITIZER_RT.search(name):
                 problems.append(f"non-OS dependency: {dep}")
     else:
         print(f"link_audit: unsupported platform {sys.platform}; skipping")

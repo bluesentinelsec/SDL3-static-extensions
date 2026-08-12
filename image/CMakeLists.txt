@@ -6,7 +6,7 @@
 # declarations — unsupported formats fail at build time, not runtime (design
 # no-stubs policy).
 #
-# Enabled loaders: BMP, GIF (incl. animation), JPG + PNG (stb_image backend),
+# Enabled loaders: ANI, BMP, GIF (incl. animation), JPG + PNG (stb_image backend),
 # LBM, PCX, PNM, QOI, SVG (nanosvg), TGA, XCF, XPM, XV.
 # Save support: PNG and JPG (SAVE_PNG / SAVE_JPG default on in the sources,
 # backed by the vendored stb write / tiny_jpeg single-file encoders).
@@ -48,6 +48,7 @@ set_target_properties(SDLStatic_Image PROPERTIES
 
 target_compile_definitions(SDLStatic_Image PRIVATE
   USE_STBIMAGE
+  LOAD_ANI
   LOAD_BMP
   LOAD_GIF
   LOAD_JPG

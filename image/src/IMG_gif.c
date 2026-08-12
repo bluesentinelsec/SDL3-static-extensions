@@ -363,6 +363,10 @@ LWZReadByte(SDL_IOStream *src, int flag, int input_code_size, State_t * state)
         incode = code;
 
         if (code >= state->max_code) {
+            if (state->sp >= state->stack + SDL_arraysize(state->stack)) {
+                RWSetMsg("LWZ stack overflow");
+                return -3;
+            }
             *state->sp++ = state->firstcode;
             code = state->oldcode;
         }
@@ -370,6 +374,10 @@ LWZReadByte(SDL_IOStream *src, int flag, int input_code_size, State_t * state)
             /* Guard against buffer overruns */
             if (code < 0 || code >= (1 << MAX_LWZ_BITS)) {
                 RWSetMsg("invalid LWZ data");
+                return -3;
+            }
+            if (state->sp >= state->stack + SDL_arraysize(state->stack)) {
+                RWSetMsg("LWZ stack overflow");
                 return -3;
             }
             *state->sp++ = state->table[1][code];
@@ -383,6 +391,10 @@ LWZReadByte(SDL_IOStream *src, int flag, int input_code_size, State_t * state)
         /* Guard against buffer overruns */
         if (code < 0 || code >= (1 << MAX_LWZ_BITS)) {
             RWSetMsg("invalid LWZ data");
+            return -4;
+        }
+        if (state->sp >= state->stack + SDL_arraysize(state->stack)) {
+            RWSetMsg("LWZ stack overflow");
             return -4;
         }
         *state->sp++ = state->firstcode = state->table[1][code];
