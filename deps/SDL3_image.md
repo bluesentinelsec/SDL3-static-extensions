@@ -57,7 +57,10 @@ upstream PRs):
   → `IMG_LoadGIF_IO` …) until stack overflow.
 - `src/IMG_gif.c`: the LZW decompressor's output stack is now bounds-checked
   at every push; corrupted code tables with multi-entry cycles previously
-  wrote past the stack (heap-buffer-overflow). Both found by the
-  malformed-input test suite under ASan.
+  wrote past the stack (heap-buffer-overflow).
+- `src/IMG_svg.c`: `IMG_LoadSizedSVG_IO` leaked the parsed `NSVGimage`
+  when the parse produced a zero-dimension image (malformed input) —
+  the error path returned without `nsvgDelete`. All three found by the
+  malformed-input test suite under ASan/LSan.
 
 Test corpus provenance: see `tests/image/assets/README.md`.
