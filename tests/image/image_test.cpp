@@ -85,8 +85,8 @@ INSTANTIATE_TEST_SUITE_P(
         FormatCase{"svg.svg", false},
         FormatCase{"generated.lbm", false},
         FormatCase{"generated.xv", false}),
-    [](const ::testing::TestParamInfo<FormatCase> &info) {
-        std::string name = info.param.file;
+    [](const ::testing::TestParamInfo<FormatCase> &param_info) {
+        std::string name = param_info.param.file;
         for (char &c : name)
         {
             if (c == '.' || c == '-')
@@ -115,8 +115,8 @@ TEST_P(LoadRemoved, DoesNotLoad)
 INSTANTIATE_TEST_SUITE_P(RemovedFormats, LoadRemoved,
                          ::testing::Values("sample.avif", "sample.jxl", "sample.tif",
                                            "rgbrgb.webp"),
-                         [](const ::testing::TestParamInfo<const char *> &info) {
-                             std::string name = info.param;
+                         [](const ::testing::TestParamInfo<const char *> &param_info) {
+                             std::string name = param_info.param;
                              for (char &c : name)
                              {
                                  if (c == '.' || c == '-')

@@ -114,7 +114,9 @@ if(SDLSTATIC_BUILD_IMAGE)
   set(SDL_INSTALL OFF CACHE BOOL "" FORCE)
   FetchContent_Declare(
     SDL3
-    URL https://github.com/libsdl-org/SDL/releases/download/release-3.4.14/SDL3-3.4.14.tar.gz
+    URL
+      https://github.com/libsdl-org/SDL/releases/download/release-3.4.14/SDL3-3.4.14.tar.gz
+      https://www.libsdl.org/release/SDL3-3.4.14.tar.gz
     URL_HASH SHA256=30d4aa2b3037718142b32dffd4e72f917ebb6cc5227150e7bb9c45efb2153aeb
   )
   FetchContent_MakeAvailable(SDL3)
