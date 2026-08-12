@@ -121,6 +121,10 @@ SDL_Surface *IMG_LoadSizedSVG_IO(SDL_IOStream *src, int width, int height)
     image = nsvgParse(data, "px", 96.0f);
     SDL_free(data);
     if (!image || image->width <= 0.0f || image->height <= 0.0f) {
+        if (image) {
+            /* Zero-sized parses (malformed input) still allocate; free them. */
+            nsvgDelete(image);
+        }
         SDL_SetError("Couldn't parse SVG image");
         return NULL;
     }
