@@ -2,12 +2,16 @@
 # iOS XCFramework: build static device (arm64) and simulator (arm64/x86_64)
 # libraries, package and verify the XCFramework, and run the consumer package
 # tests in an iOS Simulator.
+#
+# Iteration-phase policy: manual dispatch only (~17 min per run is too heavy
+# for the per-push loop). Desktop/Sanitizers/Web/Android still validate every
+# push, and release.yml's build-ios job remains the hard gate before any
+# release ships. Run this on demand to batch-validate iOS, and restore
+# push/pull_request triggers once the early heavy-iteration phase is over.
 name: iOS
 
 on:
-  push:
-    branches: [main, master]
-  pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
