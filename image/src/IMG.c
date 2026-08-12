@@ -56,23 +56,19 @@ static struct {
 } supported[] = {
     /* keep magicless formats first */
     { "TGA", NULL,      IMG_LoadTGA_IO },
-    { "AVIF",IMG_isAVIF,IMG_LoadAVIF_IO },
     { "CUR", IMG_isCUR, IMG_LoadCUR_IO },
     { "ICO", IMG_isICO, IMG_LoadICO_IO },
     { "BMP", IMG_isBMP, IMG_LoadBMP_IO },
     { "GIF", IMG_isGIF, IMG_LoadGIF_IO },
     { "JPG", IMG_isJPG, IMG_LoadJPG_IO },
-    { "JXL", IMG_isJXL, IMG_LoadJXL_IO },
     { "LBM", IMG_isLBM, IMG_LoadLBM_IO },
     { "PCX", IMG_isPCX, IMG_LoadPCX_IO },
     { "PNG", IMG_isPNG, IMG_LoadPNG_IO },
     { "PNM", IMG_isPNM, IMG_LoadPNM_IO }, /* P[BGP]M share code */
     { "SVG", IMG_isSVG, IMG_LoadSVG_IO },
-    { "TIF", IMG_isTIF, IMG_LoadTIF_IO },
     { "XCF", IMG_isXCF, IMG_LoadXCF_IO },
     { "XPM", IMG_isXPM, IMG_LoadXPM_IO },
     { "XV",  IMG_isXV,  IMG_LoadXV_IO  },
-    { "WEBP", IMG_isWEBP, IMG_LoadWEBP_IO },
     { "QOI", IMG_isQOI, IMG_LoadQOI_IO },
 };
 
@@ -84,9 +80,6 @@ static struct {
 } supported_anims[] = {
     /* keep magicless formats first */
     { "GIF", IMG_isGIF, IMG_LoadGIFAnimation_IO     },
-    { "WEBP", IMG_isWEBP, IMG_LoadWEBPAnimation_IO  },
-    { "APNG", IMG_isPNG, IMG_LoadAPNGAnimation_IO   },
-    { "AVIFS", IMG_isAVIF, IMG_LoadAVIFAnimation_IO },
     { "ANI", IMG_isANI, IMG_LoadANIAnimation_IO },
 };
 
@@ -387,9 +380,7 @@ bool IMG_SaveTyped_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio, con
         goto done;
     }
 
-    if (SDL_strcasecmp(type, "avif") == 0) {
-        result = IMG_SaveAVIF_IO(surface, dst, false, 90);
-    } else if (SDL_strcasecmp(type, "bmp") == 0) {
+    if (SDL_strcasecmp(type, "bmp") == 0) {
         result = IMG_SaveBMP_IO(surface, dst, false);
     } else if (SDL_strcasecmp(type, "cur") == 0) {
         result = IMG_SaveCUR_IO(surface, dst, false);
@@ -404,8 +395,6 @@ bool IMG_SaveTyped_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio, con
         result = IMG_SavePNG_IO(surface, dst, false);
     } else if (SDL_strcasecmp(type, "tga") == 0) {
         result = IMG_SaveTGA_IO(surface, dst, false);
-    } else if (SDL_strcasecmp(type, "webp") == 0) {
-        result = IMG_SaveWEBP_IO(surface, dst, false, 90.0f);
     } else {
         result = SDL_SetError("Unsupported image format");
     }
@@ -464,14 +453,8 @@ bool IMG_SaveAnimationTyped_IO(IMG_Animation *anim, SDL_IOStream *dst, bool clos
 
     if (SDL_strcasecmp(type, "ani") == 0) {
         result = IMG_SaveANIAnimation_IO(anim, dst, false);
-    } else if (SDL_strcasecmp(type, "apng") == 0 || SDL_strcasecmp(type, "png") == 0) {
-        result = IMG_SaveAPNGAnimation_IO(anim, dst, false);
-    } else if (SDL_strcasecmp(type, "avif") == 0) {
-        result = IMG_SaveAVIFAnimation_IO(anim, dst, false, 90);
     } else if (SDL_strcasecmp(type, "gif") == 0) {
         result = IMG_SaveGIFAnimation_IO(anim, dst, false);
-    } else if (SDL_strcasecmp(type, "webp") == 0) {
-        result = IMG_SaveWEBPAnimation_IO(anim, dst, false, 90);
     } else {
         result = SDL_SetError("Unsupported image format");
     }

@@ -60,8 +60,11 @@ if(SDL3_STATIC_EXTENSIONS_IS_TOP_LEVEL)
 endif()
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(CompilerWarnings)
-include(Sanitizers)
+# Absolute paths: generic names like "Dependencies" collide with a consuming
+# parent project's identically named modules when this repo is embedded via
+# FetchContent/add_subdirectory (CMAKE_MODULE_PATH searches the parent first).
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/CompilerWarnings.cmake")
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Sanitizers.cmake")
 
 # Preferred third-party libraries (FetchContent). On for top-level apps; off when
 # embedded (and for the Android Prefab AAR and iOS XCFramework and web/Emscripten package, whose public
@@ -137,7 +140,7 @@ endif()
 # ASan + UBSan for project targets (intended for Linux GCC/Clang; see make sanitizer).
 option(SDL3_STATIC_EXTENSIONS_ENABLE_SANITIZERS "Enable Address+UBSan on project targets" OFF)
 
-include(Dependencies)
+include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/Dependencies.cmake")
 
 # Apply sanitizer flags only to targets created after this point (not FetchContent deps).
 if(SDL3_STATIC_EXTENSIONS_ENABLE_SANITIZERS)

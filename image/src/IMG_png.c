@@ -28,8 +28,6 @@
 #endif
 
 #include "IMG.h"
-#include "IMG_libpng.h"
-#include "IMG_WIC.h"
 
 /* We'll have PNG save support by default */
 #if !defined(SAVE_PNG)

@@ -548,49 +548,6 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL IMG_GetClipboardImage(void);
  */
 extern SDL_DECLSPEC bool SDLCALL IMG_isANI(SDL_IOStream *src);
 
-/**
- * Detect AVIF image data on a readable/seekable SDL_IOStream.
- *
- * This function attempts to determine if a file is a given filetype, reading
- * the least amount possible from the SDL_IOStream (usually a few bytes).
- *
- * There is no distinction made between "not the filetype in question" and
- * basic i/o errors.
- *
- * This function will always attempt to seek `src` back to where it started
- * when this function was called, but it will not report any errors in doing
- * so, but assuming seeking works, this means you can immediately use this
- * with a different IMG_isTYPE function, or load the image without further
- * seeking.
- *
- * You do not need to call this function to load data; SDL_image can work to
- * determine file type in many cases in its standard load functions.
- *
- * \param src a seekable/readable SDL_IOStream to provide image data.
- * \returns true if this is AVIF data, false otherwise.
- *
- * \since This function is available since SDL_image 3.0.0.
- *
- * \sa IMG_isANI
- * \sa IMG_isBMP
- * \sa IMG_isCUR
- * \sa IMG_isGIF
- * \sa IMG_isICO
- * \sa IMG_isJPG
- * \sa IMG_isJXL
- * \sa IMG_isLBM
- * \sa IMG_isPCX
- * \sa IMG_isPNG
- * \sa IMG_isPNM
- * \sa IMG_isQOI
- * \sa IMG_isSVG
- * \sa IMG_isTIF
- * \sa IMG_isWEBP
- * \sa IMG_isXCF
- * \sa IMG_isXPM
- * \sa IMG_isXV
- */
-extern SDL_DECLSPEC bool SDLCALL IMG_isAVIF(SDL_IOStream *src);
 
 /**
  * Detect CUR image data on a readable/seekable SDL_IOStream.
@@ -812,49 +769,6 @@ extern SDL_DECLSPEC bool SDLCALL IMG_isICO(SDL_IOStream *src);
  */
 extern SDL_DECLSPEC bool SDLCALL IMG_isJPG(SDL_IOStream *src);
 
-/**
- * Detect JXL image data on a readable/seekable SDL_IOStream.
- *
- * This function attempts to determine if a file is a given filetype, reading
- * the least amount possible from the SDL_IOStream (usually a few bytes).
- *
- * There is no distinction made between "not the filetype in question" and
- * basic i/o errors.
- *
- * This function will always attempt to seek `src` back to where it started
- * when this function was called, but it will not report any errors in doing
- * so, but assuming seeking works, this means you can immediately use this
- * with a different IMG_isTYPE function, or load the image without further
- * seeking.
- *
- * You do not need to call this function to load data; SDL_image can work to
- * determine file type in many cases in its standard load functions.
- *
- * \param src a seekable/readable SDL_IOStream to provide image data.
- * \returns true if this is JXL data, false otherwise.
- *
- * \since This function is available since SDL_image 3.0.0.
- *
- * \sa IMG_isANI
- * \sa IMG_isAVIF
- * \sa IMG_isBMP
- * \sa IMG_isCUR
- * \sa IMG_isGIF
- * \sa IMG_isICO
- * \sa IMG_isJPG
- * \sa IMG_isLBM
- * \sa IMG_isPCX
- * \sa IMG_isPNG
- * \sa IMG_isPNM
- * \sa IMG_isQOI
- * \sa IMG_isSVG
- * \sa IMG_isTIF
- * \sa IMG_isWEBP
- * \sa IMG_isXCF
- * \sa IMG_isXPM
- * \sa IMG_isXV
- */
-extern SDL_DECLSPEC bool SDLCALL IMG_isJXL(SDL_IOStream *src);
 
 /**
  * Detect LBM image data on a readable/seekable SDL_IOStream.
@@ -1120,93 +1034,7 @@ extern SDL_DECLSPEC bool SDLCALL IMG_isQOI(SDL_IOStream *src);
  */
 extern SDL_DECLSPEC bool SDLCALL IMG_isSVG(SDL_IOStream *src);
 
-/**
- * Detect TIFF image data on a readable/seekable SDL_IOStream.
- *
- * This function attempts to determine if a file is a given filetype, reading
- * the least amount possible from the SDL_IOStream (usually a few bytes).
- *
- * There is no distinction made between "not the filetype in question" and
- * basic i/o errors.
- *
- * This function will always attempt to seek `src` back to where it started
- * when this function was called, but it will not report any errors in doing
- * so, but assuming seeking works, this means you can immediately use this
- * with a different IMG_isTYPE function, or load the image without further
- * seeking.
- *
- * You do not need to call this function to load data; SDL_image can work to
- * determine file type in many cases in its standard load functions.
- *
- * \param src a seekable/readable SDL_IOStream to provide image data.
- * \returns true if this is TIFF data, false otherwise.
- *
- * \since This function is available since SDL_image 3.0.0.
- *
- * \sa IMG_isANI
- * \sa IMG_isAVIF
- * \sa IMG_isBMP
- * \sa IMG_isCUR
- * \sa IMG_isGIF
- * \sa IMG_isICO
- * \sa IMG_isJPG
- * \sa IMG_isJXL
- * \sa IMG_isLBM
- * \sa IMG_isPCX
- * \sa IMG_isPNG
- * \sa IMG_isPNM
- * \sa IMG_isQOI
- * \sa IMG_isSVG
- * \sa IMG_isWEBP
- * \sa IMG_isXCF
- * \sa IMG_isXPM
- * \sa IMG_isXV
- */
-extern SDL_DECLSPEC bool SDLCALL IMG_isTIF(SDL_IOStream *src);
 
-/**
- * Detect WEBP image data on a readable/seekable SDL_IOStream.
- *
- * This function attempts to determine if a file is a given filetype, reading
- * the least amount possible from the SDL_IOStream (usually a few bytes).
- *
- * There is no distinction made between "not the filetype in question" and
- * basic i/o errors.
- *
- * This function will always attempt to seek `src` back to where it started
- * when this function was called, but it will not report any errors in doing
- * so, but assuming seeking works, this means you can immediately use this
- * with a different IMG_isTYPE function, or load the image without further
- * seeking.
- *
- * You do not need to call this function to load data; SDL_image can work to
- * determine file type in many cases in its standard load functions.
- *
- * \param src a seekable/readable SDL_IOStream to provide image data.
- * \returns true if this is WEBP data, false otherwise.
- *
- * \since This function is available since SDL_image 3.0.0.
- *
- * \sa IMG_isANI
- * \sa IMG_isAVIF
- * \sa IMG_isBMP
- * \sa IMG_isCUR
- * \sa IMG_isGIF
- * \sa IMG_isICO
- * \sa IMG_isJPG
- * \sa IMG_isJXL
- * \sa IMG_isLBM
- * \sa IMG_isPCX
- * \sa IMG_isPNG
- * \sa IMG_isPNM
- * \sa IMG_isQOI
- * \sa IMG_isSVG
- * \sa IMG_isTIF
- * \sa IMG_isXCF
- * \sa IMG_isXPM
- * \sa IMG_isXV
- */
-extern SDL_DECLSPEC bool SDLCALL IMG_isWEBP(SDL_IOStream *src);
 
 /**
  * Detect XCF image data on a readable/seekable SDL_IOStream.
@@ -1340,39 +1168,6 @@ extern SDL_DECLSPEC bool SDLCALL IMG_isXPM(SDL_IOStream *src);
  */
 extern SDL_DECLSPEC bool SDLCALL IMG_isXV(SDL_IOStream *src);
 
-/**
- * Load a AVIF image directly.
- *
- * If you know you definitely have a AVIF image, you can call this function,
- * which will skip SDL_image's file format detection routines. Generally it's
- * better to use the abstract interfaces; also, there is only an SDL_IOStream
- * interface available here.
- *
- * \param src an SDL_IOStream to load image data from.
- * \returns SDL surface, or NULL on error.
- *
- * \since This function is available since SDL_image 3.0.0.
- *
- * \sa IMG_LoadBMP_IO
- * \sa IMG_LoadCUR_IO
- * \sa IMG_LoadGIF_IO
- * \sa IMG_LoadICO_IO
- * \sa IMG_LoadJPG_IO
- * \sa IMG_LoadJXL_IO
- * \sa IMG_LoadLBM_IO
- * \sa IMG_LoadPCX_IO
- * \sa IMG_LoadPNG_IO
- * \sa IMG_LoadPNM_IO
- * \sa IMG_LoadQOI_IO
- * \sa IMG_LoadSVG_IO
- * \sa IMG_LoadTGA_IO
- * \sa IMG_LoadTIF_IO
- * \sa IMG_LoadWEBP_IO
- * \sa IMG_LoadXCF_IO
- * \sa IMG_LoadXPM_IO
- * \sa IMG_LoadXV_IO
- */
-extern SDL_DECLSPEC SDL_Surface * SDLCALL IMG_LoadAVIF_IO(SDL_IOStream *src);
 
 /**
  * Load a BMP image directly.
@@ -1544,39 +1339,6 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL IMG_LoadICO_IO(SDL_IOStream *src);
  */
 extern SDL_DECLSPEC SDL_Surface * SDLCALL IMG_LoadJPG_IO(SDL_IOStream *src);
 
-/**
- * Load a JXL image directly.
- *
- * If you know you definitely have a JXL image, you can call this function,
- * which will skip SDL_image's file format detection routines. Generally it's
- * better to use the abstract interfaces; also, there is only an SDL_IOStream
- * interface available here.
- *
- * \param src an SDL_IOStream to load image data from.
- * \returns SDL surface, or NULL on error.
- *
- * \since This function is available since SDL_image 3.0.0.
- *
- * \sa IMG_LoadAVIF_IO
- * \sa IMG_LoadBMP_IO
- * \sa IMG_LoadCUR_IO
- * \sa IMG_LoadGIF_IO
- * \sa IMG_LoadICO_IO
- * \sa IMG_LoadJPG_IO
- * \sa IMG_LoadLBM_IO
- * \sa IMG_LoadPCX_IO
- * \sa IMG_LoadPNG_IO
- * \sa IMG_LoadPNM_IO
- * \sa IMG_LoadQOI_IO
- * \sa IMG_LoadSVG_IO
- * \sa IMG_LoadTGA_IO
- * \sa IMG_LoadTIF_IO
- * \sa IMG_LoadWEBP_IO
- * \sa IMG_LoadXCF_IO
- * \sa IMG_LoadXPM_IO
- * \sa IMG_LoadXV_IO
- */
-extern SDL_DECLSPEC SDL_Surface * SDLCALL IMG_LoadJXL_IO(SDL_IOStream *src);
 
 /**
  * Load a LBM image directly.
@@ -1840,73 +1602,7 @@ extern SDL_DECLSPEC SDL_Surface * SDLCALL IMG_LoadQOI_IO(SDL_IOStream *src);
  */
 extern SDL_DECLSPEC SDL_Surface * SDLCALL IMG_LoadTGA_IO(SDL_IOStream *src);
 
-/**
- * Load a TIFF image directly.
- *
- * If you know you definitely have a TIFF image, you can call this function,
- * which will skip SDL_image's file format detection routines. Generally it's
- * better to use the abstract interfaces; also, there is only an SDL_IOStream
- * interface available here.
- *
- * \param src an SDL_IOStream to load image data from.
- * \returns SDL surface, or NULL on error.
- *
- * \since This function is available since SDL_image 3.0.0.
- *
- * \sa IMG_LoadAVIF_IO
- * \sa IMG_LoadBMP_IO
- * \sa IMG_LoadCUR_IO
- * \sa IMG_LoadGIF_IO
- * \sa IMG_LoadICO_IO
- * \sa IMG_LoadJPG_IO
- * \sa IMG_LoadJXL_IO
- * \sa IMG_LoadLBM_IO
- * \sa IMG_LoadPCX_IO
- * \sa IMG_LoadPNG_IO
- * \sa IMG_LoadPNM_IO
- * \sa IMG_LoadQOI_IO
- * \sa IMG_LoadSVG_IO
- * \sa IMG_LoadTGA_IO
- * \sa IMG_LoadWEBP_IO
- * \sa IMG_LoadXCF_IO
- * \sa IMG_LoadXPM_IO
- * \sa IMG_LoadXV_IO
- */
-extern SDL_DECLSPEC SDL_Surface * SDLCALL IMG_LoadTIF_IO(SDL_IOStream *src);
 
-/**
- * Load a WEBP image directly.
- *
- * If you know you definitely have a WEBP image, you can call this function,
- * which will skip SDL_image's file format detection routines. Generally it's
- * better to use the abstract interfaces; also, there is only an SDL_IOStream
- * interface available here.
- *
- * \param src an SDL_IOStream to load image data from.
- * \returns SDL surface, or NULL on error.
- *
- * \since This function is available since SDL_image 3.0.0.
- *
- * \sa IMG_LoadAVIF_IO
- * \sa IMG_LoadBMP_IO
- * \sa IMG_LoadCUR_IO
- * \sa IMG_LoadGIF_IO
- * \sa IMG_LoadICO_IO
- * \sa IMG_LoadJPG_IO
- * \sa IMG_LoadJXL_IO
- * \sa IMG_LoadLBM_IO
- * \sa IMG_LoadPCX_IO
- * \sa IMG_LoadPNG_IO
- * \sa IMG_LoadPNM_IO
- * \sa IMG_LoadQOI_IO
- * \sa IMG_LoadSVG_IO
- * \sa IMG_LoadTGA_IO
- * \sa IMG_LoadTIF_IO
- * \sa IMG_LoadXCF_IO
- * \sa IMG_LoadXPM_IO
- * \sa IMG_LoadXV_IO
- */
-extern SDL_DECLSPEC SDL_Surface * SDLCALL IMG_LoadWEBP_IO(SDL_IOStream *src);
 
 /**
  * Load a XCF image directly.
@@ -2109,46 +1805,7 @@ extern SDL_DECLSPEC bool SDLCALL IMG_Save(SDL_Surface *surface, const char *file
  */
 extern SDL_DECLSPEC bool SDLCALL IMG_SaveTyped_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio, const char *type);
 
-/**
- * Save an SDL_Surface into a AVIF image file.
- *
- * If the file already exists, it will be overwritten.
- *
- * \param surface the SDL surface to save.
- * \param file path on the filesystem to write new file to.
- * \param quality the desired quality, ranging between 0 (lowest) and 100
- *                (highest).
- * \returns true on success or false on failure; call SDL_GetError() for more
- *          information.
- *
- * \since This function is available since SDL_image 3.0.0.
- *
- * \sa IMG_SaveAVIF_IO
- */
-extern SDL_DECLSPEC bool SDLCALL IMG_SaveAVIF(SDL_Surface *surface, const char *file, int quality);
 
-/**
- * Save an SDL_Surface into AVIF image data, via an SDL_IOStream.
- *
- * If you just want to save to a filename, you can use IMG_SaveAVIF() instead.
- *
- * If `closeio` is true, `dst` will be closed before returning, whether this
- * function succeeds or not.
- *
- * \param surface the SDL surface to save.
- * \param dst the SDL_IOStream to save the image data to.
- * \param closeio true to close/free the SDL_IOStream before returning, false
- *                to leave it open.
- * \param quality the desired quality, ranging between 0 (lowest) and 100
- *                (highest).
- * \returns true on success or false on failure; call SDL_GetError() for more
- *          information.
- *
- * \since This function is available since SDL_image 3.0.0.
- *
- * \sa IMG_SaveAVIF
- */
-extern SDL_DECLSPEC bool SDLCALL IMG_SaveAVIF_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio, int quality);
 
 /**
  * Save an SDL_Surface into a BMP image file.
@@ -2413,50 +2070,7 @@ extern SDL_DECLSPEC bool SDLCALL IMG_SaveTGA(SDL_Surface *surface, const char *f
  */
 extern SDL_DECLSPEC bool SDLCALL IMG_SaveTGA_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio);
 
-/**
- * Save an SDL_Surface into a WEBP image file.
- *
- * If the file already exists, it will be overwritten.
- *
- * \param surface the SDL surface to save.
- * \param file path on the filesystem to write the new file to.
- * \param quality between 0 and 100. For lossy, 0 gives the smallest size and
- *                100 the largest. For lossless, this parameter is the amount
- *                of effort put into the compression: 0 is the fastest but
- *                gives larger files compared to the slowest, but best, 100.
- * \returns true on success or false on failure; call SDL_GetError() for more
- *          information.
- *
- * \since This function is available since SDL_image 3.4.0.
- *
- * \sa IMG_SaveWEBP_IO
- */
-extern SDL_DECLSPEC bool SDLCALL IMG_SaveWEBP(SDL_Surface *surface, const char *file, float quality);
 
-/**
- * Save an SDL_Surface into WEBP image data, via an SDL_IOStream.
- *
- * If you just want to save to a filename, you can use IMG_SaveWEBP() instead.
- *
- * If `closeio` is true, `dst` will be closed before returning, whether this
- * function succeeds or not.
- *
- * \param surface the SDL surface to save.
- * \param dst the SDL_IOStream to save the image data to.
- * \param closeio true to close/free the SDL_IOStream before returning, false
- *                to leave it open.
- * \param quality between 0 and 100. For lossy, 0 gives the smallest size and
- *                100 the largest. For lossless, this parameter is the amount
- *                of effort put into the compression: 0 is the fastest but
- *                gives larger files compared to the slowest, but best, 100.
- * \returns true on success or false on failure; call SDL_GetError() for more
- *          information.
- *
- * \since This function is available since SDL_image 3.4.0.
- *
- * \sa IMG_SaveWEBP
- */
-extern SDL_DECLSPEC bool SDLCALL IMG_SaveWEBP_IO(SDL_Surface *surface, SDL_IOStream *dst, bool closeio, float quality);
 
 /**
  * Animated image support
@@ -2586,61 +2200,7 @@ extern SDL_DECLSPEC IMG_Animation * SDLCALL IMG_LoadAnimationTyped_IO(SDL_IOStre
  */
 extern SDL_DECLSPEC IMG_Animation *SDLCALL IMG_LoadANIAnimation_IO(SDL_IOStream *src);
 
-/**
- * Load an APNG animation directly from an SDL_IOStream.
- *
- * If you know you definitely have an APNG image, you can call this function,
- * which will skip SDL_image's file format detection routines. Generally, it's
- * better to use the abstract interfaces; also, there is only an SDL_IOStream
- * interface available here.
- *
- * When done with the returned animation, the app should dispose of it with a
- * call to IMG_FreeAnimation().
- *
- * \param src an SDL_IOStream from which data will be read.
- * \returns a new IMG_Animation, or NULL on error.
- *
- * \since This function is available since SDL_image 3.4.0.
- *
- * \sa IMG_isPNG
- * \sa IMG_LoadAnimation
- * \sa IMG_LoadAnimation_IO
- * \sa IMG_LoadAnimationTyped_IO
- * \sa IMG_LoadANIAnimation_IO
- * \sa IMG_LoadAVIFAnimation_IO
- * \sa IMG_LoadGIFAnimation_IO
- * \sa IMG_LoadWEBPAnimation_IO
- * \sa IMG_FreeAnimation
- */
-extern SDL_DECLSPEC IMG_Animation *SDLCALL IMG_LoadAPNGAnimation_IO(SDL_IOStream *src);
 
-/**
- * Load an AVIF animation directly from an SDL_IOStream.
- *
- * If you know you definitely have an AVIF animation, you can call this
- * function, which will skip SDL_image's file format detection routines.
- * Generally it's better to use the abstract interfaces; also, there is only
- * an SDL_IOStream interface available here.
- *
- * When done with the returned animation, the app should dispose of it with a
- * call to IMG_FreeAnimation().
- *
- * \param src an SDL_IOStream that data will be read from.
- * \returns a new IMG_Animation, or NULL on error.
- *
- * \since This function is available since SDL_image 3.4.0.
- *
- * \sa IMG_isAVIF
- * \sa IMG_LoadAnimation
- * \sa IMG_LoadAnimation_IO
- * \sa IMG_LoadAnimationTyped_IO
- * \sa IMG_LoadANIAnimation_IO
- * \sa IMG_LoadAPNGAnimation_IO
- * \sa IMG_LoadGIFAnimation_IO
- * \sa IMG_LoadWEBPAnimation_IO
- * \sa IMG_FreeAnimation
- */
-extern SDL_DECLSPEC IMG_Animation *SDLCALL IMG_LoadAVIFAnimation_IO(SDL_IOStream *src);
 
 /**
  * Load a GIF animation directly.
@@ -2667,30 +2227,6 @@ extern SDL_DECLSPEC IMG_Animation *SDLCALL IMG_LoadAVIFAnimation_IO(SDL_IOStream
  */
 extern SDL_DECLSPEC IMG_Animation * SDLCALL IMG_LoadGIFAnimation_IO(SDL_IOStream *src);
 
-/**
- * Load a WEBP animation directly.
- *
- * If you know you definitely have a WEBP image, you can call this function,
- * which will skip SDL_image's file format detection routines. Generally it's
- * better to use the abstract interfaces; also, there is only an SDL_IOStream
- * interface available here.
- *
- * \param src an SDL_IOStream that data will be read from.
- * \returns a new IMG_Animation, or NULL on error.
- *
- * \since This function is available since SDL_image 3.0.0.
- *
- * \sa IMG_isWEBP
- * \sa IMG_LoadAnimation
- * \sa IMG_LoadAnimation_IO
- * \sa IMG_LoadAnimationTyped_IO
- * \sa IMG_LoadANIAnimation_IO
- * \sa IMG_LoadAPNGAnimation_IO
- * \sa IMG_LoadAVIFAnimation_IO
- * \sa IMG_LoadGIFAnimation_IO
- * \sa IMG_FreeAnimation
- */
-extern SDL_DECLSPEC IMG_Animation * SDLCALL IMG_LoadWEBPAnimation_IO(SDL_IOStream *src);
 
 /**
  * Save an animation to a file.
@@ -2767,55 +2303,7 @@ extern SDL_DECLSPEC bool SDLCALL IMG_SaveAnimationTyped_IO(IMG_Animation *anim, 
  */
 extern SDL_DECLSPEC bool SDLCALL IMG_SaveANIAnimation_IO(IMG_Animation *anim, SDL_IOStream *dst, bool closeio);
 
-/**
- * Save an animation in APNG format to an SDL_IOStream.
- *
- * If `closeio` is true, `dst` will be closed before returning, whether this
- * function succeeds or not.
- *
- * \param anim the animation to save.
- * \param dst an SDL_IOStream from which data will be written to.
- * \param closeio true to close/free the SDL_IOStream before returning, false
- *                to leave it open.
- * \returns true on success or false on failure; call SDL_GetError() for more
- *          information.
- *
- * \since This function is available since SDL_image 3.4.0.
- *
- * \sa IMG_SaveAnimation
- * \sa IMG_SaveAnimationTyped_IO
- * \sa IMG_SaveANIAnimation_IO
- * \sa IMG_SaveAVIFAnimation_IO
- * \sa IMG_SaveGIFAnimation_IO
- * \sa IMG_SaveWEBPAnimation_IO
- */
-extern SDL_DECLSPEC bool SDLCALL IMG_SaveAPNGAnimation_IO(IMG_Animation *anim, SDL_IOStream *dst, bool closeio);
 
-/**
- * Save an animation in AVIF format to an SDL_IOStream.
- *
- * If `closeio` is true, `dst` will be closed before returning, whether this
- * function succeeds or not.
- *
- * \param anim the animation to save.
- * \param dst an SDL_IOStream from which data will be written to.
- * \param closeio true to close/free the SDL_IOStream before returning, false
- *                to leave it open.
- * \param quality the desired quality, ranging between 0 (lowest) and 100
- *                (highest).
- * \returns true on success or false on failure; call SDL_GetError() for more
- *          information.
- *
- * \since This function is available since SDL_image 3.4.0.
- *
- * \sa IMG_SaveAnimation
- * \sa IMG_SaveAnimationTyped_IO
- * \sa IMG_SaveANIAnimation_IO
- * \sa IMG_SaveAPNGAnimation_IO
- * \sa IMG_SaveGIFAnimation_IO
- * \sa IMG_SaveWEBPAnimation_IO
- */
-extern SDL_DECLSPEC bool SDLCALL IMG_SaveAVIFAnimation_IO(IMG_Animation *anim, SDL_IOStream *dst, bool closeio, int quality);
 
 /**
  * Save an animation in GIF format to an SDL_IOStream.
@@ -2841,33 +2329,6 @@ extern SDL_DECLSPEC bool SDLCALL IMG_SaveAVIFAnimation_IO(IMG_Animation *anim, S
  */
 extern SDL_DECLSPEC bool SDLCALL IMG_SaveGIFAnimation_IO(IMG_Animation *anim, SDL_IOStream *dst, bool closeio);
 
-/**
- * Save an animation in WEBP format to an SDL_IOStream.
- *
- * If `closeio` is true, `dst` will be closed before returning, whether this
- * function succeeds or not.
- *
- * \param anim the animation to save.
- * \param dst an SDL_IOStream from which data will be written to.
- * \param closeio true to close/free the SDL_IOStream before returning, false
- *                to leave it open.
- * \param quality between 0 and 100. For lossy, 0 gives the smallest size and
- *                100 the largest. For lossless, this parameter is the amount
- *                of effort put into the compression: 0 is the fastest but
- *                gives larger files compared to the slowest, but best, 100.
- * \returns true on success or false on failure; call SDL_GetError() for more
- *          information.
- *
- * \since This function is available since SDL_image 3.4.0.
- *
- * \sa IMG_SaveAnimation
- * \sa IMG_SaveAnimationTyped_IO
- * \sa IMG_SaveANIAnimation_IO
- * \sa IMG_SaveAPNGAnimation_IO
- * \sa IMG_SaveAVIFAnimation_IO
- * \sa IMG_SaveGIFAnimation_IO
- */
-extern SDL_DECLSPEC bool SDLCALL IMG_SaveWEBPAnimation_IO(IMG_Animation *anim, SDL_IOStream *dst, bool closeio, int quality);
 
 /**
  * Create an animated cursor from an animation.
@@ -3027,8 +2488,6 @@ extern SDL_DECLSPEC IMG_AnimationEncoder * SDLCALL IMG_CreateAnimationEncoderWit
 #define IMG_PROP_ANIMATION_ENCODER_CREATE_TIMEBASE_NUMERATOR_NUMBER      "SDL_image.animation_encoder.create.timebase.numerator"
 #define IMG_PROP_ANIMATION_ENCODER_CREATE_TIMEBASE_DENOMINATOR_NUMBER    "SDL_image.animation_encoder.create.timebase.denominator"
 
-#define IMG_PROP_ANIMATION_ENCODER_CREATE_AVIF_MAX_THREADS_NUMBER        "SDL_image.animation_encoder.create.avif.max_threads"
-#define IMG_PROP_ANIMATION_ENCODER_CREATE_AVIF_KEYFRAME_INTERVAL_NUMBER  "SDL_image.animation_encoder.create.avif.keyframe_interval"
 #define IMG_PROP_ANIMATION_ENCODER_CREATE_GIF_USE_LUT_BOOLEAN            "SDL_image.animation_encoder.create.gif.use_lut"
 
 /**
@@ -3196,9 +2655,6 @@ extern SDL_DECLSPEC IMG_AnimationDecoder * SDLCALL IMG_CreateAnimationDecoderWit
 #define IMG_PROP_ANIMATION_DECODER_CREATE_TIMEBASE_NUMERATOR_NUMBER      "SDL_image.animation_decoder.create.timebase.numerator"
 #define IMG_PROP_ANIMATION_DECODER_CREATE_TIMEBASE_DENOMINATOR_NUMBER    "SDL_image.animation_decoder.create.timebase.denominator"
 
-#define IMG_PROP_ANIMATION_DECODER_CREATE_AVIF_MAX_THREADS_NUMBER        "SDL_image.animation_decoder.create.avif.max_threads"
-#define IMG_PROP_ANIMATION_DECODER_CREATE_AVIF_ALLOW_INCREMENTAL_BOOLEAN "SDL_image.animation_decoder.create.avif.allow_incremental"
-#define IMG_PROP_ANIMATION_DECODER_CREATE_AVIF_ALLOW_PROGRESSIVE_BOOLEAN "SDL_image.animation_decoder.create.avif.allow_progressive"
 #define IMG_PROP_ANIMATION_DECODER_CREATE_GIF_TRANSPARENT_COLOR_INDEX_NUMBER "SDL_image.animation_encoder.create.gif.transparent_color_index"
 #define IMG_PROP_ANIMATION_DECODER_CREATE_GIF_NUM_COLORS_NUMBER          "SDL_image.animation_encoder.create.gif.num_colors"
 
