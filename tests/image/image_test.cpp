@@ -314,6 +314,15 @@ void TryLoadBytes(const std::vector<Uint8> &bytes)
     {
         SDL_DestroySurface(surface);  // accepting damaged data is fine; crashing is not
     }
+
+    // Animation path exercises the decoder-creation code (GIF/ANI contexts).
+    io = SDL_IOFromConstMem(bytes.data(), bytes.size());
+    ASSERT_NE(io, nullptr) << SDL_GetError();
+    IMG_Animation *anim = IMG_LoadAnimation_IO(io, true);
+    if (anim != nullptr)
+    {
+        IMG_FreeAnimation(anim);
+    }
 }
 
 TEST_P(MalformedInputs, TruncationsAndBitFlipsDoNotCrash)
@@ -350,7 +359,7 @@ INSTANTIATE_TEST_SUITE_P(Corpus, MalformedInputs,
                                            "sample.qoi", "sample.pnm", "sample.tga",
                                            "sample.pcx", "sample.xcf", "sample.xpm",
                                            "sample.cur", "sample.ico", "palette.gif",
-                                           "rgbrgb.gif", "svg.svg", "generated.lbm",
+                                           "rgbrgb.gif", "rgbrgb.ani", "svg.svg", "generated.lbm",
                                            "generated.xv"),
                          [](const ::testing::TestParamInfo<const char *> &param_info) {
                              std::string name = param_info.param;

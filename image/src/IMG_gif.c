@@ -1017,6 +1017,10 @@ bool IMG_CreateGIFAnimationDecoder(IMG_AnimationDecoder *decoder, SDL_Properties
     char *comment = NULL;
     int loop_count = 1;
     if (!IMG_AnimationDecoderGetGIFHeader(decoder, &comment, &loop_count)) {
+        /* Mirror the ANI decoder: free the context on creation failure
+           (previously leaked ~66KB per malformed GIF). */
+        SDL_free(comment);
+        IMG_AnimationDecoderClose_Internal(decoder);
         return false;
     }
 

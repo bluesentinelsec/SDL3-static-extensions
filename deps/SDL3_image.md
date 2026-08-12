@@ -60,7 +60,10 @@ upstream PRs):
   wrote past the stack (heap-buffer-overflow).
 - `src/IMG_svg.c`: `IMG_LoadSizedSVG_IO` leaked the parsed `NSVGimage`
   when the parse produced a zero-dimension image (malformed input) —
-  the error path returned without `nsvgDelete`. All three found by the
+  the error path returned without `nsvgDelete`.
+- `src/IMG_gif.c`: `IMG_CreateGIFAnimationDecoder` leaked its ~66KB
+  context when the GIF header parse failed (malformed input) — now
+  mirrors the ANI decoder's close-on-failure. All four found by the
   malformed-input test suite under ASan/LSan.
 
 Test corpus provenance: see `tests/image/assets/README.md`.
