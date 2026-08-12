@@ -48,7 +48,8 @@ Removal pass (no-stubs policy — removed formats fail at build time):
   (e.g. libpng/WIC paths in `IMG_png.c`) are left in place for diff-minimal
   vendoring; they compile to nothing.
 
-Hardening fixes to vendored code (candidates for upstreaming):
+Hardening fixes to vendored code (kept local; we are not submitting
+upstream PRs):
 
 - `src/IMG_anim_decoder.c`: the single-frame fallback no longer runs for
   formats with a dedicated animation decoder — on malformed GIF headers the
