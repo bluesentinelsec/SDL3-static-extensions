@@ -15,13 +15,15 @@
 
 // Renders one frame through the canvas 2D context. EM_JS defines the function
 // once in JavaScript; calls from C++ are ordinary function calls.
+// clang-format off
+// The EM_JS body is JavaScript: clang-format must not touch it (it splits
+// JS operators like !== into invalid `!= =`).
 EM_JS(void, SDL3_static_extensions_draw_frame, (double x, double y, double size, const char *hud), {
     const canvas = document.getElementById('canvas');
     const dpr = window.devicePixelRatio || 1;
     const width = canvas.clientWidth * dpr;
     const height = canvas.clientHeight * dpr;
-    if (canvas.width != = width || canvas.height != = height)
-    {
+    if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
         canvas.height = height;
     }
@@ -36,6 +38,7 @@ EM_JS(void, SDL3_static_extensions_draw_frame, (double x, double y, double size,
     g.font = (14 * dpr) + 'px monospace';
     g.fillText(UTF8ToString(hud), 12 * dpr, 24 * dpr);
 });
+// clang-format on
 
 namespace
 {
