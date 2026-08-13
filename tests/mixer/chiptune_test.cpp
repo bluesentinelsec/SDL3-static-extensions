@@ -216,7 +216,10 @@ TEST_F(Chiptune, AllSfxPresetsRender)
         EXPECT_GT(Energy(pcm, 0, 2048), 1.0) << "sfx " << i << " is silent";
         MIX_DestroyAudio(sfx);
     }
-    EXPECT_EQ(SDLStatic_CreateChipSFX(mixer_, static_cast<SDLStatic_ChipSFX>(99)), nullptr);
+    // One past the last preset: invalid ID, but inside the enum's value range
+    // (an out-of-range cast like 99 is unspecified in C++ and gcc rejects it).
+    EXPECT_EQ(SDLStatic_CreateChipSFX(mixer_, static_cast<SDLStatic_ChipSFX>(SDLSTATIC_SFX_HURT + 1)),
+              nullptr);
 }
 
 TEST_F(Chiptune, MmlDurationFollowsTempo)
