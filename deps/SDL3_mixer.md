@@ -38,10 +38,11 @@
 ## Format coverage (the games-90%)
 
 Enabled: **WAV, OGG Vorbis, MP3, FLAC** (the big four), plus AIFF, AU, VOC,
-RAW, generated sine waves, and **MIDI** via statically linked TiMidity
-(requires GUS patch data at runtime to produce sound; loads fail cleanly
-without it — the dlopen-style "niche optional" of the design, with zero
-link-time cost).
+RAW, generated sine waves, and **MIDI** via statically linked TiMidity.
+TiMidity needs GUS patch data at runtime; the repo ships an original
+**generated** GM patch set (`mixer/gm-patches/`, built by
+`scripts/gen_gus_patches.py` — no third-party samples, zlib). Without
+patches, MIDI loads fail cleanly with zero link-time cost.
 
 ## Local modifications
 

@@ -19,7 +19,7 @@ Provenance and the full delete list: [`deps/SDL3_mixer.md`](../deps/SDL3_mixer.m
 | VOC | ✅ | built-in |
 | RAW PCM | ✅ | built-in |
 | Sine wave generator | ✅ | built-in |
-| MIDI | ⚠️ | TiMidity (vendored, statically linked) — needs GUS patch data on disk at runtime; without it, loads fail cleanly |
+| MIDI | ✅ | TiMidity (vendored, statically linked) + the **generated GM patch set** in [`gm-patches/`](gm-patches/README.md) (point `TIMIDITY_CFG` at its `timidity.cfg`); without patches, loads fail cleanly |
 | Opus | ❌ removed | required libopus/libopusfile |
 | WavPack | ❌ removed | required libwavpack |
 | Tracker (MOD/XM/IT/S3M) | ❌ removed | required libxmp |
