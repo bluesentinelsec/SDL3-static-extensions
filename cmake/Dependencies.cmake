@@ -106,7 +106,7 @@ include(GoogleTest)
 # Pinned release tarball, SHA-256 verified, built static. Never vendored,
 # never a submodule; extensions never embed a second SDL3.
 # ---------------------------------------------------------------------------
-if(SDLSTATIC_BUILD_IMAGE OR SDLSTATIC_BUILD_TTF OR SDLSTATIC_BUILD_MIXER OR SDLSTATIC_BUILD_NET)
+if(SDLSTATIC_BUILD_IMAGE OR SDLSTATIC_BUILD_TTF OR SDLSTATIC_BUILD_MIXER OR SDLSTATIC_BUILD_NET OR SDLSTATIC_BUILD_GFX)
   set(SDL_SHARED OFF CACHE BOOL "" FORCE)
   set(SDL_STATIC ON CACHE BOOL "" FORCE)
   set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)

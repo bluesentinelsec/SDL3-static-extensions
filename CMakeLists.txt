@@ -111,6 +111,7 @@ if(EMSCRIPTEN)
 else()
   option(SDLSTATIC_BUILD_NET "Build the SDLStatic::Net extension" ON)
 endif()
+option(SDLSTATIC_BUILD_GFX "Build the SDLStatic::Gfx extension" ON)
 
 if(ANDROID AND (SDL3_STATIC_EXTENSIONS_BUILD_APP OR SDL3_STATIC_EXTENSIONS_BUILD_TESTS OR SDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS))
   message(FATAL_ERROR
@@ -223,6 +224,10 @@ endif()
 
 if(SDLSTATIC_BUILD_NET)
   add_subdirectory(net)
+endif()
+
+if(SDLSTATIC_BUILD_GFX)
+  add_subdirectory(gfx)
 endif()
 
 if(SDL3_STATIC_EXTENSIONS_BUILD_TESTS)
