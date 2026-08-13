@@ -16,6 +16,8 @@ add_library(SDLStatic_TTF STATIC
   src/SDL_gpu_textengine.c
   src/SDL_renderer_textengine.c
   src/SDL_surface_textengine.c
+  # SDLStatic additions (ours, zlib): embedded-font debug text overlay.
+  src/sdlstatic_debug_text.c
 )
 add_library(SDLStatic::TTF ALIAS SDLStatic_TTF)
 

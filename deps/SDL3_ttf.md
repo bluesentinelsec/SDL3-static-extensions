@@ -55,5 +55,18 @@ Removal pass (no-stubs policy — removed APIs fail at build time):
   scope per the design.
 - `TTF_Direction` remains in the public header as a type (used internally;
   inert as API surface).
+- Hardening fixes to vendored code (found by the coverage/robustness suite
+  under ASan+UBSan; kept local, no upstream PRs):
+  - `BUILD_RENDER_LINE` macro: skip glyphs with a NULL bitmap buffer
+    (e.g. spaces) — `NULL + alignment` pointer arithmetic is UB and fired
+    on every render containing a space.
+  - `BG_Blended_LCD`: rewritten to walk byte pointers — LCD glyph rows are
+    not 4-aligned, and the typed `Uint32*` walkers made clang emit
+    aligned loads despite upstream's memcpy workaround (misaligned-load UB
+    on every LCD render).
+- SDLStatic additions (ours, zlib): `SDLStatic/debug_text.h` +
+  `src/sdlstatic_debug_text.c` — zero-setup debug/HUD text overlay backed by
+  an embedded ProggyClean font (`src/sdlstatic_debug_font.h`, MIT, license
+  reproduced in the header; regenerate with `scripts/embed_font.py`).
 - HarfBuzz shaping and plutosvg color-emoji are disabled at build level
   (`TTF_USE_HARFBUZZ` / `TTF_USE_PLUTOSVG` = 0); no submodules imported.
