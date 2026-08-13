@@ -104,6 +104,13 @@ option(SDL3_STATIC_EXTENSIONS_BUILD_WEB_DEMO "Build the web canvas demo (Emscrip
 option(SDLSTATIC_BUILD_IMAGE "Build the SDLStatic::Image extension" ON)
 option(SDLSTATIC_BUILD_TTF "Build the SDLStatic::TTF extension" ON)
 option(SDLSTATIC_BUILD_MIXER "Build the SDLStatic::Mixer extension" ON)
+# Upstream SDL_net has no real Emscripten support (it ships a stub build);
+# per the no-stubs policy, Net simply does not exist on web builds.
+if(EMSCRIPTEN)
+  set(SDLSTATIC_BUILD_NET OFF)
+else()
+  option(SDLSTATIC_BUILD_NET "Build the SDLStatic::Net extension" ON)
+endif()
 
 if(ANDROID AND (SDL3_STATIC_EXTENSIONS_BUILD_APP OR SDL3_STATIC_EXTENSIONS_BUILD_TESTS OR SDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS))
   message(FATAL_ERROR
@@ -212,6 +219,10 @@ endif()
 
 if(SDLSTATIC_BUILD_MIXER)
   add_subdirectory(mixer)
+endif()
+
+if(SDLSTATIC_BUILD_NET)
+  add_subdirectory(net)
 endif()
 
 if(SDL3_STATIC_EXTENSIONS_BUILD_TESTS)
