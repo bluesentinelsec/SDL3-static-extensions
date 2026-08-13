@@ -264,7 +264,8 @@ TEST(Yaml, ParsesSceneFileWithExactValues)
     yaml_node_t *layers = MapGet(&doc, root, "layers");
     ASSERT_NE(layers, nullptr);
     ASSERT_EQ(layers->type, YAML_SEQUENCE_NODE);
-    const long nlayers = layers->data.sequence.items.top - layers->data.sequence.items.start;
+    const ptrdiff_t nlayers =
+        layers->data.sequence.items.top - layers->data.sequence.items.start;
     ASSERT_EQ(nlayers, 2);
     yaml_node_t *props =
         yaml_document_get_node(&doc, layers->data.sequence.items.start[1]);
