@@ -42,6 +42,8 @@ add_library(SDLStatic_Mixer STATIC
   src/timidity/resample.c
   src/timidity/tables.c
   src/timidity/timidity.c
+  # Original SDLStatic code (not vendored): 8-bit synthesis layer.
+  src/sdlstatic_chiptune.c
 )
 add_library(SDLStatic::Mixer ALIAS SDLStatic_Mixer)
 
