@@ -55,20 +55,22 @@ era synthesis with high-level entry points, rendered offline into normal
 ordinary playback.
 
 - `SDLStatic_CreateChipTone` — one voice: square (12.5/25/50% duty), 16-step
-  NES-style triangle, saw, or LFSR noise (normal + metallic short-loop), with
-  pitch sweep, vibrato, and attack/release envelope.
+  NES-style triangle, saw, LFSR noise (normal + metallic short-loop), or
+  sine, with pitch sweep, vibrato, and attack/release envelope.
 - `SDLStatic_CreateChipSFX` — canned effects: coin, laser, jump, explosion,
   powerup, hurt.
 - `SDLStatic_CreateChipTune` — compiles an MML string (the 8-bit BASIC
   `PLAY` dialect: notes `A-G#`, octaves `O`/`<`/`>`, lengths `L`/dots, tempo
-  `T`, volume `V`, waveform `W`, up to 8 `;`-separated channels) into a
-  finished multi-channel tune:
+  `T`, volume `V`, waveform `W`, envelope shape `S`, up to 8 `;`-separated
+  channels) into a finished multi-channel tune — here the classic NES
+  four-voice lineup:
 
 ```c
 MIX_Audio *tune = SDLStatic_CreateChipTune(mixer,
-    "T140 W2 O5 L8 C E G >C< G E C4 ;"   /* pulse lead   */
-    "T140 W1 O4 L8 E G B >E< B G E4 ;"   /* pulse harmony */
-    "T140 W3 O2 L4 C G C G");            /* triangle bass */
+    "T140 W1 O5 L8 C E G >C< G E C4 ;"                     /* pulse lead   */
+    "T140 W2 O4 L8 E G B >E< B G E4 ;"                     /* counterpoint */
+    "T140 W3 O2 L4 C G E G ;"                              /* triangle bass */
+    "T140 W5 S2 L8 O3 C O6 C O3 C O6 C O3 C O6 C O3 C O6 C"); /* noise drums */
 ```
 
 Tests (`tests/mixer/`) decode a synthesized corpus in every enabled format,

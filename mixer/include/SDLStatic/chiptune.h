@@ -29,15 +29,20 @@
  *   Ln              default note length (default 4)
  *   Tn              tempo in BPM, 20-600 (default 120)
  *   Vn              channel volume 0-15 (default 10)
- *   Wn              waveform 0-6, see SDLStatic_ChipWave (default 2 = square)
+ *   Wn              waveform 0-7, see SDLStatic_ChipWave (default 2 = square)
+ *   Sn              envelope shape: 0 = flat sustain (default), 1 = decay
+ *                   across the note, 2 = short percussive pluck — use S2 on
+ *                   a noise channel for drums
  *   ;               start the next channel (up to 8; mixed like NES voices)
  *
- * Example — two pulse channels and a triangle bass:
+ * Example — the classic NES lineup: pulse lead, pulse counterpoint,
+ * triangle bass, noise percussion:
  *
  *   MIX_Audio *tune = SDLStatic_CreateChipTune(mixer,
- *       "T140 W2 O5 L8 C E G >C< G E C4 ;"
- *       "T140 W1 O4 L8 E G B >E< B G E4 ;"
- *       "T140 W3 O2 L4 C G C G");
+ *       "T140 W1 O5 L8 C E G >C< G E C4 ;"
+ *       "T140 W2 O4 L8 E G B >E< B G E4 ;"
+ *       "T140 W3 O2 L4 C G E G ;"
+ *       "T140 W5 S2 L8 O3 C O6 C O3 C O6 C O3 C O6 C O3 C O6 C");
  *
  * The result loops seamlessly if the channels line up on the same total
  * length. On parse errors these functions return NULL with SDL_GetError()
@@ -62,7 +67,9 @@ typedef enum SDLStatic_ChipWave
     SDLSTATIC_CHIP_TRIANGLE = 3,   /**< 16-step quantized triangle (NES bass) */
     SDLSTATIC_CHIP_SAW = 4,        /**< sawtooth */
     SDLSTATIC_CHIP_NOISE = 5,      /**< 15-bit LFSR noise (drums/explosions) */
-    SDLSTATIC_CHIP_NOISE_METALLIC = 6 /**< short-loop LFSR (metallic buzz) */
+    SDLSTATIC_CHIP_NOISE_METALLIC = 6, /**< short-loop LFSR (metallic buzz) */
+    SDLSTATIC_CHIP_SINE = 7            /**< pure sine (not on real hardware,
+                                            but a useful soft voice) */
 } SDLStatic_ChipWave;
 
 /** One synthesized voice. Zero-init then set what you need. */

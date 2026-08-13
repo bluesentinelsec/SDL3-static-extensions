@@ -320,12 +320,86 @@ TEST_F(Chiptune, MmlWaveformSelectionChangesTimbre)
     MIX_DestroyAudio(triangle);
 }
 
+TEST_F(Chiptune, SineWaveIsPitchedAndSmooth)
+{
+    MIX_Audio *sine = SDLStatic_CreateChipTune(mixer_, "T120 W7 O4 L1 A");
+    MIX_Audio *square = SDLStatic_CreateChipTune(mixer_, "T120 W2 O4 L1 A");
+    ASSERT_NE(sine, nullptr) << SDL_GetError();
+    ASSERT_NE(square, nullptr) << SDL_GetError();
+
+    const std::vector<float> s = Render(sine, 32768);
+    const std::vector<float> q = Render(square, 32768);
+    EXPECT_NEAR(PitchHz(s, 512, 30000), 440.0, 25.0);
+
+    // Mean-|x| over peak separates the shapes: sine = 2/pi (~0.64), square = 1.
+    auto crest = [](const std::vector<float> &pcm) {
+        double peak = 0.0;
+        double mean = 0.0;
+        for (int i = 512; i < 30512; ++i)
+        {
+            const double v = std::fabs(static_cast<double>(pcm[static_cast<size_t>(i) * 2]));
+            peak = std::max(peak, v);
+            mean += v;
+        }
+        return mean / 30000.0 / peak;
+    };
+    EXPECT_LT(crest(s), 0.75) << "sine should be smooth, not flat-topped";
+    EXPECT_GT(crest(q), 0.9) << "square should sit at the rails";
+
+    MIX_DestroyAudio(sine);
+    MIX_DestroyAudio(square);
+}
+
+TEST_F(Chiptune, MmlEnvelopeShapesDecay)
+{
+    // T240 L1 = a 1 s whole note. S1 decays across it; S0 stays flat.
+    MIX_Audio *flat = SDLStatic_CreateChipTune(mixer_, "T240 S0 L1 C");
+    MIX_Audio *decay = SDLStatic_CreateChipTune(mixer_, "T240 S1 L1 C");
+    MIX_Audio *pluck = SDLStatic_CreateChipTune(mixer_, "T240 S2 L1 C");
+    ASSERT_NE(flat, nullptr) << SDL_GetError();
+    ASSERT_NE(decay, nullptr) << SDL_GetError();
+    ASSERT_NE(pluck, nullptr) << SDL_GetError();
+
+    const std::vector<float> f = Render(flat, 44100);
+    const std::vector<float> d = Render(decay, 44100);
+    const std::vector<float> p = Render(pluck, 44100);
+
+    // Flat: similar power early vs late. Decay: late is a fraction of early.
+    EXPECT_GT(Energy(f, 36000, 4000), Energy(f, 2000, 4000) * 0.5);
+    EXPECT_LT(Energy(d, 36000, 4000), Energy(d, 2000, 4000) * 0.2);
+    // Pluck: audible at the start, silent after ~140 ms.
+    EXPECT_GT(Energy(p, 0, 4000), 1.0);
+    EXPECT_NEAR(Energy(p, 12000, 8000), 0.0, 0.05);
+
+    MIX_DestroyAudio(flat);
+    MIX_DestroyAudio(decay);
+    MIX_DestroyAudio(pluck);
+}
+
+TEST_F(Chiptune, MmlNoisePercussionChannelWorks)
+{
+    // The classic four-voice NES lineup, percussion via plucked noise.
+    MIX_Audio *tune = SDLStatic_CreateChipTune(
+        mixer_, "T140 W1 O5 L8 C E G >C< G E C4 ;"
+                "T140 W2 O4 L8 E G B >E< B G E4 ;"
+                "T140 W3 O2 L4 C G E G ;"
+                "T140 W5 S2 L8 O3 C O6 C O3 C O6 C O3 C O6 C O3 C O6 C");
+    ASSERT_NE(tune, nullptr) << SDL_GetError();
+    // All four channels are 4 beats at 140 BPM.
+    EXPECT_NEAR(static_cast<double>(MIX_GetAudioDuration(tune)), 44100.0 * 4.0 * 60.0 / 140.0,
+                300.0);
+    const std::vector<float> pcm = Render(tune, 32768);
+    EXPECT_GT(Energy(pcm, 512, 30000), 50.0);
+    MIX_DestroyAudio(tune);
+}
+
 TEST_F(Chiptune, MmlRejectsBadPrograms)
 {
     EXPECT_EQ(SDLStatic_CreateChipTune(mixer_, nullptr), nullptr);
     EXPECT_EQ(SDLStatic_CreateChipTune(mixer_, ""), nullptr);
     EXPECT_EQ(SDLStatic_CreateChipTune(mixer_, "C D H E"), nullptr); // H invalid
     EXPECT_EQ(SDLStatic_CreateChipTune(mixer_, "T120 W9 C"), nullptr); // bad wave
+    EXPECT_EQ(SDLStatic_CreateChipTune(mixer_, "T120 S5 C"), nullptr); // bad shape
     EXPECT_EQ(SDLStatic_CreateChipTune(mixer_, "T120 V5"), nullptr); // no audio
     // Error message should locate the problem.
     SDL_ClearError();

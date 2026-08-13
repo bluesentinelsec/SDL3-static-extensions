@@ -58,18 +58,22 @@ static float ChipVoice_Step(ChipVoice *v, float freq_hz)
     case SDLSTATIC_CHIP_NOISE_METALLIC:
         out = v->noise_level;
         break;
+    case SDLSTATIC_CHIP_SINE:
+        out = SDL_sinf(2.0f * SDL_PI_F * (float)v->phase);
+        break;
     }
 
     /* Noise clocks its LFSR well above the nominal pitch so note choice
      * changes brightness, matching how the NES noise channel feels. */
-    const double incr = (v->wave >= SDLSTATIC_CHIP_NOISE)
-                            ? ((double)freq_hz * 16.0 / CHIP_RATE)
-                            : ((double)freq_hz / CHIP_RATE);
+    const bool is_noise =
+        (v->wave == SDLSTATIC_CHIP_NOISE) || (v->wave == SDLSTATIC_CHIP_NOISE_METALLIC);
+    const double incr = is_noise ? ((double)freq_hz * 16.0 / CHIP_RATE)
+                                 : ((double)freq_hz / CHIP_RATE);
     v->phase += incr;
     while (v->phase >= 1.0)
     {
         v->phase -= 1.0;
-        if (v->wave >= SDLSTATIC_CHIP_NOISE)
+        if (is_noise)
         {
             const Uint32 tap = (v->wave == SDLSTATIC_CHIP_NOISE_METALLIC) ? 6u : 1u;
             const Uint32 feedback = (v->lfsr ^ (v->lfsr >> tap)) & 1u;
@@ -154,7 +158,7 @@ MIX_Audio *SDLStatic_CreateChipTone(MIX_Mixer *mixer, const SDLStatic_ChipToneDe
         SDL_SetError("chiptune: freq_hz must be positive");
         return NULL;
     }
-    if ((int)desc->wave < 0 || (int)desc->wave > SDLSTATIC_CHIP_NOISE_METALLIC)
+    if ((int)desc->wave < 0 || (int)desc->wave > SDLSTATIC_CHIP_SINE)
     {
         SDL_SetError("chiptune: bad waveform %d", (int)desc->wave);
         return NULL;
@@ -300,6 +304,7 @@ typedef struct MmlState
     int octave;  /* 0..8 */
     int deflen;  /* 1..64 */
     int volume;  /* 0..15 */
+    int shape;   /* 0 flat, 1 decay, 2 percussive pluck */
     SDLStatic_ChipWave wave;
     ChipVoice voice;
 } MmlState;
@@ -340,7 +345,7 @@ static double MmlDuration(const MmlState *st, const char **p)
 
 static bool MmlChannel(const char *src, const char *end, int chan, MmlBuf *buf)
 {
-    MmlState st = {120, 4, 4, 10, SDLSTATIC_CHIP_SQUARE_50, {0}};
+    MmlState st = {120, 4, 4, 10, 0, SDLSTATIC_CHIP_SQUARE_50, {0}};
     ChipVoice_Init(&st.voice, st.wave);
 
     const char *p = src;
@@ -385,13 +390,24 @@ static bool MmlChannel(const char *src, const char *end, int chan, MmlBuf *buf)
         else if (c == 'W')
         {
             const int w = MmlParseInt(&p, (int)st.wave);
-            if (w < 0 || w > (int)SDLSTATIC_CHIP_NOISE_METALLIC)
+            if (w < 0 || w > (int)SDLSTATIC_CHIP_SINE)
             {
                 SDL_SetError("chiptune MML: bad waveform W%d (channel %d, pos %d)", w, chan, pos);
                 return false;
             }
             st.wave = (SDLStatic_ChipWave)w;
             ChipVoice_Init(&st.voice, st.wave);
+        }
+        else if (c == 'S')
+        {
+            const int shape = MmlParseInt(&p, st.shape);
+            if (shape < 0 || shape > 2)
+            {
+                SDL_SetError("chiptune MML: bad envelope shape S%d (channel %d, pos %d)", shape,
+                             chan, pos);
+                return false;
+            }
+            st.shape = shape;
         }
         else if (c == 'R')
         {
@@ -433,7 +449,17 @@ static bool MmlChannel(const char *src, const char *end, int chan, MmlBuf *buf)
             d.freq_hz = 440.0f * SDL_powf(2.0f, (float)(midi - 69) / 12.0f);
             d.volume = (float)st.volume / 15.0f;
             /* Gate at 15/16 of the slot for that clipped chip articulation. */
-            const int gate = frames - (frames / 16);
+            int gate = frames - (frames / 16);
+            if (st.shape == 2)
+            {
+                /* Percussive pluck: only the first ~140 ms sounds. */
+                gate = SDL_min(gate, CHIP_RATE * 140 / 1000);
+            }
+            if (st.shape != 0)
+            {
+                /* Linear decay across the sounding portion. */
+                d.release_ms = (Uint32)((Uint64)gate * 1000 / CHIP_RATE);
+            }
             RenderTone(buf->samples + buf->frames, gate, &d, &st.voice);
             buf->frames += frames;
         }
