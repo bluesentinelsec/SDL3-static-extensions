@@ -36,6 +36,13 @@ target_include_directories(SDLStatic_Physics
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
+# Box2D's wasm path uses Emscripten's SSE->WASM-SIMD128 compat intrinsics,
+# which require these flags (upstream's own CMake does the same). WASM SIMD
+# is supported by all modern browsers.
+if(EMSCRIPTEN)
+  target_compile_options(SDLStatic_Physics PRIVATE -msimd128 -msse2)
+endif()
+
 target_link_libraries(SDLStatic_Physics PUBLIC SDLStatic::Gfx)
 if(UNIX AND NOT APPLE)
   target_link_libraries(SDLStatic_Physics PRIVATE m)
