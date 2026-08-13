@@ -486,7 +486,7 @@ static void BG_Blended_Color(const TTF_Image *image, Uint32 *destination, Sint32
             DUFFS_LOOP4(
                     /* prevent misaligned load: tmp = *src++; */
                     // eventually, we can expect the compiler to replace the memcpy call with something optimized
-                    SDL_memcpy(&tmp, src++, sizeof(tmp));
+                    SDL_memcpy(&tmp, src, sizeof(tmp)); src += 4;
                     alpha = tmp >> 24;
                     tmp &= ~0xFF000000;
                     alpha = fg_alpha * alpha;
@@ -503,8 +503,8 @@ static void BG_Blended_Color(const TTF_Image *image, Uint32 *destination, Sint32
 // Blend with LCD rendering
 static void BG_Blended_LCD(const TTF_Image *image, Uint32 *destination, Sint32 srcskip, Uint32 dstskip, SDL_Color *fg)
 {
-    const Uint32 *src   = (Uint32 *)image->buffer;
-    Uint32      *dst    = destination;
+    const Uint8 *src    = image->buffer;     /* byte ptr: LCD rows are not 4-aligned */
+    Uint8       *dst    = (Uint8 *)destination;
     Uint32       width  = image->width;
     Uint32       height = image->rows;
 
@@ -525,7 +525,8 @@ static void BG_Blended_LCD(const TTF_Image *image, Uint32 *destination, Sint32 s
                 SDL_memcpy(&tmp, src++, sizeof(tmp));
 
                 if (tmp) {
-                    bg = *dst;
+                    /* prevent misaligned load: bg = *dst; */
+                    SDL_memcpy(&bg, dst, sizeof(bg));
 
                     bg_a = bg & 0xff000000;
                     bg_r = (bg >> 16) & 0xff;
@@ -549,14 +550,16 @@ static void BG_Blended_LCD(const TTF_Image *image, Uint32 *destination, Sint32 s
                     g <<= 8;
                     b <<= 0;
 
-                    *dst = r | g | b | bg_a;
+                    /* prevent misaligned store: *dst = ...; */
+                    tmp = r | g | b | bg_a;
+                    SDL_memcpy(dst, &tmp, sizeof(tmp));
                 }
-                dst++;
+                dst += 4;
 
                 , width);
         /* *INDENT-ON* */
-        src = (const Uint32 *)((const Uint8 *)src + srcskip);
-        dst = (Uint32 *)((Uint8 *)dst + dstskip);
+        src += srcskip;
+        dst += dstskip;
     }
 
 }
@@ -1194,6 +1197,9 @@ static bool Render_Line_##NAME(TTF_Font *font, SDL_Surface *textbuf, int xstart,
             int remainder;                                                                                              \
             Uint8 *saved_buffer = image->buffer;                                                                        \
             int saved_width = image->width;                                                                             \
+            if (!image->buffer) {                                                                                       \
+                continue; /* empty glyph (e.g. space): NULL + offset is UB */                                           \
+            }                                                                                                           \
             image->buffer += alignment;                                                                                 \
             /* Position updated after glyph rendering */                                                                \
             x = xstart + FT_FLOOR(x) + image->left;                                                                     \

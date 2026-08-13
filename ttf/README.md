@@ -31,6 +31,21 @@ unsupported usage fails at **compile time**.
 
 Text direction is LTR. `TTF_Direction` remains as an inert type.
 
+## SDLStatic additions
+
+`SDLStatic/debug_text.h` — zero-setup debug/HUD text for any `SDL_Renderer`:
+
+```c
+SDL_SetRenderDrawColor(renderer, 80, 250, 123, 255);   /* text color */
+SDLStatic_RenderDebugTextFormat(renderer, 8, 8, "FPS: %d", fps);
+```
+
+Backed by an **embedded ProggyClean** font (MIT, ~40KB, license reproduced in
+`src/sdlstatic_debug_font.h`) — no font files needed at runtime. DPI-aware
+(rasterized at the window's pixel density, drawn 1:1), color follows the
+renderer draw color, rendered strings are cached. `SDLStatic_SetDebugTextSize`
+adjusts size; call `SDLStatic_QuitDebugText` at shutdown.
+
 ## Attribution requirement
 
 FreeType is licensed under the FTL: products shipping this library must
