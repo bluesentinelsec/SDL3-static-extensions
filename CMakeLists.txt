@@ -113,6 +113,7 @@ else()
 endif()
 option(SDLSTATIC_BUILD_GFX "Build the SDLStatic::Gfx extension" ON)
 option(SDLSTATIC_BUILD_EXTRAS "Build the SDLStatic::Extras modules" ON)
+option(SDLSTATIC_BUILD_FORMATS "Build the SDLStatic::Formats parsers (JSON/TOML/YAML)" ON)
 
 if(ANDROID AND (SDL3_STATIC_EXTENSIONS_BUILD_APP OR SDL3_STATIC_EXTENSIONS_BUILD_TESTS OR SDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS))
   message(FATAL_ERROR
@@ -233,6 +234,10 @@ endif()
 
 if(SDLSTATIC_BUILD_EXTRAS)
   add_subdirectory(extras)
+endif()
+
+if(SDLSTATIC_BUILD_FORMATS)
+  add_subdirectory(formats)
 endif()
 
 if(SDL3_STATIC_EXTENSIONS_BUILD_TESTS)
