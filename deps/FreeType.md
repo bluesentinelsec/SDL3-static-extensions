@@ -8,8 +8,8 @@
 | Fetch | Official release tarball, SHA-256 pinned (see `cmake/Dependencies.cmake`) |
 | License | **FTL** (BSD-style; FreeType is dual FTL/GPLv2 — we take FTL) |
 
-Backend for `SDLStatic::TTF` (Phase A; see `deps/SDL3_ttf.md` for the open
-Phase-B decision). Built static and **minimal** — every optional dependency
+The permanent glyph backend for `SDLStatic::TTF` (decision record in
+`deps/SDL3_ttf.md`; the stb_truetype alternative was dropped from scope). Built static and **minimal** — every optional dependency
 disabled so it contributes zero shared-library dependencies:
 
 - `FT_DISABLE_ZLIB` (uses FreeType's internal zlib copy)

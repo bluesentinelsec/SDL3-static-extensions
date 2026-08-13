@@ -1,12 +1,10 @@
 # SDLStatic::TTF — static-only build of the vendored SDL_ttf sources
 # (upstream release-3.2.2; provenance in deps/SDL3_ttf.md).
 #
-# Phase A: FreeType backend via pinned, minimal, static FetchContent
-# (deps/FreeType.md — internal zlib, no harfbuzz/png/brotli/bzip2, so the
-# link-time dependency set stays empty). HarfBuzz shaping and plutosvg color
-# emoji are disabled (TTF_USE_HARFBUZZ / TTF_USE_PLUTOSVG default to 0).
-# The stb_truetype-vs-static-FreeType Phase-B decision is documented in
-# deps/SDL3_ttf.md.
+# Backend: minimal static FreeType via pinned FetchContent (deps/FreeType.md —
+# internal zlib, no harfbuzz/png/brotli/bzip2, so the link-time dependency set
+# stays empty). HarfBuzz shaping and plutosvg color emoji are disabled and
+# their nine dependent public APIs are deleted (no-stubs; deps/SDL3_ttf.md).
 
 # The root project is CXX-only; the vendored SDL_ttf sources are C.
 enable_language(C)

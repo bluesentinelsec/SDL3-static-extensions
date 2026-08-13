@@ -65,6 +65,12 @@
 #  define TTF_USE_PLUTOSVG 0
 #endif
 
+/* Forward declarations for internal direction/script getters (defined near
+   the text-attribute section; used by layout code above them). */
+struct TTF_Text;
+static TTF_Direction GetTextDirectionInternal(TTF_Text *text);
+static Uint32 GetTextScriptInternal(TTF_Text *text);
+
 #ifndef TTF_DEFAULT_DPI
 #define TTF_DEFAULT_DPI 72
 #endif
@@ -4503,8 +4509,8 @@ static bool LayoutText(TTF_Text *text)
     int num_clusters = 0, max_clusters = 0, cluster_offset;
     int *lines = NULL;
     bool result = false;
-    TTF_Direction direction = TTF_GetTextDirection(text);
-    Uint32 script = TTF_GetTextScript(text);
+    TTF_Direction direction = GetTextDirectionInternal(text);
+    Uint32 script = GetTextScriptInternal(text);
 
     if (!GetWrappedLines(font, text->text, length, direction, script, text->internal->x, wrap_width, trim_whitespace, &strLines, &numLines, &width, &height, false)) {
         return true;
@@ -4727,57 +4733,24 @@ TTF_Font *TTF_GetTextFont(TTF_Text *text)
     return text->internal->font;
 }
 
-bool TTF_SetTextDirection(TTF_Text *text, TTF_Direction direction)
+
+/* Internal equivalents of the removed public direction/script getters
+   (the public APIs were HarfBuzz-only stubs; layout code still needs the
+   effective values). */
+static TTF_Direction GetTextDirectionInternal(TTF_Text *text)
 {
-    TTF_CHECK_POINTER("text", text, false);
-
-    if (direction == text->internal->layout->direction) {
-        return true;
-    }
-
-#if !TTF_USE_HARFBUZZ
-    if (direction != TTF_DIRECTION_INVALID && direction != TTF_DIRECTION_LTR) {
-        return SDL_Unsupported();
-    }
-#endif
-
-    text->internal->layout->direction = direction;
-    text->internal->needs_layout_update = true;
-    return true;
-}
-
-TTF_Direction TTF_GetTextDirection(TTF_Text *text)
-{
-    TTF_CHECK_POINTER("text", text, TTF_DIRECTION_INVALID);
-
     if (text->internal->layout->direction != TTF_DIRECTION_INVALID) {
         return text->internal->layout->direction;
     }
-    return TTF_GetFontDirection(text->internal->font);
+    return text->internal->font->direction;
 }
 
-bool TTF_SetTextScript(TTF_Text *text, Uint32 script)
+static Uint32 GetTextScriptInternal(TTF_Text *text)
 {
-    TTF_CHECK_POINTER("text", text, false);
-
-#if TTF_USE_HARFBUZZ
-    text->internal->layout->script = script;
-    text->internal->needs_layout_update = true;
-    return true;
-#else
-    (void) script;
-    return SDL_Unsupported();
-#endif
-}
-
-Uint32 TTF_GetTextScript(TTF_Text *text)
-{
-    TTF_CHECK_POINTER("text", text, 0);
-
     if (text->internal->layout->script) {
         return text->internal->layout->script;
     }
-    return TTF_GetFontScript(text->internal->font);
+    return text->internal->font->script;
 }
 
 bool TTF_SetTextColor(TTF_Text *text, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
@@ -5352,7 +5325,7 @@ bool TTF_GetTextSubStringForPoint(TTF_Text *text, int x, int y, TTF_SubString *s
         return true;
     }
 
-    TTF_Direction direction = TTF_GetTextDirection(text);
+    TTF_Direction direction = GetTextDirectionInternal(text);
     bool prefer_row = (direction != TTF_DIRECTION_TTB && direction != TTF_DIRECTION_BTT);
     const TTF_SubString *closest = NULL;
     int closest_dist = INT_MAX;
@@ -5941,32 +5914,6 @@ const char *TTF_GetFontStyleName(const TTF_Font *font)
     return font->face->style_name;
 }
 
-bool TTF_SetFontDirection(TTF_Font *font, TTF_Direction direction)
-{
-    TTF_CHECK_FONT(font, false);
-
-    if (direction == font->direction) {
-        return true;
-    }
-
-#if !TTF_USE_HARFBUZZ
-    if (direction != TTF_DIRECTION_INVALID && direction != TTF_DIRECTION_LTR) {
-        return SDL_Unsupported();
-    }
-#endif
-
-    font->direction = direction;
-    UpdateFontText(font, NULL);
-    return true;
-}
-
-TTF_Direction TTF_GetFontDirection(TTF_Font *font)
-{
-    TTF_CHECK_FONT(font, TTF_DIRECTION_INVALID);
-
-    return font->direction;
-}
-
 Uint32 TTF_StringToTag(const char *string)
 {
     Uint8 bytes[4] = { 0, 0, 0, 0 };
@@ -5997,63 +5944,6 @@ void TTF_TagToString(Uint32 tag, char *string, size_t size)
     if (size > 4) {
         string[4] = '\0';
     }
-}
-
-bool TTF_SetFontScript(TTF_Font *font, Uint32 script)
-{
-    TTF_CHECK_FONT(font, false);
-
-#if TTF_USE_HARFBUZZ
-    font->script = script;
-    UpdateFontText(font, NULL);
-    return true;
-#else
-    (void) script;
-    return SDL_Unsupported();
-#endif
-}
-
-Uint32 TTF_GetFontScript(TTF_Font *font)
-{
-    TTF_CHECK_FONT(font, 0);
-
-    return font->script;
-}
-
-Uint32 TTF_GetGlyphScript(Uint32 ch)
-{
-    Uint32 script = 0;
-
-#if TTF_USE_HARFBUZZ
-    hb_buffer_t *hb_buffer = hb_buffer_create();
-
-    if (hb_buffer == NULL) {
-        SDL_SetError("Cannot create harfbuzz buffer");
-        return 0;
-    }
-
-    hb_unicode_funcs_t *hb_unicode_functions = hb_buffer_get_unicode_funcs(hb_buffer);
-
-    if (hb_unicode_functions == NULL) {
-        hb_buffer_destroy(hb_buffer);
-        SDL_SetError("Can't get harfbuzz unicode functions");
-        return 0;
-    }
-
-    hb_buffer_clear_contents(hb_buffer);
-    hb_buffer_set_content_type(hb_buffer, HB_BUFFER_CONTENT_TYPE_UNICODE);
-
-    script = hb_script_to_iso15924_tag(hb_unicode_script(hb_unicode_functions, ch));
-
-    hb_buffer_destroy(hb_buffer);
-#else
-    (void)ch;
-#endif
-
-    if (script == 0) {
-        SDL_SetError("Unknown script");
-    }
-    return script;
 }
 
 bool TTF_SetFontLanguage(TTF_Font *font, const char *language_bcp47)

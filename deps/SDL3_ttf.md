@@ -34,17 +34,26 @@ Upstream SDL_ttf 3.x hard-requires **FreeType** (`SDLTTF_FREETYPE ON`, not
 configurable) — there is no stb backend upstream. HarfBuzz (shaping) and
 plutosvg (color emoji) are optional and will **not** be used here.
 
-Phase-A plan (per the design: temporary old backend allowed): build against a
-**statically vendored FreeType** via pinned FetchContent, configured minimal
-(no harfbuzz, no brotli, no bzip2, no libpng — FreeType itself is
-static-link-friendly when built this way, adding zero shared deps).
-
-Phase-B decision (open): replace FreeType with **stb_truetype + our own
-DPI/quality code** (design default; a substantial glyph-engine rewrite), or
-retain minimal static FreeType permanently (design fallback: "FreeType only if
-clearly static-link-friendly" — it is, in this configuration). To be decided
-before Phase B starts.
+**Backend decision (resolved 2026-08-12): minimal static FreeType,
+permanently.** Built via pinned FetchContent (see `deps/FreeType.md`), with
+every optional dependency disabled — zero shared-library deps, CI-enforced by
+the `ttf_link_audit` test. The stb_truetype rewrite is **dropped from scope**
+(design fallback explicitly permits FreeType when static-link-friendly, which
+this configuration is).
 
 ## Local modifications
 
-None yet (snapshot only; removal pass and build wiring follow).
+Removal pass (no-stubs policy — removed APIs fail at build time):
+
+- Deleted the nine HarfBuzz-dependent public functions that were runtime
+  stubs or functionally inert without shaping:
+  `TTF_SetFontDirection`, `TTF_GetFontDirection`, `TTF_SetFontScript`,
+  `TTF_GetFontScript`, `TTF_GetGlyphScript`, `TTF_SetTextDirection`,
+  `TTF_GetTextDirection`, `TTF_SetTextScript`, `TTF_GetTextScript`
+  (declarations and implementations; internal layout code uses private
+  equivalents). Text direction is LTR; complex-script shaping is out of
+  scope per the design.
+- `TTF_Direction` remains in the public header as a type (used internally;
+  inert as API surface).
+- HarfBuzz shaping and plutosvg color-emoji are disabled at build level
+  (`TTF_USE_HARFBUZZ` / `TTF_USE_PLUTOSVG` = 0); no submodules imported.
