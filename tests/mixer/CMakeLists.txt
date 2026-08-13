@@ -9,6 +9,7 @@ target_link_libraries(SDL3_static_extensions_mixer_test
 )
 target_compile_definitions(SDL3_static_extensions_mixer_test PRIVATE
   MIXER_TEST_ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets"
+  MIXER_GM_PATCHES_DIR="${CMAKE_SOURCE_DIR}/mixer/gm-patches"
 )
 cppboot_set_project_warnings(SDL3_static_extensions_mixer_test)
 gtest_discover_tests(SDL3_static_extensions_mixer_test)

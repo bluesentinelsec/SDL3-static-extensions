@@ -259,6 +259,136 @@ TEST_F(MixerFoundation, MidiLoadsOrFailsCleanly)
     }
 }
 
+/**
+ * MIDI with the generated GM patch set (mixer/gm-patches): TiMidity must
+ * actually synthesize audio, not just parse. TIMIDITY_CFG has to be set
+ * before MIX_Init (decoder init reads it), and unset afterwards so the
+ * patchless MidiLoadsOrFailsCleanly test stays valid regardless of order.
+ */
+class MidiPlayback : public ::testing::Test
+{
+  protected:
+    static void SetUpTestSuite()
+    {
+        ASSERT_TRUE(SDL_Init(0)) << SDL_GetError();
+        ASSERT_TRUE(SDL_SetEnvironmentVariable(SDL_GetEnvironment(), "TIMIDITY_CFG",
+                                               MIXER_GM_PATCHES_DIR "/timidity.cfg", true));
+        ASSERT_TRUE(MIX_Init()) << SDL_GetError();
+    }
+    static void TearDownTestSuite()
+    {
+        MIX_Quit();
+        SDL_UnsetEnvironmentVariable(SDL_GetEnvironment(), "TIMIDITY_CFG");
+        SDL_Quit();
+    }
+
+    void SetUp() override
+    {
+        SDL_AudioSpec spec = {SDL_AUDIO_F32, 2, 44100};
+        mixer_ = MIX_CreateMixer(&spec);
+        ASSERT_NE(mixer_, nullptr) << SDL_GetError();
+    }
+    void TearDown() override
+    {
+        if (mixer_ != nullptr)
+        {
+            MIX_DestroyMixer(mixer_);
+        }
+    }
+
+    MIX_Mixer *mixer_ = nullptr;
+};
+
+TEST_F(MidiPlayback, ScaleSynthesizesRealAudio)
+{
+    // music_scale.mid: eight quarter notes C4..C5 at 120 BPM = 4 seconds.
+    MIX_Audio *midi = MIX_LoadAudio(mixer_, AssetPath("music_scale.mid").c_str(), false);
+    ASSERT_NE(midi, nullptr) << "GM patches failed to load: " << SDL_GetError();
+    const Sint64 frames = MIX_GetAudioDuration(midi);
+    EXPECT_GT(frames, 44100 * 3) << "scale should be ~4s";
+
+    MIX_Track *track = MIX_CreateTrack(mixer_);
+    ASSERT_NE(track, nullptr);
+    ASSERT_TRUE(MIX_SetTrackAudio(track, midi));
+    ASSERT_TRUE(MIX_PlayTrack(track, 0)) << SDL_GetError();
+
+    // Render the first second (the whole first note + part of the second).
+    std::vector<float> pcm(static_cast<size_t>(44100) * 2);
+    const int got = MIX_Generate(mixer_, pcm.data(), static_cast<int>(pcm.size() * sizeof(float)));
+    ASSERT_GT(got, 0) << SDL_GetError();
+
+    double energy = 0.0;
+    for (size_t i = 0; i < pcm.size(); i += 2)
+    {
+        energy += std::fabs(static_cast<double>(pcm[i]));
+    }
+    EXPECT_GT(energy, 50.0) << "MIDI synthesis produced near-silence";
+
+    // Pitch of the first note (C4 = 261.63 Hz), measured mid-note past the
+    // envelope attack via zero crossings on the left channel.
+    const int first = 44100 / 8;
+    const int count = 44100 / 4;
+    int crossings = 0;
+    for (int i = first + 1; i < first + count; ++i)
+    {
+        const float a = pcm[static_cast<size_t>(i - 1) * 2];
+        const float b = pcm[static_cast<size_t>(i) * 2];
+        if ((a < 0.0F && b >= 0.0F) || (a >= 0.0F && b < 0.0F))
+        {
+            crossings++;
+        }
+    }
+    const double pitch = (crossings / 2.0) / (static_cast<double>(count) / 44100.0);
+    EXPECT_NEAR(pitch, 261.63, 25.0) << "first scale note should be C4";
+
+    MIX_DestroyTrack(track);
+    MIX_DestroyAudio(midi);
+}
+
+TEST_F(MidiPlayback, MalformedMidiDoesNotCrashWithPatches)
+{
+    // Truncations + bit flips of the SMF, now with the synth actually
+    // rendering: parse errors must fail cleanly, not crash the synth.
+    std::vector<Uint8> data;
+    {
+        SDL_IOStream *io = SDL_IOFromFile(AssetPath("music_scale.mid").c_str(), "rb");
+        ASSERT_NE(io, nullptr);
+        const Sint64 size = SDL_GetIOSize(io);
+        data.resize(static_cast<size_t>(size));
+        ASSERT_EQ(SDL_ReadIO(io, data.data(), data.size()), data.size());
+        SDL_CloseIO(io);
+    }
+    for (const double fraction : {0.1, 0.25, 0.5, 0.9})
+    {
+        const auto cut_len =
+            static_cast<std::ptrdiff_t>(static_cast<double>(data.size()) * fraction);
+        std::vector<Uint8> cut(data.begin(), data.begin() + cut_len);
+        SDL_IOStream *mem = SDL_IOFromConstMem(cut.data(), cut.size());
+        ASSERT_NE(mem, nullptr);
+        MIX_Audio *audio = MIX_LoadAudio_IO(mixer_, mem, true, true);
+        if (audio != nullptr)
+        {
+            MIX_DestroyAudio(audio);
+        }
+    }
+    Uint32 rng = 0xC0FFEE11u;
+    std::vector<Uint8> flipped = data;
+    for (int i = 0; i < 64; ++i)
+    {
+        rng ^= rng << 13;
+        rng ^= rng >> 17;
+        rng ^= rng << 5;
+        flipped[rng % flipped.size()] ^= static_cast<Uint8>(1u << (rng % 8));
+    }
+    SDL_IOStream *mem = SDL_IOFromConstMem(flipped.data(), flipped.size());
+    ASSERT_NE(mem, nullptr);
+    MIX_Audio *audio = MIX_LoadAudio_IO(mixer_, mem, true, true);
+    if (audio != nullptr)
+    {
+        MIX_DestroyAudio(audio);
+    }
+}
+
 class MalformedAudio : public MixerFoundation, public ::testing::WithParamInterface<const char *>
 {
 };
