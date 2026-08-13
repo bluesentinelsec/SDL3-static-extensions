@@ -61,3 +61,4 @@ android/.gradle/
 android/local.properties
 local.properties
 .cxx/
+.cache/

@@ -103,6 +103,7 @@ option(SDL3_STATIC_EXTENSIONS_BUILD_WEB_DEMO "Build the web canvas demo (Emscrip
 # do not want). Each extension is a static library under SDLStatic::.
 option(SDLSTATIC_BUILD_IMAGE "Build the SDLStatic::Image extension" ON)
 option(SDLSTATIC_BUILD_TTF "Build the SDLStatic::TTF extension" ON)
+option(SDLSTATIC_BUILD_MIXER "Build the SDLStatic::Mixer extension" ON)
 
 if(ANDROID AND (SDL3_STATIC_EXTENSIONS_BUILD_APP OR SDL3_STATIC_EXTENSIONS_BUILD_TESTS OR SDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS))
   message(FATAL_ERROR
@@ -207,6 +208,10 @@ endif()
 
 if(SDLSTATIC_BUILD_TTF)
   add_subdirectory(ttf)
+endif()
+
+if(SDLSTATIC_BUILD_MIXER)
+  add_subdirectory(mixer)
 endif()
 
 if(SDL3_STATIC_EXTENSIONS_BUILD_TESTS)
