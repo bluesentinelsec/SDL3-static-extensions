@@ -1,5 +1,6 @@
 add_executable(SDL3_static_extensions_mixer_test
   mixer_test.cpp
+  chiptune_test.cpp
 )
 target_link_libraries(SDL3_static_extensions_mixer_test
   PRIVATE
