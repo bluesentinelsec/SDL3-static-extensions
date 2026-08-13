@@ -115,6 +115,7 @@ option(SDLSTATIC_BUILD_GFX "Build the SDLStatic::Gfx extension" ON)
 option(SDLSTATIC_BUILD_EXTRAS "Build the SDLStatic::Extras modules" ON)
 option(SDLSTATIC_BUILD_FORMATS "Build the SDLStatic::Formats parsers (JSON/TOML/YAML)" ON)
 option(SDLSTATIC_BUILD_VFS "Build the SDLStatic::VFS virtual filesystem (PhysFS)" ON)
+option(SDLSTATIC_BUILD_PHYSICS "Build the SDLStatic::Physics engine (Box2D)" ON)
 
 if(ANDROID AND (SDL3_STATIC_EXTENSIONS_BUILD_APP OR SDL3_STATIC_EXTENSIONS_BUILD_TESTS OR SDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS))
   message(FATAL_ERROR
@@ -246,6 +247,13 @@ if(SDLSTATIC_BUILD_VFS)
     message(FATAL_ERROR "SDLSTATIC_BUILD_VFS requires SDLSTATIC_BUILD_EXTRAS (encrypted mounts use SDLStatic crypto)")
   endif()
   add_subdirectory(vfs)
+endif()
+
+if(SDLSTATIC_BUILD_PHYSICS)
+  if(NOT SDLSTATIC_BUILD_GFX)
+    message(FATAL_ERROR "SDLSTATIC_BUILD_PHYSICS requires SDLSTATIC_BUILD_GFX (debug draw uses the GPU primitives)")
+  endif()
+  add_subdirectory(physics)
 endif()
 
 if(SDL3_STATIC_EXTENSIONS_BUILD_TESTS)
