@@ -114,6 +114,7 @@ endif()
 option(SDLSTATIC_BUILD_GFX "Build the SDLStatic::Gfx extension" ON)
 option(SDLSTATIC_BUILD_EXTRAS "Build the SDLStatic::Extras modules" ON)
 option(SDLSTATIC_BUILD_FORMATS "Build the SDLStatic::Formats parsers (JSON/TOML/YAML)" ON)
+option(SDLSTATIC_BUILD_VFS "Build the SDLStatic::VFS virtual filesystem (PhysFS)" ON)
 
 if(ANDROID AND (SDL3_STATIC_EXTENSIONS_BUILD_APP OR SDL3_STATIC_EXTENSIONS_BUILD_TESTS OR SDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS))
   message(FATAL_ERROR
@@ -238,6 +239,13 @@ endif()
 
 if(SDLSTATIC_BUILD_FORMATS)
   add_subdirectory(formats)
+endif()
+
+if(SDLSTATIC_BUILD_VFS)
+  if(NOT SDLSTATIC_BUILD_EXTRAS)
+    message(FATAL_ERROR "SDLSTATIC_BUILD_VFS requires SDLSTATIC_BUILD_EXTRAS (encrypted mounts use SDLStatic crypto)")
+  endif()
+  add_subdirectory(vfs)
 endif()
 
 if(SDL3_STATIC_EXTENSIONS_BUILD_TESTS)
