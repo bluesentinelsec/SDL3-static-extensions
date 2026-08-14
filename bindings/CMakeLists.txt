@@ -22,7 +22,7 @@ target_include_directories(SDLStatic_Bindings
 )
 
 target_link_libraries(SDLStatic_Bindings PUBLIC
-  SDLStatic::Lua SDLStatic::Ruby SDLStatic::VFS SDLStatic::Image
+  SDLStatic::Lua SDLStatic::Ruby SDLStatic::VFS SDLStatic::Image SDLStatic::Tiled
   SDLStatic::Mixer SDLStatic::Physics SDLStatic::Gfx SDLStatic::Extras
   SDL3::SDL3
 )
