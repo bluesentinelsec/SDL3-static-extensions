@@ -322,6 +322,15 @@ static int GenL_TTF_GetFontDescent(lua_State *L)
     return 1;
 }
 
+static int GenL_TTF_GetFontDirection(lua_State *L)
+{
+    (void)L;
+    TTF_Font *a0 = (TTF_Font *)SDLStaticGen_LuaCheckHandle(L, 1, "TTF_Font");
+    TTF_Direction rv = TTF_GetFontDirection(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
 static int GenL_TTF_GetFontFamilyName(lua_State *L)
 {
     (void)L;
@@ -400,6 +409,15 @@ static int GenL_TTF_GetFontSDF(lua_State *L)
     const TTF_Font *a0 = (const TTF_Font *)SDLStaticGen_LuaCheckHandle(L, 1, "TTF_Font");
     bool rv = TTF_GetFontSDF(a0);
     lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_TTF_GetFontScript(lua_State *L)
+{
+    (void)L;
+    TTF_Font *a0 = (TTF_Font *)SDLStaticGen_LuaCheckHandle(L, 1, "TTF_Font");
+    Uint32 rv = TTF_GetFontScript(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
     return 1;
 }
 
@@ -536,6 +554,15 @@ static int GenL_TTF_GetGlyphMetrics(lua_State *L)
     return 6;
 }
 
+static int GenL_TTF_GetGlyphScript(lua_State *L)
+{
+    (void)L;
+    Uint32 a0 = (Uint32)luaL_checkinteger(L, 1);
+    Uint32 rv = TTF_GetGlyphScript(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
 static int GenL_TTF_GetHarfBuzzVersion(lua_State *L)
 {
     (void)L;
@@ -659,6 +686,15 @@ static int GenL_TTF_GetTextColorFloat(lua_State *L)
     return 5;
 }
 
+static int GenL_TTF_GetTextDirection(lua_State *L)
+{
+    (void)L;
+    TTF_Text *a0 = (TTF_Text *)SDLStaticGen_LuaCheckHandle(L, 1, "TTF_Text");
+    TTF_Direction rv = TTF_GetTextDirection(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
 static int GenL_TTF_GetTextEngine(lua_State *L)
 {
     (void)L;
@@ -695,6 +731,15 @@ static int GenL_TTF_GetTextProperties(lua_State *L)
     (void)L;
     TTF_Text *a0 = (TTF_Text *)SDLStaticGen_LuaCheckHandle(L, 1, "TTF_Text");
     SDL_PropertiesID rv = TTF_GetTextProperties(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_TTF_GetTextScript(lua_State *L)
+{
+    (void)L;
+    TTF_Text *a0 = (TTF_Text *)SDLStaticGen_LuaCheckHandle(L, 1, "TTF_Text");
+    Uint32 rv = TTF_GetTextScript(a0);
     lua_pushinteger(L, (lua_Integer)rv);
     return 1;
 }
@@ -1013,6 +1058,16 @@ static int GenL_TTF_RenderText_Solid_Wrapped(lua_State *L)
     return 1;
 }
 
+static int GenL_TTF_SetFontDirection(lua_State *L)
+{
+    (void)L;
+    TTF_Font *a0 = (TTF_Font *)SDLStaticGen_LuaCheckHandle(L, 1, "TTF_Font");
+    TTF_Direction a1 = (TTF_Direction)luaL_checkinteger(L, 2);
+    bool rv = TTF_SetFontDirection(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_TTF_SetFontHinting(lua_State *L)
 {
     (void)L;
@@ -1066,6 +1121,16 @@ static int GenL_TTF_SetFontSDF(lua_State *L)
     TTF_Font *a0 = (TTF_Font *)SDLStaticGen_LuaCheckHandle(L, 1, "TTF_Font");
     bool a1 = (bool)lua_toboolean(L, 2);
     bool rv = TTF_SetFontSDF(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_TTF_SetFontScript(lua_State *L)
+{
+    (void)L;
+    TTF_Font *a0 = (TTF_Font *)SDLStaticGen_LuaCheckHandle(L, 1, "TTF_Font");
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
+    bool rv = TTF_SetFontScript(a0, a1);
     lua_pushboolean(L, (int)rv);
     return 1;
 }
@@ -1145,6 +1210,16 @@ static int GenL_TTF_SetTextColorFloat(lua_State *L)
     return 1;
 }
 
+static int GenL_TTF_SetTextDirection(lua_State *L)
+{
+    (void)L;
+    TTF_Text *a0 = (TTF_Text *)SDLStaticGen_LuaCheckHandle(L, 1, "TTF_Text");
+    TTF_Direction a1 = (TTF_Direction)luaL_checkinteger(L, 2);
+    bool rv = TTF_SetTextDirection(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_TTF_SetTextEngine(lua_State *L)
 {
     (void)L;
@@ -1172,6 +1247,16 @@ static int GenL_TTF_SetTextPosition(lua_State *L)
     int a1 = (int)luaL_checkinteger(L, 2);
     int a2 = (int)luaL_checkinteger(L, 3);
     bool rv = TTF_SetTextPosition(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_TTF_SetTextScript(lua_State *L)
+{
+    (void)L;
+    TTF_Text *a0 = (TTF_Text *)SDLStaticGen_LuaCheckHandle(L, 1, "TTF_Text");
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
+    bool rv = TTF_SetTextScript(a0, a1);
     lua_pushboolean(L, (int)rv);
     return 1;
 }
@@ -1253,7 +1338,7 @@ static int GenL_TTF_WasInit(lua_State *L)
 int SDLStaticGen_OpenLua_ttf(lua_State *L);
 int SDLStaticGen_OpenLua_ttf(lua_State *L)
 {
-    lua_createtable(L, 0, 106);
+    lua_createtable(L, 0, 115);
     lua_pushcfunction(L, GenL_TTF_AddFallbackFont);
     lua_setfield(L, -2, "AddFallbackFont");
     lua_pushcfunction(L, GenL_TTF_AppendTextString);
@@ -1302,6 +1387,8 @@ int SDLStaticGen_OpenLua_ttf(lua_State *L)
     lua_setfield(L, -2, "GetFontDPI");
     lua_pushcfunction(L, GenL_TTF_GetFontDescent);
     lua_setfield(L, -2, "GetFontDescent");
+    lua_pushcfunction(L, GenL_TTF_GetFontDirection);
+    lua_setfield(L, -2, "GetFontDirection");
     lua_pushcfunction(L, GenL_TTF_GetFontFamilyName);
     lua_setfield(L, -2, "GetFontFamilyName");
     lua_pushcfunction(L, GenL_TTF_GetFontGeneration);
@@ -1320,6 +1407,8 @@ int SDLStaticGen_OpenLua_ttf(lua_State *L)
     lua_setfield(L, -2, "GetFontProperties");
     lua_pushcfunction(L, GenL_TTF_GetFontSDF);
     lua_setfield(L, -2, "GetFontSDF");
+    lua_pushcfunction(L, GenL_TTF_GetFontScript);
+    lua_setfield(L, -2, "GetFontScript");
     lua_pushcfunction(L, GenL_TTF_GetFontSize);
     lua_setfield(L, -2, "GetFontSize");
     lua_pushcfunction(L, GenL_TTF_GetFontStyle);
@@ -1344,6 +1433,8 @@ int SDLStaticGen_OpenLua_ttf(lua_State *L)
     lua_setfield(L, -2, "GetGlyphKerning");
     lua_pushcfunction(L, GenL_TTF_GetGlyphMetrics);
     lua_setfield(L, -2, "GetGlyphMetrics");
+    lua_pushcfunction(L, GenL_TTF_GetGlyphScript);
+    lua_setfield(L, -2, "GetGlyphScript");
     lua_pushcfunction(L, GenL_TTF_GetHarfBuzzVersion);
     lua_setfield(L, -2, "GetHarfBuzzVersion");
     lua_pushcfunction(L, GenL_TTF_GetNextTextSubString);
@@ -1360,6 +1451,8 @@ int SDLStaticGen_OpenLua_ttf(lua_State *L)
     lua_setfield(L, -2, "GetTextColor");
     lua_pushcfunction(L, GenL_TTF_GetTextColorFloat);
     lua_setfield(L, -2, "GetTextColorFloat");
+    lua_pushcfunction(L, GenL_TTF_GetTextDirection);
+    lua_setfield(L, -2, "GetTextDirection");
     lua_pushcfunction(L, GenL_TTF_GetTextEngine);
     lua_setfield(L, -2, "GetTextEngine");
     lua_pushcfunction(L, GenL_TTF_GetTextFont);
@@ -1368,6 +1461,8 @@ int SDLStaticGen_OpenLua_ttf(lua_State *L)
     lua_setfield(L, -2, "GetTextPosition");
     lua_pushcfunction(L, GenL_TTF_GetTextProperties);
     lua_setfield(L, -2, "GetTextProperties");
+    lua_pushcfunction(L, GenL_TTF_GetTextScript);
+    lua_setfield(L, -2, "GetTextScript");
     lua_pushcfunction(L, GenL_TTF_GetTextSize);
     lua_setfield(L, -2, "GetTextSize");
     lua_pushcfunction(L, GenL_TTF_GetTextSubString);
@@ -1418,6 +1513,8 @@ int SDLStaticGen_OpenLua_ttf(lua_State *L)
     lua_setfield(L, -2, "RenderText_Solid");
     lua_pushcfunction(L, GenL_TTF_RenderText_Solid_Wrapped);
     lua_setfield(L, -2, "RenderText_Solid_Wrapped");
+    lua_pushcfunction(L, GenL_TTF_SetFontDirection);
+    lua_setfield(L, -2, "SetFontDirection");
     lua_pushcfunction(L, GenL_TTF_SetFontHinting);
     lua_setfield(L, -2, "SetFontHinting");
     lua_pushcfunction(L, GenL_TTF_SetFontKerning);
@@ -1430,6 +1527,8 @@ int SDLStaticGen_OpenLua_ttf(lua_State *L)
     lua_setfield(L, -2, "SetFontOutline");
     lua_pushcfunction(L, GenL_TTF_SetFontSDF);
     lua_setfield(L, -2, "SetFontSDF");
+    lua_pushcfunction(L, GenL_TTF_SetFontScript);
+    lua_setfield(L, -2, "SetFontScript");
     lua_pushcfunction(L, GenL_TTF_SetFontSize);
     lua_setfield(L, -2, "SetFontSize");
     lua_pushcfunction(L, GenL_TTF_SetFontSizeDPI);
@@ -1444,12 +1543,16 @@ int SDLStaticGen_OpenLua_ttf(lua_State *L)
     lua_setfield(L, -2, "SetTextColor");
     lua_pushcfunction(L, GenL_TTF_SetTextColorFloat);
     lua_setfield(L, -2, "SetTextColorFloat");
+    lua_pushcfunction(L, GenL_TTF_SetTextDirection);
+    lua_setfield(L, -2, "SetTextDirection");
     lua_pushcfunction(L, GenL_TTF_SetTextEngine);
     lua_setfield(L, -2, "SetTextEngine");
     lua_pushcfunction(L, GenL_TTF_SetTextFont);
     lua_setfield(L, -2, "SetTextFont");
     lua_pushcfunction(L, GenL_TTF_SetTextPosition);
     lua_setfield(L, -2, "SetTextPosition");
+    lua_pushcfunction(L, GenL_TTF_SetTextScript);
+    lua_setfield(L, -2, "SetTextScript");
     lua_pushcfunction(L, GenL_TTF_SetTextString);
     lua_setfield(L, -2, "SetTextString");
     lua_pushcfunction(L, GenL_TTF_SetTextWrapWhitespaceVisible);

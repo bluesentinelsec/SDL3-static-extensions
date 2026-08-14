@@ -416,6 +416,19 @@ static mrb_value GenR_TTF_GetFontDescent(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_TTF_GetFontDirection(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    TTF_Font *a0 = (TTF_Font *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "TTF_Font");
+    TTF_Direction rv = TTF_GetFontDirection(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
 static mrb_value GenR_TTF_GetFontFamilyName(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -530,6 +543,19 @@ static mrb_value GenR_TTF_GetFontSDF(mrb_state *mrb, mrb_value self)
     const TTF_Font *a0 = (const TTF_Font *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "TTF_Font");
     bool rv = TTF_GetFontSDF(a0);
     return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_TTF_GetFontScript(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    TTF_Font *a0 = (TTF_Font *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "TTF_Font");
+    Uint32 rv = TTF_GetFontScript(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
     }
 }
 
@@ -724,6 +750,19 @@ static mrb_value GenR_TTF_GetGlyphMetrics(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_TTF_GetGlyphScript(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    Uint32 a0 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    Uint32 rv = TTF_GetGlyphScript(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
 static mrb_value GenR_TTF_GetHarfBuzzVersion(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -893,6 +932,19 @@ static mrb_value GenR_TTF_GetTextColorFloat(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_TTF_GetTextDirection(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    TTF_Text *a0 = (TTF_Text *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "TTF_Text");
+    TTF_Direction rv = TTF_GetTextDirection(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
 static mrb_value GenR_TTF_GetTextEngine(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -947,6 +999,19 @@ static mrb_value GenR_TTF_GetTextProperties(mrb_state *mrb, mrb_value self)
     {
     TTF_Text *a0 = (TTF_Text *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "TTF_Text");
     SDL_PropertiesID rv = TTF_GetTextProperties(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_TTF_GetTextScript(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    TTF_Text *a0 = (TTF_Text *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "TTF_Text");
+    Uint32 rv = TTF_GetTextScript(a0);
     return mrb_int_value(mrb, (mrb_int)rv);
     }
 }
@@ -1379,6 +1444,20 @@ static mrb_value GenR_TTF_RenderText_Solid_Wrapped(mrb_state *mrb, mrb_value sel
     }
 }
 
+static mrb_value GenR_TTF_SetFontDirection(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    TTF_Font *a0 = (TTF_Font *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "TTF_Font");
+    TTF_Direction a1 = (TTF_Direction)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool rv = TTF_SetFontDirection(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
 static mrb_value GenR_TTF_SetFontHinting(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -1459,6 +1538,20 @@ static mrb_value GenR_TTF_SetFontSDF(mrb_state *mrb, mrb_value self)
     TTF_Font *a0 = (TTF_Font *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "TTF_Font");
     bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
     bool rv = TTF_SetFontSDF(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_TTF_SetFontScript(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    TTF_Font *a0 = (TTF_Font *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "TTF_Font");
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool rv = TTF_SetFontScript(a0, a1);
     return mrb_bool_value((mrb_bool)(rv != 0));
     }
 }
@@ -1569,6 +1662,20 @@ static mrb_value GenR_TTF_SetTextColorFloat(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_TTF_SetTextDirection(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    TTF_Text *a0 = (TTF_Text *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "TTF_Text");
+    TTF_Direction a1 = (TTF_Direction)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool rv = TTF_SetTextDirection(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
 static mrb_value GenR_TTF_SetTextEngine(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -1608,6 +1715,20 @@ static mrb_value GenR_TTF_SetTextPosition(mrb_state *mrb, mrb_value self)
     int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
     int a2 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
     bool rv = TTF_SetTextPosition(a0, a1, a2);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_TTF_SetTextScript(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    TTF_Text *a0 = (TTF_Text *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "TTF_Text");
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool rv = TTF_SetTextScript(a0, a1);
     return mrb_bool_value((mrb_bool)(rv != 0));
     }
 }
@@ -1748,6 +1869,7 @@ void SDLStaticGen_OpenRuby_ttf(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GetFontAscent", GenR_TTF_GetFontAscent, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetFontDPI", GenR_TTF_GetFontDPI, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetFontDescent", GenR_TTF_GetFontDescent, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GetFontDirection", GenR_TTF_GetFontDirection, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetFontFamilyName", GenR_TTF_GetFontFamilyName, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetFontGeneration", GenR_TTF_GetFontGeneration, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetFontHeight", GenR_TTF_GetFontHeight, MRB_ARGS_ANY());
@@ -1757,6 +1879,7 @@ void SDLStaticGen_OpenRuby_ttf(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GetFontOutline", GenR_TTF_GetFontOutline, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetFontProperties", GenR_TTF_GetFontProperties, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetFontSDF", GenR_TTF_GetFontSDF, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GetFontScript", GenR_TTF_GetFontScript, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetFontSize", GenR_TTF_GetFontSize, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetFontStyle", GenR_TTF_GetFontStyle, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetFontStyleName", GenR_TTF_GetFontStyleName, MRB_ARGS_ANY());
@@ -1769,6 +1892,7 @@ void SDLStaticGen_OpenRuby_ttf(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GetGlyphImageForIndex", GenR_TTF_GetGlyphImageForIndex, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetGlyphKerning", GenR_TTF_GetGlyphKerning, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetGlyphMetrics", GenR_TTF_GetGlyphMetrics, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GetGlyphScript", GenR_TTF_GetGlyphScript, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetHarfBuzzVersion", GenR_TTF_GetHarfBuzzVersion, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetNextTextSubString", GenR_TTF_GetNextTextSubString, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetNumFontFaces", GenR_TTF_GetNumFontFaces, MRB_ARGS_ANY());
@@ -1777,10 +1901,12 @@ void SDLStaticGen_OpenRuby_ttf(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GetStringSizeWrapped", GenR_TTF_GetStringSizeWrapped, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetTextColor", GenR_TTF_GetTextColor, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetTextColorFloat", GenR_TTF_GetTextColorFloat, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GetTextDirection", GenR_TTF_GetTextDirection, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetTextEngine", GenR_TTF_GetTextEngine, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetTextFont", GenR_TTF_GetTextFont, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetTextPosition", GenR_TTF_GetTextPosition, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetTextProperties", GenR_TTF_GetTextProperties, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GetTextScript", GenR_TTF_GetTextScript, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetTextSize", GenR_TTF_GetTextSize, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetTextSubString", GenR_TTF_GetTextSubString, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetTextSubStringForLine", GenR_TTF_GetTextSubStringForLine, MRB_ARGS_ANY());
@@ -1806,12 +1932,14 @@ void SDLStaticGen_OpenRuby_ttf(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "RenderText_Shaded_Wrapped", GenR_TTF_RenderText_Shaded_Wrapped, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "RenderText_Solid", GenR_TTF_RenderText_Solid, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "RenderText_Solid_Wrapped", GenR_TTF_RenderText_Solid_Wrapped, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SetFontDirection", GenR_TTF_SetFontDirection, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetFontHinting", GenR_TTF_SetFontHinting, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetFontKerning", GenR_TTF_SetFontKerning, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetFontLanguage", GenR_TTF_SetFontLanguage, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetFontLineSkip", GenR_TTF_SetFontLineSkip, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetFontOutline", GenR_TTF_SetFontOutline, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetFontSDF", GenR_TTF_SetFontSDF, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SetFontScript", GenR_TTF_SetFontScript, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetFontSize", GenR_TTF_SetFontSize, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetFontSizeDPI", GenR_TTF_SetFontSizeDPI, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetFontStyle", GenR_TTF_SetFontStyle, MRB_ARGS_ANY());
@@ -1819,9 +1947,11 @@ void SDLStaticGen_OpenRuby_ttf(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "SetGPUTextEngineWinding", GenR_TTF_SetGPUTextEngineWinding, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetTextColor", GenR_TTF_SetTextColor, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetTextColorFloat", GenR_TTF_SetTextColorFloat, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SetTextDirection", GenR_TTF_SetTextDirection, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetTextEngine", GenR_TTF_SetTextEngine, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetTextFont", GenR_TTF_SetTextFont, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetTextPosition", GenR_TTF_SetTextPosition, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SetTextScript", GenR_TTF_SetTextScript, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetTextString", GenR_TTF_SetTextString, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetTextWrapWhitespaceVisible", GenR_TTF_SetTextWrapWhitespaceVisible, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetTextWrapWidth", GenR_TTF_SetTextWrapWidth, MRB_ARGS_ANY());

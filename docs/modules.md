@@ -17,7 +17,7 @@ which record every vendored version, checksum, deletion, and local fix.
 | `SDLStatic::Mixer` | [Mixer](mixer.html) | audio mixing, music, sound effects, MIDI, chiptune synthesis |
 | `SDLStatic::Gfx` | [Gfx](gfx.html) | CPU drawing primitives, rotozoom, framerate manager, GPU-batched primitives |
 | `SDLStatic::Image` | [Image](image.html) | loading/saving 13 image formats, animations |
-| `SDLStatic::TTF` | [TTF](ttf.html) | TrueType/OpenType rendering via vendored FreeType |
+| `SDLStatic::TTF` | [TTF](ttf.html) | TrueType/OpenType rendering, complex-script shaping (HarfBuzz), BiDi (SheenBidi) |
 | `SDLStatic::Net` | [Net](net.html) | TCP/UDP sockets (SDL3_net) |
 | `mog::mog` | [HTTP/S](http.html) | HTTP/S client (mog), statically linked |
 | `SDLStatic::Physics` | [Physics](physics.html) | Box2D v3 rigid-body physics |

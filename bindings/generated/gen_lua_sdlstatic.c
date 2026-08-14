@@ -4,9 +4,11 @@
 #include "../src/gen_support_lua.h"
 
 #include <SDLStatic/base64.h>
+#include <SDLStatic/bidi.h>
 #include <SDLStatic/chiptune.h>
 #include <SDLStatic/compress.h>
 #include <SDLStatic/crypto.h>
+#include <SDLStatic/debug_text.h>
 #include <SDLStatic/gpu_primitives.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/signals.h>
@@ -33,6 +35,16 @@ static void GenDtor_SDLStatic_FreeTiledMap(void *p)
 {
     SDLStatic_TiledMap *typed = (SDLStatic_TiledMap *)p;
     SDLStatic_FreeTiledMap(typed);
+}
+
+static int GenL_SDLStatic_BidiBaseIsRTL(lua_State *L)
+{
+    (void)L;
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checkstring(L, 1);
+    int a1 = (int)luaL_checkinteger(L, 2);
+    bool rv = SDLStatic_BidiBaseIsRTL(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
 }
 
 static int GenL_SDLStatic_CountSignalConnections(lua_State *L)
@@ -198,6 +210,13 @@ static int GenL_SDLStatic_OpenVFSRead(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_QuitDebugText(lua_State *L)
+{
+    (void)L;
+    SDLStatic_QuitDebugText();
+    return 0;
+}
+
 static int GenL_SDLStatic_SHA256(lua_State *L)
 {
     (void)L;
@@ -208,6 +227,14 @@ static int GenL_SDLStatic_SHA256(lua_State *L)
     lua_pushboolean(L, (int)rv);
     lua_pushinteger(L, (lua_Integer)io2);
     return 2;
+}
+
+static int GenL_SDLStatic_SetDebugTextSize(lua_State *L)
+{
+    (void)L;
+    float a0 = (float)luaL_checknumber(L, 1);
+    SDLStatic_SetDebugTextSize(a0);
+    return 0;
 }
 
 static int GenL_SDLStatic_TiledLayerCount(lua_State *L)
@@ -321,7 +348,9 @@ static int GenL_SDLStatic_TiledTileWidth(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 29);
+    lua_createtable(L, 0, 32);
+    lua_pushcfunction(L, GenL_SDLStatic_BidiBaseIsRTL);
+    lua_setfield(L, -2, "BidiBaseIsRTL");
     lua_pushcfunction(L, GenL_SDLStatic_CountSignalConnections);
     lua_setfield(L, -2, "CountSignalConnections");
     lua_pushcfunction(L, GenL_SDLStatic_CreateChipSFX);
@@ -356,8 +385,12 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "MountEncryptedArchiveFile");
     lua_pushcfunction(L, GenL_SDLStatic_OpenVFSRead);
     lua_setfield(L, -2, "OpenVFSRead");
+    lua_pushcfunction(L, GenL_SDLStatic_QuitDebugText);
+    lua_setfield(L, -2, "QuitDebugText");
     lua_pushcfunction(L, GenL_SDLStatic_SHA256);
     lua_setfield(L, -2, "SHA256");
+    lua_pushcfunction(L, GenL_SDLStatic_SetDebugTextSize);
+    lua_setfield(L, -2, "SetDebugTextSize");
     lua_pushcfunction(L, GenL_SDLStatic_TiledLayerCount);
     lua_setfield(L, -2, "TiledLayerCount");
     lua_pushcfunction(L, GenL_SDLStatic_TiledLayerName);

@@ -31,8 +31,8 @@
 ## Backend status (differs from the Image port!)
 
 Upstream SDL_ttf 3.x hard-requires **FreeType** (`SDLTTF_FREETYPE ON`, not
-configurable) — there is no stb backend upstream. HarfBuzz (shaping) and
-plutosvg (color emoji) are optional and will **not** be used here.
+configurable) — there is no stb backend upstream. plutosvg (color emoji) remains unused; HarfBuzz shaping was enabled in
+v0.2.0 with a vendored HarfBuzz (`deps/harfbuzz.md`).
 
 **Backend decision (resolved 2026-08-12): minimal static FreeType,
 permanently.** Built via pinned FetchContent (see `deps/FreeType.md`), with
@@ -45,6 +45,10 @@ this configuration is).
 
 Removal pass (no-stubs policy — removed APIs fail at build time):
 
+- **RESTORED (v0.2.0, 2026-08-14):** the nine functions below are back,
+  verbatim from upstream 3.2.2, now that HarfBuzz is vendored and
+  `TTF_USE_HARFBUZZ=1` (see `deps/harfbuzz.md`, `deps/sheenbidi.md`).
+  The historical note is kept for provenance.
 - Deleted the nine HarfBuzz-dependent public functions that were runtime
   stubs or functionally inert without shaping:
   `TTF_SetFontDirection`, `TTF_GetFontDirection`, `TTF_SetFontScript`,
@@ -57,6 +61,9 @@ Removal pass (no-stubs policy — removed APIs fail at build time):
   inert as API surface).
 - Hardening fixes to vendored code (found by the coverage/robustness suite
   under ASan+UBSan; kept local, no upstream PRs):
+  - `CollectGlyphsFromFont` (HarfBuzz path): destroy the hb_buffer before
+    the glyph-lookup error return — upstream leaks it (LeakSanitizer,
+    malformed-font corpus; found when shaping was enabled in v0.2.0)
   - `BUILD_RENDER_LINE` macro: skip glyphs with a NULL bitmap buffer
     (e.g. spaces) — `NULL + alignment` pointer arithmetic is UB and fired
     on every render containing a space.

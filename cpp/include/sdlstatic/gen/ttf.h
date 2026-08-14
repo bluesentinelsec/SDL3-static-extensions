@@ -187,6 +187,18 @@ class Font {
   Status MeasureString(const char *text, size_t length, int max_width, int *measured_width, size_t *measured_length) {
     return ::TTF_MeasureString(value_, text, length, max_width, measured_width, measured_length) ? Status() : Status::FromSdl();
   }
+  Status SetFontDirection(TTF_Direction direction) {
+    return ::TTF_SetFontDirection(value_, direction) ? Status() : Status::FromSdl();
+  }
+  TTF_Direction GetFontDirection() {
+    return ::TTF_GetFontDirection(value_);
+  }
+  Status SetFontScript(Uint32 script) {
+    return ::TTF_SetFontScript(value_, script) ? Status() : Status::FromSdl();
+  }
+  Uint32 GetFontScript() {
+    return ::TTF_GetFontScript(value_);
+  }
  private:
   explicit Font(TTF_Font* value) : value_(value), engaged_(true) {}
   TTF_Font* value_{};
@@ -383,6 +395,18 @@ class Text {
   Status UpdateText() {
     return ::TTF_UpdateText(value_) ? Status() : Status::FromSdl();
   }
+  Status SetTextDirection(TTF_Direction direction) {
+    return ::TTF_SetTextDirection(value_, direction) ? Status() : Status::FromSdl();
+  }
+  TTF_Direction GetTextDirection() {
+    return ::TTF_GetTextDirection(value_);
+  }
+  Status SetTextScript(Uint32 script) {
+    return ::TTF_SetTextScript(value_, script) ? Status() : Status::FromSdl();
+  }
+  Uint32 GetTextScript() {
+    return ::TTF_GetTextScript(value_);
+  }
  private:
   explicit Text(TTF_Text* value) : value_(value), engaged_(true) {}
   TTF_Text* value_{};
@@ -527,6 +551,7 @@ inline constexpr auto& CreateGPUTextEngineWithProperties = ::TTF_CreateGPUTextEn
 inline constexpr auto& CreateRendererTextEngineWithProperties = ::TTF_CreateRendererTextEngineWithProperties;
 inline constexpr auto& CreateSurfaceTextEngine = ::TTF_CreateSurfaceTextEngine;
 inline constexpr auto& GetFreeTypeVersion = ::TTF_GetFreeTypeVersion;
+inline constexpr auto& GetGlyphScript = ::TTF_GetGlyphScript;
 inline constexpr auto& GetHarfBuzzVersion = ::TTF_GetHarfBuzzVersion;
 inline constexpr auto& Quit = ::TTF_Quit;
 inline constexpr auto& StringToTag = ::TTF_StringToTag;

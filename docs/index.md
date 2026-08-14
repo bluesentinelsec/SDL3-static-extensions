@@ -4,7 +4,7 @@ description: "SDL3 Static Extensions: static-link-first game infrastructure for 
 ---
 
 <div class="hero">
-  <img class="banner" src="assets/sse-icon.svg" alt="" width="120" height="120">
+  <img class="banner" src="assets/sse-banner.png" alt="SDL3 Static Extensions: a bag of holding erupting with game-development tools over an impossible-geometry block world">
   <h1>SDL3 Static Extensions</h1>
   <p class="tagline">Everything a 2D game needs, statically linked into one self-contained binary. SDL3 and 12 battle-tested extension modules — audio, graphics, physics, GUI, Lua &amp; Ruby scripting — with zero shared-library dependencies.</p>
   <div class="badges">
@@ -53,7 +53,7 @@ browser WebAssembly, and all of it is exercised by CI on every platform.
 | Audio: mixing, music, sound effects | [Mixer](mixer.html) | SDL3_mixer + vendored codecs, MIDI, chiptune synth |
 | 2D drawing primitives | [Gfx](gfx.html) | SDL3_gfx + original GPU-batched equivalents |
 | Image loading/saving | [Image](image.html) | SDL3_image, 13 formats, all-static codecs |
-| Text and fonts | [TTF](ttf.html) | SDL3_ttf + vendored FreeType |
+| Text and fonts, i18n shaping + BiDi | [TTF](ttf.html) | SDL3_ttf + FreeType, HarfBuzz, SheenBidi |
 | Networking | [Net](net.html) | SDL3_net (TCP/UDP) + mog HTTP/S client |
 | Physics | [Physics](physics.html) | Box2D v3 |
 | GUI | [GUI](gui.html) | Nuklear + SDL3 backend + weighted grid layout |
@@ -65,7 +65,7 @@ browser WebAssembly, and all of it is exercised by CI on every platform.
 
 ## Proof it works
 
-The test suite runs 253 tests across six CI platforms plus an iOS
+The test suite runs 259 tests across six CI platforms plus an iOS
 XCFramework build, with a dedicated AddressSanitizer + UBSan job. The
 repository includes four complete Pong implementations — one each in C,
 C++, Lua, and Ruby — built purely against the public APIs.

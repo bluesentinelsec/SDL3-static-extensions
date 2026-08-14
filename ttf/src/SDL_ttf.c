@@ -3383,6 +3383,9 @@ static bool CollectGlyphsFromFont(TTF_Font *font, const char *text, size_t lengt
         pos->y_offset = hb_glyph_position[i].y_offset;
         pos->offset = (int)hb_glyph_info[i].cluster;
         if (!Find_GlyphByIndex(font, pos->index, 0, 0, 0, 0, 0, 0, &pos->glyph, NULL)) {
+            /* SDLStatic local fix: upstream leaked the harfbuzz buffer on
+             * this error path (LeakSanitizer, malformed-font corpus). */
+            hb_buffer_destroy(hb_buffer);
             return SDL_SetError("Couldn't find glyph %u in font", pos->index);
         }
     }
@@ -6065,3 +6068,141 @@ int TTF_WasInit(void)
     return SDL_GetAtomicInt(&TTF_state.refcount);
 }
 
+
+/* Restored upstream shaping/direction APIs (HarfBuzz backend). */
+
+bool TTF_SetFontDirection(TTF_Font *font, TTF_Direction direction)
+{
+    TTF_CHECK_FONT(font, false);
+
+    if (direction == font->direction) {
+        return true;
+    }
+
+#if !TTF_USE_HARFBUZZ
+    if (direction != TTF_DIRECTION_INVALID && direction != TTF_DIRECTION_LTR) {
+        return SDL_Unsupported();
+    }
+#endif
+
+    font->direction = direction;
+    UpdateFontText(font, NULL);
+    return true;
+}
+
+TTF_Direction TTF_GetFontDirection(TTF_Font *font)
+{
+    TTF_CHECK_FONT(font, TTF_DIRECTION_INVALID);
+
+    return font->direction;
+}
+
+bool TTF_SetFontScript(TTF_Font *font, Uint32 script)
+{
+    TTF_CHECK_FONT(font, false);
+
+#if TTF_USE_HARFBUZZ
+    font->script = script;
+    UpdateFontText(font, NULL);
+    return true;
+#else
+    (void) script;
+    return SDL_Unsupported();
+#endif
+}
+
+Uint32 TTF_GetFontScript(TTF_Font *font)
+{
+    TTF_CHECK_FONT(font, 0);
+
+    return font->script;
+}
+
+Uint32 TTF_GetGlyphScript(Uint32 ch)
+{
+    Uint32 script = 0;
+
+#if TTF_USE_HARFBUZZ
+    hb_buffer_t *hb_buffer = hb_buffer_create();
+
+    if (hb_buffer == NULL) {
+        SDL_SetError("Cannot create harfbuzz buffer");
+        return 0;
+    }
+
+    hb_unicode_funcs_t *hb_unicode_functions = hb_buffer_get_unicode_funcs(hb_buffer);
+
+    if (hb_unicode_functions == NULL) {
+        hb_buffer_destroy(hb_buffer);
+        SDL_SetError("Can't get harfbuzz unicode functions");
+        return 0;
+    }
+
+    hb_buffer_clear_contents(hb_buffer);
+    hb_buffer_set_content_type(hb_buffer, HB_BUFFER_CONTENT_TYPE_UNICODE);
+
+    script = hb_script_to_iso15924_tag(hb_unicode_script(hb_unicode_functions, ch));
+
+    hb_buffer_destroy(hb_buffer);
+#else
+    (void)ch;
+#endif
+
+    if (script == 0) {
+        SDL_SetError("Unknown script");
+    }
+    return script;
+}
+
+bool TTF_SetTextDirection(TTF_Text *text, TTF_Direction direction)
+{
+    TTF_CHECK_POINTER("text", text, false);
+
+    if (direction == text->internal->layout->direction) {
+        return true;
+    }
+
+#if !TTF_USE_HARFBUZZ
+    if (direction != TTF_DIRECTION_INVALID && direction != TTF_DIRECTION_LTR) {
+        return SDL_Unsupported();
+    }
+#endif
+
+    text->internal->layout->direction = direction;
+    text->internal->needs_layout_update = true;
+    return true;
+}
+
+TTF_Direction TTF_GetTextDirection(TTF_Text *text)
+{
+    TTF_CHECK_POINTER("text", text, TTF_DIRECTION_INVALID);
+
+    if (text->internal->layout->direction != TTF_DIRECTION_INVALID) {
+        return text->internal->layout->direction;
+    }
+    return TTF_GetFontDirection(text->internal->font);
+}
+
+bool TTF_SetTextScript(TTF_Text *text, Uint32 script)
+{
+    TTF_CHECK_POINTER("text", text, false);
+
+#if TTF_USE_HARFBUZZ
+    text->internal->layout->script = script;
+    text->internal->needs_layout_update = true;
+    return true;
+#else
+    (void) script;
+    return SDL_Unsupported();
+#endif
+}
+
+Uint32 TTF_GetTextScript(TTF_Text *text)
+{
+    TTF_CHECK_POINTER("text", text, 0);
+
+    if (text->internal->layout->script) {
+        return text->internal->layout->script;
+    }
+    return TTF_GetFontScript(text->internal->font);
+}

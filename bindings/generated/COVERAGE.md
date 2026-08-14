@@ -15,19 +15,19 @@ types). The full C API additionally stays reachable from C/C++.
 | SDL3 core | 1205 | 545 | 143 | 492 | 871 | 334 |
 | SDL_mixer | 94 | 79 | 2 | 9 | 84 | 10 |
 | SDL_image | 84 | 27 | 20 | 36 | 81 | 3 |
-| SDL_ttf | 108 | 93 | 1 | 11 | 106 | 2 |
+| SDL_ttf | 117 | 101 | 1 | 12 | 115 | 2 |
 | SDL_net | 34 | 15 | 1 | 15 | 27 | 7 |
 | PhysFS | 98 | 0 | 0 | 98 | 82 | 16 |
 | Box2D | 421 | 120 | 0 | 299 | 385 | 36 |
 | Nuklear | 534 | 0 | 0 | 534 | 426 | 108 |
 | cJSON | 78 | 57 | 0 | 20 | 68 | 10 |
-| SDLStatic modules | 36 | 12 | 6 | 17 | 29 | 7 |
-| **Total** | 2692 | 948 | 173 | 1531 | 2159 | 533 |
+| SDLStatic modules | 40 | 12 | 7 | 20 | 32 | 8 |
+| **Total** | 2705 | 956 | 174 | 1535 | 2171 | 534 |
 
 ## Script-surface skip reasons
 
 - 236: unmarshalable parameter type
-- 112: unmarshalable return type
+- 113: unmarshalable return type
 - 76: stdlib clone
 - 53: math clone
 - 47: threading
@@ -607,8 +607,9 @@ types). The full C API additionally stays reachable from C/C++.
 
 </details>
 
-<details><summary>SDLStatic modules (7)</summary>
+<details><summary>SDLStatic modules (8)</summary>
 
+- `SDLStatic_BidiItemize` — returns struct pointer
 - `SDLStatic_ConnectSignal` — param callback: SDLStatic_SignalCallback
 - `SDLStatic_DecodeDataBase64` — return type unsigned char*
 - `SDLStatic_DecompressData` — return type unsigned char*
