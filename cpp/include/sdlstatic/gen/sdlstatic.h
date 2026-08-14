@@ -5,6 +5,9 @@
 #ifndef SDLSTATIC_CPP_GEN_SDLSTATIC_H_
 #define SDLSTATIC_CPP_GEN_SDLSTATIC_H_
 
+#include <SDLStatic/base64.h>
+#include <SDLStatic/chiptune.h>
+#include <SDLStatic/compress.h>
 #include <SDLStatic/crypto.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/signals.h>
@@ -19,6 +22,13 @@ namespace ext {
 // RAII owner for SDLStatic_TiledMap (destroyed with SDLStatic_FreeTiledMap).
 class TiledMapHandle {
  public:
+  static Result<TiledMapHandle> LoadTiledMap(const char *path) {
+    SDLStatic_TiledMap* created_ = ::SDLStatic_LoadTiledMap(path);
+    if (created_ == nullptr) {
+      return Status::FromSdl();
+    }
+    return TiledMapHandle(created_);
+  }
 
   TiledMapHandle() = default;
   ~TiledMapHandle() { reset(); }
@@ -68,6 +78,12 @@ class TiledMapHandle {
   int TiledLayerCount() {
     return ::SDLStatic_TiledLayerCount(value_);
   }
+  const char* TiledLayerName(int idx) {
+    return ::SDLStatic_TiledLayerName(value_, idx);
+  }
+  const char* TiledLayerType(int idx) {
+    return ::SDLStatic_TiledLayerType(value_, idx);
+  }
   int TiledTileAt(int layer, int x, int y) {
     return ::SDLStatic_TiledTileAt(value_, layer, x, y);
   }
@@ -76,6 +92,9 @@ class TiledMapHandle {
   }
   Status TiledObjectAt(int layer, int index, SDLStatic_TiledObject *out) {
     return ::SDLStatic_TiledObjectAt(value_, layer, index, out) ? Status() : Status::FromSdl();
+  }
+  cute_tiled_map_t* TiledRaw() {
+    return ::SDLStatic_TiledRaw(value_);
   }
  private:
   explicit TiledMapHandle(SDLStatic_TiledMap* value) : value_(value), engaged_(true) {}
@@ -106,12 +125,21 @@ inline Status SHA256(const void *data, size_t dataSize, Uint8 digest[32]) {
 // Everything else, aliased into the namespace unchanged.
 inline constexpr auto& ConnectSignal = ::SDLStatic_ConnectSignal;
 inline constexpr auto& CountSignalConnections = ::SDLStatic_CountSignalConnections;
+inline constexpr auto& CreateChipSFX = ::SDLStatic_CreateChipSFX;
+inline constexpr auto& CreateChipTone = ::SDLStatic_CreateChipTone;
+inline constexpr auto& CreateChipTune = ::SDLStatic_CreateChipTune;
+inline constexpr auto& CreateSignalEmitter = ::SDLStatic_CreateSignalEmitter;
+inline constexpr auto& DecodeDataBase64 = ::SDLStatic_DecodeDataBase64;
+inline constexpr auto& DecompressData = ::SDLStatic_DecompressData;
+inline constexpr auto& DecryptData = ::SDLStatic_DecryptData;
 inline constexpr auto& DestroySignalEmitter = ::SDLStatic_DestroySignalEmitter;
 inline constexpr auto& EmitSignal = ::SDLStatic_EmitSignal;
 inline constexpr auto& GuiGridCell = ::SDLStatic_GuiGridCell;
 inline constexpr auto& GuiGridCellSpan = ::SDLStatic_GuiGridCellSpan;
 inline constexpr auto& GuiGridEnd = ::SDLStatic_GuiGridEnd;
 inline constexpr auto& GuiGridNextRow = ::SDLStatic_GuiGridNextRow;
+inline constexpr auto& LoadVFSFile = ::SDLStatic_LoadVFSFile;
+inline constexpr auto& OpenVFSRead = ::SDLStatic_OpenVFSRead;
 
 }  // namespace ext
 }  // namespace sdlstatic

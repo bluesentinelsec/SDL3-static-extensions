@@ -72,6 +72,7 @@ class Struct:
 class Enum:
     name: str
     values: list[str]
+    plain: bool = False  # declared without typedef; C spelling needs "enum"
 
 
 @dataclass
@@ -84,6 +85,7 @@ class Library:
     enums: dict[str, Enum] = field(default_factory=dict)
     opaque: set[str] = field(default_factory=set)  # forward-declared structs
     typedef_aliases: dict[str, str] = field(default_factory=dict)
+    header_names: list[str] = field(default_factory=list)  # parsed files
 
 
 @dataclass

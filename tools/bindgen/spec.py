@@ -23,12 +23,14 @@ class LibrarySpec:
     exclude_headers: list[str] = field(default_factory=list)  # basename globs
     includes: list[str] = field(default_factory=list)  # emit-time #includes
     error_fn: str | None = None  # C expr returning const char* last error
+    free_fn: str | None = None  # frees char* returns owned by the caller
     exclude: set[str] = field(default_factory=set)  # function names to skip
 
 
 LIBRARIES: list[LibrarySpec] = [
     LibrarySpec(
         key="sdl",
+        free_fn="SDL_free",
         title="SDL3 core",
         macro_style="sdl",
         script_module="SDL",
@@ -51,6 +53,7 @@ LIBRARIES: list[LibrarySpec] = [
     ),
     LibrarySpec(
         key="mix",
+        free_fn="SDL_free",
         title="SDL_mixer",
         macro_style="sdl",
         script_module="MIX",
@@ -61,6 +64,7 @@ LIBRARIES: list[LibrarySpec] = [
     ),
     LibrarySpec(
         key="img",
+        free_fn="SDL_free",
         title="SDL_image",
         macro_style="sdl",
         script_module="IMG",
@@ -71,16 +75,18 @@ LIBRARIES: list[LibrarySpec] = [
     ),
     LibrarySpec(
         key="ttf",
+        free_fn="SDL_free",
         title="SDL_ttf",
         macro_style="sdl",
         script_module="TTF",
         prefix="TTF_",
         headers=["ttf/include/SDL3_ttf/*.h"],
-        includes=["<SDL3_ttf/SDL_ttf.h>"],
+        includes=["<SDL3_ttf/SDL_ttf.h>", "<SDL3_ttf/SDL_textengine.h>"],
         error_fn="SDL_GetError()",
     ),
     LibrarySpec(
         key="net",
+        free_fn="SDL_free",
         title="SDL_net",
         macro_style="sdl",
         script_module="NET",
@@ -119,6 +125,7 @@ LIBRARIES: list[LibrarySpec] = [
     ),
     LibrarySpec(
         key="cjson",
+        free_fn="cJSON_free",
         title="cJSON",
         macro_style="cjson",
         script_module="JSON",
@@ -128,6 +135,7 @@ LIBRARIES: list[LibrarySpec] = [
     ),
     LibrarySpec(
         key="sdlstatic",
+        free_fn="SDL_free",
         title="SDLStatic modules",
         macro_style="sdlstatic",
         script_module="SDLStaticC",

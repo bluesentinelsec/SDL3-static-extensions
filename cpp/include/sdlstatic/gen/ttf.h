@@ -6,6 +6,7 @@
 #define SDLSTATIC_CPP_GEN_TTF_H_
 
 #include <SDL3_ttf/SDL_ttf.h>
+#include <SDL3_ttf/SDL_textengine.h>
 
 #include "sdlstatic/status.h"
 

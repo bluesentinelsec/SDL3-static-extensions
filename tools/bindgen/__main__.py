@@ -27,6 +27,7 @@ def build_manifest(repo: Path, deps: Path) -> Manifest:
             print(f"warning: no headers found for {spec.key}", file=sys.stderr)
         for header in headers:
             parse_header(lib, header, spec.macro_style)
+            lib.header_names.append(header.name)
         for name in spec.exclude:
             lib.functions.pop(name, None)
         manifest.libraries[spec.key] = lib

@@ -61,6 +61,7 @@ _KNOWN_TRUE = {
     "NK_BUTTON_TRIGGER_ON_RELEASE",
 }
 _KNOWN_FALSE = {
+    "NK_IMPLEMENTATION",
     "NK_INCLUDE_STANDARD_IO",
     "NK_INCLUDE_COMMAND_USERDATA",
     "NK_INCLUDE_SOFTWARE_FONT",
@@ -144,6 +145,11 @@ def excluded_spans(text: str) -> list[tuple[int, int]]:
                 spans.append((frame[0], pos_start))
             # Propagate exclusion into enclosing frame: nothing to do — nested
             # regions inside an excluded span are already covered by it.
+    # Close any still-open excluded frames at EOF (e.g. a guard whose #endif
+    # is the file's final line and produced no further directive matches).
+    for frame in stack:
+        if frame[0] is not None:
+            spans.append((frame[0], len(text)))
     return spans
 
 
@@ -182,6 +188,9 @@ _TYPE_TOKEN_DROP = {
 
 def parse_ctype(spelling: str) -> CType | None:
     spelling = spelling.strip()
+    # "T * const name" pointer-constness is irrelevant at call sites and
+    # must not be confused with pointee constness.
+    spelling = re.sub(r"\*\s*const\b", "*", spelling)
     pointers = spelling.count("*")
     spelling = spelling.replace("*", " ")
     tokens = [t for t in spelling.split() if t and t not in _TYPE_TOKEN_DROP]
@@ -295,17 +304,17 @@ _FUNC_PATTERNS = {
         flags=re.S,
     ),
     "physfs": re.compile(
-        r"PHYSFS_DECL\s+(?P<ret>[^;()]*?)\s+"
+        r"PHYSFS_DECL\s+(?P<ret>[^;()]*?[\s*])\s*"
         r"(?P<name>PHYSFS_[A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
         flags=re.S,
     ),
     "b2": re.compile(
-        r"B2_API\s+(?P<ret>[^;()]*?)\s+"
+        r"B2_API\s+(?P<ret>[^;()]*?[\s*])\s*"
         r"(?P<name>b2[A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
         flags=re.S,
     ),
     "nk": re.compile(
-        r"NK_API\s+(?P<ret>[^;()]*?)\s+"
+        r"NK_API\s+(?P<ret>[^;()]*?[\s*])\s*"
         r"(?P<name>nk_[A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
         flags=re.S,
     ),
@@ -315,7 +324,7 @@ _FUNC_PATTERNS = {
         flags=re.S,
     ),
     "toml": re.compile(
-        r"TOML_EXTERN\s+(?P<ret>[^;()]*?)\s+"
+        r"TOML_EXTERN\s+(?P<ret>[^;()]*?[\s*])\s*"
         r"(?P<name>toml_[A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
         flags=re.S,
     ),
@@ -325,7 +334,7 @@ _FUNC_PATTERNS = {
         flags=re.S,
     ),
     "sdlstatic": re.compile(
-        r"extern\s+(?P<ret>[^;()]*?)\s+"
+        r"extern\s+(?P<ret>[^;()]*?[\s*])\s*"
         r"(?P<name>SDLStatic_[A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
         flags=re.S,
     ),
@@ -433,7 +442,7 @@ def parse_header(lib: Library, path: Path, macro_style: str) -> None:
         if name in lib.enums or "{" in m.group(2):
             continue
         values = re.findall(r"([A-Za-z_][A-Za-z0-9_]*)\s*(?:=[^,}]*)?(?:,|\s*$)", m.group(2))
-        lib.enums[name] = Enum(name=name, values=values)
+        lib.enums[name] = Enum(name=name, values=values, plain=True)
 
     for m in _TYPEDEF_ALIAS_RE.finditer(text):
         if _in_spans(m.start(), dead):

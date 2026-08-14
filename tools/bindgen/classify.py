@@ -48,6 +48,7 @@ class TypeInfo:
     base: str = ""
     pointers: int = 0
     is_const: bool = False
+    declared: str = ""  # base name as written in the header
 
 
 class TypeTable:
@@ -55,11 +56,13 @@ class TypeTable:
 
     def __init__(self, manifest: Manifest) -> None:
         self.enums: set[str] = set()
+        self.plain_enums: set[str] = set()
         self.opaque: set[str] = set()
         self.structs: dict[str, Struct] = {}
         self.aliases: dict[str, str] = {}
         for lib in manifest.libraries.values():
             self.enums |= set(lib.enums)
+            self.plain_enums |= {n for n, e in lib.enums.items() if e.plain}
             self.opaque |= lib.opaque
             self.structs.update(lib.structs)
             self.aliases.update(lib.typedef_aliases)
@@ -138,6 +141,12 @@ class TypeTable:
         return None
 
     def info(self, t: CType) -> TypeInfo:
+        out = self._info(t)
+        if t.base != "<funcptr>":
+            out.declared = f"unsigned {t.base}" if t.is_unsigned else t.base
+        return out
+
+    def _info(self, t: CType) -> TypeInfo:
         if t.base == "<funcptr>":
             return TypeInfo(TK.FUNCPTR)
         base = self.resolve_base(t.base)
@@ -146,6 +155,10 @@ class TypeTable:
                 return TypeInfo(TK.VOID)
             return TypeInfo(TK.VOIDP, base, t.pointers, t.is_const)
         if base == "char" and t.pointers == 1:
+            if t.is_unsigned:
+                # unsigned char* is a byte buffer, not a C string; const
+                # ones pair with a length param via the blob rule.
+                return TypeInfo(TK.VOIDP, base, 1, t.is_const)
             if t.is_const:
                 return TypeInfo(TK.STRING, base, 1, True)
             return TypeInfo(TK.OWNED_STRING, base, 1, False)
@@ -344,6 +357,10 @@ def plan_script(lib_key: str, functions: dict[str, Function], tt: TypeTable) -> 
             continue
         if ri.kind == TK.POD and ri.pointers:
             plans[name] = ScriptPlan(fn, ok=False, reason="returns struct pointer")
+            continue
+        lib_spec = next(s for s in LIBRARIES if s.key == lib_key)
+        if ri.kind == TK.OWNED_STRING and not lib_spec.free_fn:
+            plans[name] = ScriptPlan(fn, ok=False, reason="owned string, no free fn")
             continue
         pplans: list[ParamPlan] = []
         bad = ""
