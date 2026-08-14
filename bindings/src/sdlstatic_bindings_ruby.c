@@ -11,6 +11,7 @@
 #include <SDLStatic/bindings.h>
 #include <SDLStatic/compress.h>
 #include <SDLStatic/crypto.h>
+#include <SDLStatic/tiled.h>
 #include <SDLStatic/vfs.h>
 #include <physfs.h>
 
@@ -53,6 +54,10 @@ static void FreeWorld(void *p)
 {
     BindWorld_Destroy((BindWorld *)p);
 }
+static void FreeMap(void *p)
+{
+    SDLStatic_FreeTiledMap((SDLStatic_TiledMap *)p);
+}
 static void FreeBody(void *p)
 {
     BindBody_DestroyWrapper((BindBody *)p);
@@ -65,6 +70,7 @@ DEF_TYPE(SDLStaticSound, FreeSound);
 DEF_TYPE(SDLStaticTrack, FreeTrack);
 DEF_TYPE(SDLStaticWorld, FreeWorld);
 DEF_TYPE(SDLStaticBody, FreeBody);
+DEF_TYPE(SDLStaticMap, FreeMap);
 
 static struct RClass *ClassFor(mrb_state *mrb, const char *name)
 {
@@ -415,6 +421,89 @@ static mrb_value MBodyImpulse(mrb_state *mrb, mrb_value self)
     return mrb_nil_value();
 }
 
+/* ------------------------------------------------------------- tiled ---- */
+
+static mrb_value MLoadMap(mrb_state *mrb, mrb_value self)
+{
+    (void)self;
+    const char *path = NULL;
+    mrb_get_args(mrb, "z", &path);
+    SDLStatic_TiledMap *map = SDLStatic_LoadTiledMap(path);
+    if (map == NULL)
+    {
+        RaiseSdl(mrb);
+    }
+    return WrapChild(mrb, "TiledMap", &SDLStaticMap_type, map, mrb_nil_value());
+}
+
+static mrb_value MMapSize(mrb_state *mrb, mrb_value self)
+{
+    SDLStatic_TiledMap *map = (SDLStatic_TiledMap *)Unwrap(mrb, self, &SDLStaticMap_type);
+    mrb_value out = mrb_ary_new_capa(mrb, 4);
+    mrb_ary_push(mrb, out, mrb_int_value(mrb, SDLStatic_TiledMapWidth(map)));
+    mrb_ary_push(mrb, out, mrb_int_value(mrb, SDLStatic_TiledMapHeight(map)));
+    mrb_ary_push(mrb, out, mrb_int_value(mrb, SDLStatic_TiledTileWidth(map)));
+    mrb_ary_push(mrb, out, mrb_int_value(mrb, SDLStatic_TiledTileHeight(map)));
+    return out;
+}
+
+static mrb_value MMapLayers(mrb_state *mrb, mrb_value self)
+{
+    return mrb_int_value(
+        mrb, SDLStatic_TiledLayerCount((SDLStatic_TiledMap *)Unwrap(mrb, self,
+                                                                    &SDLStaticMap_type)));
+}
+
+static mrb_value MMapLayerName(mrb_state *mrb, mrb_value self)
+{
+    mrb_int idx;
+    mrb_get_args(mrb, "i", &idx);
+    const char *name = SDLStatic_TiledLayerName(
+        (SDLStatic_TiledMap *)Unwrap(mrb, self, &SDLStaticMap_type), (int)idx);
+    return (name != NULL) ? mrb_str_new_cstr(mrb, name) : mrb_nil_value();
+}
+
+static mrb_value MMapTile(mrb_state *mrb, mrb_value self)
+{
+    mrb_int layer, x, y;
+    mrb_get_args(mrb, "iii", &layer, &x, &y);
+    return mrb_int_value(mrb, SDLStatic_TiledTileAt((SDLStatic_TiledMap *)Unwrap(
+                                                        mrb, self, &SDLStaticMap_type),
+                                                    (int)layer, (int)x, (int)y));
+}
+
+static mrb_value MMapObjects(mrb_state *mrb, mrb_value self)
+{
+    SDLStatic_TiledMap *map = (SDLStatic_TiledMap *)Unwrap(mrb, self, &SDLStaticMap_type);
+    mrb_int layer;
+    mrb_get_args(mrb, "i", &layer);
+    const int count = SDLStatic_TiledObjectCount(map, (int)layer);
+    mrb_value out = mrb_ary_new_capa(mrb, count);
+    for (int i = 0; i < count; ++i)
+    {
+        SDLStatic_TiledObject obj;
+        if (!SDLStatic_TiledObjectAt(map, (int)layer, i, &obj))
+        {
+            continue;
+        }
+        mrb_value hash = mrb_hash_new(mrb);
+        mrb_hash_set(mrb, hash, mrb_symbol_value(mrb_intern_lit(mrb, "name")),
+                     mrb_str_new_cstr(mrb, obj.name != NULL ? obj.name : ""));
+        mrb_hash_set(mrb, hash, mrb_symbol_value(mrb_intern_lit(mrb, "type")),
+                     mrb_str_new_cstr(mrb, obj.type != NULL ? obj.type : ""));
+        mrb_hash_set(mrb, hash, mrb_symbol_value(mrb_intern_lit(mrb, "x")),
+                     mrb_float_value(mrb, obj.x));
+        mrb_hash_set(mrb, hash, mrb_symbol_value(mrb_intern_lit(mrb, "y")),
+                     mrb_float_value(mrb, obj.y));
+        mrb_hash_set(mrb, hash, mrb_symbol_value(mrb_intern_lit(mrb, "w")),
+                     mrb_float_value(mrb, obj.w));
+        mrb_hash_set(mrb, hash, mrb_symbol_value(mrb_intern_lit(mrb, "h")),
+                     mrb_float_value(mrb, obj.h));
+        mrb_ary_push(mrb, out, hash);
+    }
+    return out;
+}
+
 /* ----------------------------------------------------- vfs and utils ---- */
 
 static mrb_value MMount(mrb_state *mrb, mrb_value self)
@@ -629,6 +718,14 @@ bool SDLStatic_OpenRubyBindings(mrb_state *mrb)
     mrb_define_method(mrb, world, "box", MWorldBox, MRB_ARGS_ARG(4, 1));
     mrb_define_method(mrb, world, "circle", MWorldCircle, MRB_ARGS_ARG(3, 1));
 
+    struct RClass *tmap = mrb_define_class_under(mrb, module, "TiledMap", mrb->object_class);
+    MRB_SET_INSTANCE_TT(tmap, MRB_TT_CDATA);
+    mrb_define_method(mrb, tmap, "size", MMapSize, MRB_ARGS_NONE());
+    mrb_define_method(mrb, tmap, "layers", MMapLayers, MRB_ARGS_NONE());
+    mrb_define_method(mrb, tmap, "layer_name", MMapLayerName, MRB_ARGS_REQ(1));
+    mrb_define_method(mrb, tmap, "tile", MMapTile, MRB_ARGS_REQ(3));
+    mrb_define_method(mrb, tmap, "objects", MMapObjects, MRB_ARGS_REQ(1));
+
     struct RClass *body = mrb_define_class_under(mrb, module, "Body", mrb->object_class);
     MRB_SET_INSTANCE_TT(body, MRB_TT_CDATA);
     mrb_define_method(mrb, body, "position", MBodyPosition, MRB_ARGS_NONE());
@@ -637,6 +734,7 @@ bool SDLStatic_OpenRubyBindings(mrb_state *mrb)
     mrb_define_method(mrb, body, "impulse", MBodyImpulse, MRB_ARGS_REQ(2));
 
     mrb_define_module_function(mrb, module, "window", MWindow, MRB_ARGS_REQ(3));
+    mrb_define_module_function(mrb, module, "load_map", MLoadMap, MRB_ARGS_REQ(1));
     mrb_define_module_function(mrb, module, "open_audio", MOpenAudio, MRB_ARGS_NONE());
     mrb_define_module_function(mrb, module, "world", MWorldNew, MRB_ARGS_OPT(2));
     mrb_define_module_function(mrb, module, "mount", MMount, MRB_ARGS_ARG(1, 1));

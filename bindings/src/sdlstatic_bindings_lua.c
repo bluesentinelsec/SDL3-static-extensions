@@ -12,6 +12,7 @@
 #include <SDLStatic/bindings.h>
 #include <SDLStatic/compress.h>
 #include <SDLStatic/crypto.h>
+#include <SDLStatic/tiled.h>
 #include <SDLStatic/vfs.h>
 #include <physfs.h>
 
@@ -24,6 +25,7 @@
 #define SOUND_MT "SDLStatic.Sound"
 #define TRACK_MT "SDLStatic.Track"
 #define WORLD_MT "SDLStatic.World"
+#define MAP_MT "SDLStatic.TiledMap"
 #define BODY_MT "SDLStatic.Body"
 
 /* Generic opaque-handle helpers: userdata holds a single pointer. */
@@ -407,6 +409,98 @@ static int LBodyImpulse(lua_State *L)
     return 0;
 }
 
+/* ------------------------------------------------------------- tiled ---- */
+
+static int LLoadMap(lua_State *L)
+{
+    SDLStatic_TiledMap *map = SDLStatic_LoadTiledMap(luaL_checkstring(L, 1));
+    if (map == NULL)
+    {
+        return Fail(L);
+    }
+    PushHandle(L, map, MAP_MT, 0);
+    return 1;
+}
+
+static int LMapGc(lua_State *L)
+{
+    void **slot = (void **)luaL_checkudata(L, 1, MAP_MT);
+    SDLStatic_FreeTiledMap((SDLStatic_TiledMap *)*slot);
+    *slot = NULL;
+    return 0;
+}
+
+static int LMapSize(lua_State *L)
+{
+    SDLStatic_TiledMap *map = (SDLStatic_TiledMap *)CheckHandle(L, 1, MAP_MT);
+    lua_pushinteger(L, SDLStatic_TiledMapWidth(map));
+    lua_pushinteger(L, SDLStatic_TiledMapHeight(map));
+    lua_pushinteger(L, SDLStatic_TiledTileWidth(map));
+    lua_pushinteger(L, SDLStatic_TiledTileHeight(map));
+    return 4;
+}
+
+static int LMapLayers(lua_State *L)
+{
+    lua_pushinteger(L, SDLStatic_TiledLayerCount((SDLStatic_TiledMap *)CheckHandle(L, 1, MAP_MT)));
+    return 1;
+}
+
+static int LMapLayerName(lua_State *L)
+{
+    const char *name = SDLStatic_TiledLayerName((SDLStatic_TiledMap *)CheckHandle(L, 1, MAP_MT),
+                                                (int)luaL_checkinteger(L, 2));
+    if (name == NULL)
+    {
+        lua_pushnil(L);
+    }
+    else
+    {
+        lua_pushstring(L, name);
+    }
+    return 1;
+}
+
+static int LMapTile(lua_State *L)
+{
+    lua_pushinteger(L, SDLStatic_TiledTileAt((SDLStatic_TiledMap *)CheckHandle(L, 1, MAP_MT),
+                                             (int)luaL_checkinteger(L, 2),
+                                             (int)luaL_checkinteger(L, 3),
+                                             (int)luaL_checkinteger(L, 4)));
+    return 1;
+}
+
+static int LMapObjects(lua_State *L)
+{
+    SDLStatic_TiledMap *map = (SDLStatic_TiledMap *)CheckHandle(L, 1, MAP_MT);
+    const int layer = (int)luaL_checkinteger(L, 2);
+    const int count = SDLStatic_TiledObjectCount(map, layer);
+    lua_createtable(L, count, 0);
+    for (int i = 0; i < count; ++i)
+    {
+        SDLStatic_TiledObject obj;
+        if (!SDLStatic_TiledObjectAt(map, layer, i, &obj))
+        {
+            continue;
+        }
+        lua_newtable(L);
+        lua_pushstring(L, obj.name != NULL ? obj.name : "");
+        lua_setfield(L, -2, "name");
+        lua_pushstring(L, obj.type != NULL ? obj.type : "");
+        lua_setfield(L, -2, "type");
+        lua_pushnumber(L, obj.x);
+        lua_setfield(L, -2, "x");
+        lua_pushnumber(L, obj.y);
+        lua_setfield(L, -2, "y");
+        lua_pushnumber(L, obj.w);
+        lua_setfield(L, -2, "w");
+        lua_pushnumber(L, obj.h);
+        lua_setfield(L, -2, "h");
+        lua_rawseti(L, -2, i + 1);
+    }
+    return 1;
+}
+
 /* ----------------------------------------------------- vfs and utils ---- */
 
 static int LMount(lua_State *L)
@@ -579,12 +673,19 @@ bool SDLStatic_OpenLuaBindings(lua_State *L)
                                              {"box", LWorldBox},
                                              {"circle", LWorldCircle},
                                              {NULL, NULL}};
+    static const luaL_Reg map_methods[] = {{"size", LMapSize},
+                                           {"layers", LMapLayers},
+                                           {"layer_name", LMapLayerName},
+                                           {"tile", LMapTile},
+                                           {"objects", LMapObjects},
+                                           {NULL, NULL}};
     static const luaL_Reg body_methods[] = {{"position", LBodyPosition},
                                             {"angle", LBodyAngle},
                                             {"velocity", LBodyVelocity},
                                             {"impulse", LBodyImpulse},
                                             {NULL, NULL}};
     static const luaL_Reg module_fns[] = {{"window", LWindow},
+                                          {"load_map", LLoadMap},
                                           {"open_audio", LOpenAudio},
                                           {"world", LWorld},
                                           {"mount", LMount},
@@ -611,6 +712,7 @@ bool SDLStatic_OpenLuaBindings(lua_State *L)
     MakeMeta(L, TRACK_MT, track_methods, LTrackGc);
     MakeMeta(L, WORLD_MT, world_methods, LWorldGc);
     MakeMeta(L, BODY_MT, body_methods, LBodyGc);
+    MakeMeta(L, MAP_MT, map_methods, LMapGc);
     luaL_newlib(L, module_fns);
     lua_setglobal(L, "SDLStatic");
     return true;

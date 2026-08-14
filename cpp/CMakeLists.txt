@@ -27,6 +27,6 @@ target_include_directories(SDLStatic_Cpp
 
 target_link_libraries(SDLStatic_Cpp PUBLIC
   SDLStatic::VFS SDLStatic::Extras SDLStatic::Mixer SDLStatic::Physics
-  SDLStatic::Image SDLStatic::GUI SDLStatic::Lua SDLStatic::Ruby
+  SDLStatic::Image SDLStatic::GUI SDLStatic::Lua SDLStatic::Ruby SDLStatic::Tiled
   SDL3::SDL3
 )
