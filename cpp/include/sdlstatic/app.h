@@ -17,6 +17,34 @@
 
 namespace sdlstatic {
 
+// Owns SDL initialization: SDL_Quit runs when this is destroyed. Declare
+// it BEFORE every other owner (windows, renderers, mixers...) so C++
+// destruction order tears the owners down first and SDL last. Calling
+// SDL_Quit manually in the same scope as owners is a real crash we shipped
+// once: the mixer's destructor ran after the audio subsystem was gone.
+class SdlInit {
+ public:
+  static Result<SdlInit> Create(SDL_InitFlags flags) {
+    if (!SDL_Init(flags)) return Status::FromSdl();
+    return SdlInit(true);
+  }
+
+  ~SdlInit() {
+    if (owned_) SDL_Quit();
+  }
+  SdlInit(SdlInit&& other) noexcept : owned_(std::exchange(other.owned_, false)) {}
+  SdlInit& operator=(SdlInit&& other) noexcept {
+    std::swap(owned_, other.owned_);
+    return *this;
+  }
+  SdlInit(const SdlInit&) = delete;
+  SdlInit& operator=(const SdlInit&) = delete;
+
+ private:
+  explicit SdlInit(bool owned) : owned_(owned) {}
+  bool owned_ = false;
+};
+
 // Owns an SDL_Surface.
 class Surface {
  public:
