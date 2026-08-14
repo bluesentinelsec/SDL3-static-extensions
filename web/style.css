@@ -1,0 +1,413 @@
+/* mog documentation theme layered over Bootstrap 5.3. */
+:root {
+  color-scheme: light;
+  --bg: #ffffff;
+  --bg-elev: #f5f5f7;
+  --text: #1d1d1f;
+  --muted: #6e6e73;
+  --border: #d2d2d7;
+  --accent: #6f4bc3;
+  --accent-hover: #5d3da8;
+  --accent-2: #9b7fe0;
+  --code-bg: #f5f5f7;
+  --nav-bg: rgba(255, 255, 255, 0.82);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.05);
+  --toggler-filter: none;
+  --bs-body-bg: var(--bg);
+  --bs-body-color: var(--text);
+  --bs-body-font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display",
+    "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --bs-body-line-height: 1.6;
+  --bs-border-color: var(--border);
+  --bs-link-color: var(--accent);
+  --bs-link-hover-color: var(--accent-hover);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --bg: #000000;
+    --bg-elev: #1c1c1e;
+    --text: #f5f5f7;
+    --muted: #a1a1a6;
+    --border: #38383a;
+    --accent: #b39df0;
+    --accent-hover: #cab8f7;
+    --accent-2: #cab8f7;
+    --code-bg: #1c1c1e;
+    --nav-bg: rgba(20, 20, 22, 0.86);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.5);
+    --toggler-filter: invert(1);
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  color: var(--text);
+  background: var(--bg);
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 1100;
+  padding: 0.6rem 0.9rem;
+  color: #ffffff;
+  background: var(--accent);
+  border-radius: 0.5rem;
+}
+
+/* Bootstrap responsive navigation with the existing translucent mog treatment. */
+.site-nav {
+  z-index: 1030;
+  padding: 0.7rem 0;
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  --bs-navbar-color: var(--text);
+  --bs-navbar-hover-color: var(--accent);
+  --bs-navbar-brand-color: var(--text);
+  --bs-navbar-brand-hover-color: var(--accent);
+  --bs-navbar-toggler-border-color: var(--border);
+}
+
+.navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-right: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.navbar-brand img {
+  flex: 0 0 auto;
+}
+
+.navbar-nav {
+  gap: 0.25rem;
+}
+
+.navbar-nav .nav-link {
+  padding-right: 0.65rem;
+  padding-left: 0.65rem;
+  color: var(--text);
+  font-size: 0.9rem;
+  opacity: 0.82;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus-visible {
+  color: var(--accent);
+  opacity: 1;
+}
+
+.github-link {
+  font-weight: 600;
+}
+
+.navbar-toggler {
+  padding: 0.4rem 0.55rem;
+  border-color: var(--border);
+}
+
+.navbar-toggler:focus {
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.navbar-toggler-icon {
+  filter: var(--toggler-filter);
+}
+
+.docs-content {
+  max-width: 960px;
+  min-width: 0;
+  padding-bottom: 6rem;
+}
+
+.docs-content > h1:first-child {
+  margin-top: 3.5rem;
+}
+
+/* Hero */
+.hero {
+  padding: 3.5rem 0 2.5rem;
+  text-align: center;
+}
+
+.hero img.banner {
+  width: 100%;
+  max-width: 760px;
+  height: auto;
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow);
+  image-rendering: pixelated;
+}
+
+.hero h1 {
+  margin: 1.2rem 0 0.5rem;
+  font-size: clamp(2.75rem, 8vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.hero .tagline {
+  max-width: 640px;
+  margin: 0 auto 1.75rem;
+  color: var(--muted);
+  font-size: clamp(1.1rem, 4vw, 1.45rem);
+}
+
+.badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: center;
+  margin-bottom: 1.6rem;
+}
+
+.badges .badge {
+  padding: 0.45rem 0.75rem;
+  color: var(--muted);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.btn-primary {
+  --bs-btn-color: #ffffff;
+  --bs-btn-bg: var(--accent);
+  --bs-btn-border-color: var(--accent);
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: var(--accent-hover);
+  --bs-btn-hover-border-color: var(--accent-hover);
+  --bs-btn-focus-shadow-rgb: 111, 75, 195;
+}
+
+.btn-outline-primary {
+  --bs-btn-color: var(--accent);
+  --bs-btn-border-color: var(--accent);
+  --bs-btn-hover-color: #ffffff;
+  --bs-btn-hover-bg: var(--accent);
+  --bs-btn-hover-border-color: var(--accent);
+}
+
+/* Typography */
+h1,
+h2,
+h3 {
+  color: var(--text);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  scroll-margin-top: 5.5rem;
+}
+
+h2 {
+  margin-top: 3.5rem;
+  padding-top: 0.5rem;
+  font-size: clamp(1.65rem, 5vw, 1.9rem);
+}
+
+h3 {
+  margin-top: 2.1rem;
+  font-size: 1.3rem;
+}
+
+a {
+  color: var(--accent);
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+p,
+li {
+  color: var(--text);
+}
+
+hr {
+  margin: 2.75rem 0;
+  border-color: var(--border);
+  opacity: 1;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Bootstrap cards and grid, themed for mog. */
+.feature-grid {
+  margin-top: 1.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.feature-grid .card {
+  color: var(--text);
+  background: var(--bg-elev);
+  border-color: var(--border);
+  border-radius: 1.1rem;
+  box-shadow: var(--shadow);
+}
+
+.feature-grid .card-title {
+  margin: 0 0 0.4rem;
+  font-size: 1.08rem;
+}
+
+.feature-grid .card-text {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+/* Code */
+code {
+  padding: 0.12rem 0.38rem;
+  color: var(--text);
+  background: var(--code-bg);
+  border-radius: 0.38rem;
+  font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  overflow-wrap: anywhere;
+}
+
+pre {
+  max-width: 100%;
+  padding: 1.1rem 1.25rem;
+  overflow-x: auto;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 0.9rem;
+  box-shadow: var(--shadow);
+  -webkit-overflow-scrolling: touch;
+}
+
+pre code {
+  padding: 0;
+  color: var(--text);
+  background: none;
+  font-size: 0.84rem;
+  line-height: 1.55;
+  overflow-wrap: normal;
+}
+
+/* Pandoc tables receive these Bootstrap classes through web/bootstrap.lua. */
+.table-responsive {
+  margin: 1.4rem 0;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  min-width: 600px;
+  margin-bottom: 0;
+  --bs-table-color: var(--text);
+  --bs-table-bg: var(--bg);
+  --bs-table-border-color: var(--border);
+  --bs-table-hover-color: var(--text);
+  --bs-table-hover-bg: var(--bg-elev);
+}
+
+.table > :not(caption) > * > * {
+  padding: 0.65rem 0.75rem;
+}
+
+blockquote {
+  margin: 1.4rem 0;
+  padding: 0.25rem 1.1rem;
+  color: var(--muted);
+  border-left: 3px solid var(--accent-2);
+}
+
+blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+footer {
+  padding: 2.1rem 0.75rem;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+footer a {
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 991.98px) {
+  .navbar-collapse {
+    margin-top: 0.65rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .navbar-nav .nav-link {
+    padding: 0.55rem 0.25rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  body {
+    font-size: 16px;
+  }
+
+  .docs-content {
+    padding-right: 1rem;
+    padding-left: 1rem;
+    padding-bottom: 4rem;
+  }
+
+  .docs-content > h1:first-child {
+    margin-top: 2.25rem;
+  }
+
+  .hero {
+    padding: 2rem 0 1.75rem;
+  }
+
+  .hero img.banner {
+    border-radius: 0.9rem;
+  }
+
+  .hero h1 {
+    font-size: 2.6rem;
+  }
+
+  .hero .tagline {
+    font-size: 1.1rem;
+  }
+
+  .hero .btn {
+    width: 100%;
+  }
+
+  h2 {
+    margin-top: 2.75rem;
+  }
+
+  pre {
+    padding: 0.9rem 1rem;
+    border-radius: 0.7rem;
+  }
+
+  footer {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+}
