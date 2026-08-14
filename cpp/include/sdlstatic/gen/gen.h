@@ -14,6 +14,12 @@
 #include "sdlstatic/gen/physfs.h"
 #include "sdlstatic/gen/b2.h"
 #include "sdlstatic/gen/nk.h"
+#include "sdlstatic/gen/gfx.h"
+#include "sdlstatic/gen/toml.h"
+#include "sdlstatic/gen/yaml.h"
+#if __has_include(<mog/mog_c.h>)
+#include "sdlstatic/gen/mog.h"
+#endif
 #include "sdlstatic/gen/cjson.h"
 #include "sdlstatic/gen/sdlstatic.h"
 

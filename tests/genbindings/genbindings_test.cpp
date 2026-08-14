@@ -113,6 +113,36 @@ TEST(GenCpp, ExtTiledFactoryFailsCleanly)
     EXPECT_FALSE(missing.ok());
 }
 
+TEST(GenCpp, NewLibrarySurfaces)
+{
+    // gfx: rotozoom returns an owned surface through RAII.
+    sdlstatic::Result<sdlstatic::sdl::Surface> src =
+        sdlstatic::sdl::Surface::CreateSurface(16, 16, SDL_PIXELFORMAT_RGBA8888);
+    ASSERT_TRUE(src.ok());
+    sdlstatic::Result<sdlstatic::gfx::Surface> rotated =
+        sdlstatic::gfx::Surface::rotozoomSurface(src->get(), 90.0, 2.0, 0);
+    ASSERT_TRUE(rotated.ok());
+    EXPECT_NE(rotated->get(), nullptr);
+
+    // toml: RAII table from mutable-buffer parse.
+    char conf[] = "answer = 42";
+    char err[64] = {0};
+    sdlstatic::Result<sdlstatic::toml::TomlTable> table =
+        sdlstatic::toml::TomlTable::parse(conf, err, sizeof(err));
+    ASSERT_TRUE(table.ok()) << err;
+
+    // mog: request builder RAII + version alias.
+    ASSERT_NE(sdlstatic::mog::version(), nullptr);
+    sdlstatic::Result<sdlstatic::mog::Request> req =
+        sdlstatic::mog::Request::request_new("GET", "http://127.0.0.1:1/x");
+    ASSERT_TRUE(req.ok());
+
+    // yaml: alias surface reachable.
+    int major = 0, minor = 0, patch = 0;
+    sdlstatic::yaml::get_version(&major, &minor, &patch);
+    EXPECT_GE(major, 0);
+}
+
 // ---------------------------------------------------------------------------
 // Lua surface
 
@@ -157,6 +187,24 @@ TEST(GenLua, JsonTreeWalk)
         "assert(JSON.GetNumberValue(item) == 7)\n"
         "JSON.Delete(d)\n"
         "collectgarbage('collect')\n");
+}
+
+TEST(GenLua, NewLibraryModules)
+{
+    RunLua(
+        "local s = SDL.CreateSurface(16, 16, SDL.PIXELFORMAT_RGBA8888)\n"
+        "local r = SDL.CreateSoftwareRenderer(s)\n"
+        "assert(GFX.pixelRGBA(r, 2, 2, 255, 0, 0, 255))\n"
+        "assert(GFX.filledCircleRGBA(r, 8, 8, 5, 0, 255, 0, 255))\n"
+        "local z = GFX.zoomSurface(s, 2.0, 2.0, 0)\n"
+        "assert(z ~= nil and tostring(z):find('owned'))\n"
+        "local t = TOML.parse('answer = 42', '', 0)\n"
+        "assert(t ~= nil)\n"
+        "TOML.free(t)\n"
+        "assert(type(MOG.version()) == 'string')\n"
+        "local req = MOG.request_new('GET', 'http://127.0.0.1:1/x')\n"
+        "assert(req ~= nil and tostring(req):find('owned'))\n"
+        "req = nil; collectgarbage('collect')\n");
 }
 
 TEST(GenLua, PhysicsWorldByValueIds)
@@ -209,6 +257,24 @@ TEST(GenRuby, OwnedHandleGcAndExplicitDestroy)
         "s2 = SDL.CreateSurface(16, 16, SDL::PIXELFORMAT_RGBA8888)\n"
         "s2 = nil\n"
         "GC.start  # GC owns this one\n");
+}
+
+TEST(GenRuby, NewLibraryModules)
+{
+    RunRuby(
+        "s = SDL.CreateSurface(16, 16, SDL::PIXELFORMAT_RGBA8888)\n"
+        "r = SDL.CreateSoftwareRenderer(s)\n"
+        "raise 'pixel' unless GFX.pixelRGBA(r, 2, 2, 255, 0, 0, 255)\n"
+        "z = GFX.zoomSurface(s, 2.0, 2.0, 0)\n"
+        "raise 'zoom' if z.nil?\n"
+        "t = TOML.parse('answer = 42', '', 0)\n"
+        "raise 'toml' if t.nil?\n"
+        "TOML.free(t)\n"
+        "raise 'mog' unless MOG.version.is_a?(String)\n"
+        "req = MOG.request_new('GET', 'http://127.0.0.1:1/x')\n"
+        "raise 'req' if req.nil?\n"
+        "req = nil\n"
+        "GC.start\n");
 }
 
 TEST(GenRuby, JsonTreeWalkAndPhysics)

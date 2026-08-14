@@ -15,7 +15,7 @@ target_compile_definitions(SDL3_static_extensions_ttf_test PRIVATE
   TTF_TEST_ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets"
 )
 cppboot_set_project_warnings(SDL3_static_extensions_ttf_test)
-gtest_discover_tests(SDL3_static_extensions_ttf_test)
+gtest_discover_tests(SDL3_static_extensions_ttf_test DISCOVERY_TIMEOUT 60)
 
 # Link audit: static SDLStatic::TTF + static minimal FreeType + static SDL3
 # must depend only on OS-built-in shared libraries.

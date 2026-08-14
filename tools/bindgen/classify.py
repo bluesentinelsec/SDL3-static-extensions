@@ -407,6 +407,10 @@ def plan_script(lib_key: str, functions: dict[str, Function], tt: TypeTable) -> 
                 pplans.append(ParamPlan(i, p.name, pi, "pod_out"))
             elif pi.kind in (TK.INT, TK.FLOAT, TK.BOOL, TK.ENUM) and pi.pointers == 1 and not pi.is_const:
                 pplans.append(ParamPlan(i, p.name, pi, "inout"))
+            elif pi.kind == TK.OWNED_STRING and pi.pointers == 1:
+                # Mutable char* input (e.g. tomlc99 parses in place): the
+                # stub passes a heap copy of the script string.
+                pplans.append(ParamPlan(i, p.name, pi, "mutstr_in"))
             else:
                 bad = f"param {p.name}: {p.type.spelling()}"
                 break

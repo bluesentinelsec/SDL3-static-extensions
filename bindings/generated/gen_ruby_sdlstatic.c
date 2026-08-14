@@ -10,6 +10,7 @@
 #include <SDLStatic/crypto.h>
 #include <SDLStatic/debug_text.h>
 #include <SDLStatic/gpu_primitives.h>
+#include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/tiled.h>
@@ -35,6 +36,12 @@ static void GenDtor_SDLStatic_FreeTiledMap(void *p)
 {
     SDLStatic_TiledMap *typed = (SDLStatic_TiledMap *)p;
     SDLStatic_FreeTiledMap(typed);
+}
+
+static void GenDtor_SDLStatic_DestroyGui(void *p)
+{
+    SDLStatic_Gui *typed = (SDLStatic_Gui *)p;
+    SDLStatic_DestroyGui(typed);
 }
 
 static mrb_value GenR_SDLStatic_BidiBaseIsRTL(mrb_state *mrb, mrb_value self)
@@ -112,6 +119,22 @@ static mrb_value GenR_SDLStatic_CreateChipTune(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_CreateGui(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Renderer *a0 = (SDL_Renderer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Renderer");
+    size_t len1 = 0;
+    const char *a1 = SDLStaticGen_RubyToBlob(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &len1);
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_Gui * rv = SDLStatic_CreateGui(a0, (const void *)a1, (size_t)len1, a3);
+    return SDLStaticGen_RubyPushOwned(mrb, (void *)rv, "SDLStatic_Gui", GenDtor_SDLStatic_DestroyGui);
+    }
+}
+
 static mrb_value GenR_SDLStatic_CreateSignalEmitter(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -133,6 +156,19 @@ static mrb_value GenR_SDLStatic_CryptoSelfTest(mrb_state *mrb, mrb_value self)
     {
     bool rv = SDLStatic_CryptoSelfTest();
     return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_DestroyGui(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyTakeHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    SDLStatic_DestroyGui(a0);
+    return mrb_nil_value();
     }
 }
 
@@ -163,6 +199,26 @@ static mrb_value GenR_SDLStatic_DisconnectSignal(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_EncodeDataBase64(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    size_t len0 = 0;
+    const char *a0 = SDLStaticGen_RubyToBlob(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), &len0);
+    int io2 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    char * rv = SDLStatic_EncodeDataBase64((const void *)a0, (int)len0, &io2);
+    mrb_value rstr = rv == NULL ? mrb_nil_value() : mrb_str_new_cstr(mrb, rv);
+    if (rv != NULL) { SDL_free(rv); }
+    mrb_value rets[2];
+    rets[0] = rstr;
+    rets[1] = mrb_int_value(mrb, (mrb_int)io2);
+    return mrb_ary_new_from_values(mrb, 2, rets);
+    }
+}
+
 static mrb_value GenR_SDLStatic_FreeTiledMap(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -173,6 +229,19 @@ static mrb_value GenR_SDLStatic_FreeTiledMap(mrb_state *mrb, mrb_value self)
     SDLStatic_TiledMap *a0 = (SDLStatic_TiledMap *)SDLStaticGen_RubyTakeHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_TiledMap");
     SDLStatic_FreeTiledMap(a0);
     return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiContext(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    struct nk_context * rv = SDLStatic_GuiContext(a0);
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "nk_context");
     }
 }
 
@@ -229,6 +298,72 @@ static mrb_value GenR_SDLStatic_GuiGridNextRow(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_GuiInputBegin(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    SDLStatic_GuiInputBegin(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiInputEnd(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    SDLStatic_GuiInputEnd(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiProcessEvent(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    const SDL_Event *a1 = (const SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_Event");
+    bool rv = SDLStatic_GuiProcessEvent(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiRender(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    bool rv = SDLStatic_GuiRender(a0);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiWantsInput(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    bool rv = SDLStatic_GuiWantsInput(a0);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
 static mrb_value GenR_SDLStatic_HMACSHA256(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -259,6 +394,22 @@ static mrb_value GenR_SDLStatic_LoadTiledMap(mrb_state *mrb, mrb_value self)
     const char *a0 = SDLStaticGen_RubyToStr(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
     SDLStatic_TiledMap * rv = SDLStatic_LoadTiledMap(a0);
     return SDLStaticGen_RubyPushOwned(mrb, (void *)rv, "SDLStatic_TiledMap", GenDtor_SDLStatic_FreeTiledMap);
+    }
+}
+
+static mrb_value GenR_SDLStatic_MountEncryptedArchive(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    size_t len0 = 0;
+    const char *a0 = SDLStaticGen_RubyToBlob(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), &len0);
+    const char *a2 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    const char *a3 = SDLStaticGen_RubyToStr(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    bool rv = SDLStatic_MountEncryptedArchive((const void *)a0, (int)len0, a2, a3);
+    return mrb_bool_value((mrb_bool)(rv != 0));
     }
 }
 
@@ -299,6 +450,22 @@ static mrb_value GenR_SDLStatic_QuitDebugText(mrb_state *mrb, mrb_value self)
     {
     SDLStatic_QuitDebugText();
     return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_RenderDebugText(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Renderer *a0 = (SDL_Renderer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Renderer");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    const char *a3 = SDLStaticGen_RubyToStr(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    bool rv = SDLStatic_RenderDebugText(a0, a1, a2, a3);
+    return mrb_bool_value((mrb_bool)(rv != 0));
     }
 }
 
@@ -496,20 +663,31 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "CreateChipSFX", GenR_SDLStatic_CreateChipSFX, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateChipTone", GenR_SDLStatic_CreateChipTone, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateChipTune", GenR_SDLStatic_CreateChipTune, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "CreateGui", GenR_SDLStatic_CreateGui, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateSignalEmitter", GenR_SDLStatic_CreateSignalEmitter, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CryptoSelfTest", GenR_SDLStatic_CryptoSelfTest, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DestroyGui", GenR_SDLStatic_DestroyGui, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DestroySignalEmitter", GenR_SDLStatic_DestroySignalEmitter, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DisconnectSignal", GenR_SDLStatic_DisconnectSignal, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EncodeDataBase64", GenR_SDLStatic_EncodeDataBase64, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "FreeTiledMap", GenR_SDLStatic_FreeTiledMap, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiContext", GenR_SDLStatic_GuiContext, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridCell", GenR_SDLStatic_GuiGridCell, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridCellSpan", GenR_SDLStatic_GuiGridCellSpan, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridEnd", GenR_SDLStatic_GuiGridEnd, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridNextRow", GenR_SDLStatic_GuiGridNextRow, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiInputBegin", GenR_SDLStatic_GuiInputBegin, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiInputEnd", GenR_SDLStatic_GuiInputEnd, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiProcessEvent", GenR_SDLStatic_GuiProcessEvent, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiRender", GenR_SDLStatic_GuiRender, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiWantsInput", GenR_SDLStatic_GuiWantsInput, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "HMACSHA256", GenR_SDLStatic_HMACSHA256, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "LoadTiledMap", GenR_SDLStatic_LoadTiledMap, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "MountEncryptedArchive", GenR_SDLStatic_MountEncryptedArchive, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "MountEncryptedArchiveFile", GenR_SDLStatic_MountEncryptedArchiveFile, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "OpenVFSRead", GenR_SDLStatic_OpenVFSRead, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "QuitDebugText", GenR_SDLStatic_QuitDebugText, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RenderDebugText", GenR_SDLStatic_RenderDebugText, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SHA256", GenR_SDLStatic_SHA256, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetDebugTextSize", GenR_SDLStatic_SetDebugTextSize, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "TiledLayerCount", GenR_SDLStatic_TiledLayerCount, MRB_ARGS_ANY());

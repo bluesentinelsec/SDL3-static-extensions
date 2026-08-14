@@ -11,6 +11,7 @@
 #include <SDLStatic/compress.h>
 #include <SDLStatic/crypto.h>
 #include <SDLStatic/debug_text.h>
+#include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/tiled.h>
@@ -104,6 +105,70 @@ class TiledMapHandle {
   bool engaged_ = false;
 };
 
+// RAII owner for SDLStatic_Gui (destroyed with SDLStatic_DestroyGui).
+class GuiHandle {
+ public:
+  static Result<GuiHandle> CreateGui(SDL_Renderer *renderer, const void *font_data, size_t font_len, float font_size) {
+    SDLStatic_Gui* created_ = ::SDLStatic_CreateGui(renderer, font_data, font_len, font_size);
+    if (created_ == nullptr) {
+      return Status::FromSdl();
+    }
+    return GuiHandle(created_);
+  }
+
+  GuiHandle() = default;
+  ~GuiHandle() { reset(); }
+  GuiHandle(GuiHandle&& other) noexcept
+      : value_(other.value_), engaged_(other.engaged_) {
+    other.value_ = nullptr;
+    other.engaged_ = false;
+  }
+  GuiHandle& operator=(GuiHandle&& other) noexcept {
+    if (this != &other) {
+      reset();
+      value_ = other.value_;
+      engaged_ = other.engaged_;
+      other.value_ = nullptr;
+      other.engaged_ = false;
+    }
+    return *this;
+  }
+  GuiHandle(const GuiHandle&) = delete;
+  GuiHandle& operator=(const GuiHandle&) = delete;
+
+  SDLStatic_Gui* get() const { return value_; }
+  SDLStatic_Gui* release() {
+    SDLStatic_Gui* out = value_;
+    value_ = nullptr;
+    engaged_ = false;
+    return out;
+  }
+  void reset() {
+    if (value_ != nullptr) ::SDLStatic_DestroyGui(value_);
+    value_ = nullptr;
+    engaged_ = false;
+  }
+
+  struct nk_context* GuiContext() {
+    return ::SDLStatic_GuiContext(value_);
+  }
+  void GuiInputBegin() { ::SDLStatic_GuiInputBegin(value_); }
+  Status GuiProcessEvent(const SDL_Event *event) {
+    return ::SDLStatic_GuiProcessEvent(value_, event) ? Status() : Status::FromSdl();
+  }
+  void GuiInputEnd() { ::SDLStatic_GuiInputEnd(value_); }
+  Status GuiWantsInput() {
+    return ::SDLStatic_GuiWantsInput(value_) ? Status() : Status::FromSdl();
+  }
+  Status GuiRender() {
+    return ::SDLStatic_GuiRender(value_) ? Status() : Status::FromSdl();
+  }
+ private:
+  explicit GuiHandle(SDLStatic_Gui* value) : value_(value), engaged_(true) {}
+  SDLStatic_Gui* value_{};
+  bool engaged_ = false;
+};
+
 // bool-returning C functions surfaced as Status.
 inline Status BidiBaseIsRTL(const char *utf8, int length) {
   return ::SDLStatic_BidiBaseIsRTL(utf8, length) ? Status() : Status::FromSdl();
@@ -120,8 +185,14 @@ inline Status GuiGridBegin(struct nk_context *ctx, SDLStatic_GuiGrid *grid, int 
 inline Status HMACSHA256(const void *key, size_t keySize, const void *data, size_t dataSize, Uint8 digest[32]) {
   return ::SDLStatic_HMACSHA256(key, keySize, data, dataSize, digest) ? Status() : Status::FromSdl();
 }
+inline Status MountEncryptedArchive(const void *data, int dataSize, const char *password, const char *mountPoint) {
+  return ::SDLStatic_MountEncryptedArchive(data, dataSize, password, mountPoint) ? Status() : Status::FromSdl();
+}
 inline Status MountEncryptedArchiveFile(const char *path, const char *password, const char *mountPoint) {
   return ::SDLStatic_MountEncryptedArchiveFile(path, password, mountPoint) ? Status() : Status::FromSdl();
+}
+inline Status RenderDebugText(SDL_Renderer *renderer, float x, float y, const char *text) {
+  return ::SDLStatic_RenderDebugText(renderer, x, y, text) ? Status() : Status::FromSdl();
 }
 inline Status SHA256(const void *data, size_t dataSize, Uint8 digest[32]) {
   return ::SDLStatic_SHA256(data, dataSize, digest) ? Status() : Status::FromSdl();
@@ -129,6 +200,7 @@ inline Status SHA256(const void *data, size_t dataSize, Uint8 digest[32]) {
 
 // Everything else, aliased into the namespace unchanged.
 inline constexpr auto& BidiItemize = ::SDLStatic_BidiItemize;
+inline constexpr auto& CompressData = ::SDLStatic_CompressData;
 inline constexpr auto& ConnectSignal = ::SDLStatic_ConnectSignal;
 inline constexpr auto& CountSignalConnections = ::SDLStatic_CountSignalConnections;
 inline constexpr auto& CreateChipSFX = ::SDLStatic_CreateChipSFX;
@@ -140,6 +212,8 @@ inline constexpr auto& DecompressData = ::SDLStatic_DecompressData;
 inline constexpr auto& DecryptData = ::SDLStatic_DecryptData;
 inline constexpr auto& DestroySignalEmitter = ::SDLStatic_DestroySignalEmitter;
 inline constexpr auto& EmitSignal = ::SDLStatic_EmitSignal;
+inline constexpr auto& EncodeDataBase64 = ::SDLStatic_EncodeDataBase64;
+inline constexpr auto& EncryptData = ::SDLStatic_EncryptData;
 inline constexpr auto& GuiGridCell = ::SDLStatic_GuiGridCell;
 inline constexpr auto& GuiGridCellSpan = ::SDLStatic_GuiGridCellSpan;
 inline constexpr auto& GuiGridEnd = ::SDLStatic_GuiGridEnd;

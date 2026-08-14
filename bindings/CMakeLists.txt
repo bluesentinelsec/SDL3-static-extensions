@@ -18,7 +18,8 @@ set(SDLSTATIC_GEN_SOURCES
 set(SDLSTATIC_GEN_DEFS "")
 foreach(pair IN ITEMS
     "mix:MIXER" "img:IMAGE" "ttf:TTF" "net:NET" "physfs:VFS"
-    "b2:PHYSICS" "nk:GUI" "cjson:FORMATS")
+    "b2:PHYSICS" "nk:GUI" "cjson:FORMATS" "gfx:GFX" "toml:FORMATS"
+    "yaml:FORMATS" "mog:HTTP")
   string(REPLACE ":" ";" pair "${pair}")
   list(GET pair 0 genkey)
   list(GET pair 1 opt)
@@ -63,4 +64,7 @@ target_link_libraries(SDLStatic_Bindings PUBLIC
 )
 if(SDLSTATIC_BUILD_NET)
   target_link_libraries(SDLStatic_Bindings PUBLIC SDLStatic::Net)
+endif()
+if(SDLSTATIC_BUILD_HTTP)
+  target_link_libraries(SDLStatic_Bindings PUBLIC SDLStatic::Http)
 endif()

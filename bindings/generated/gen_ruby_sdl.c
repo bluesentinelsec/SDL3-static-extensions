@@ -2783,6 +2783,24 @@ static mrb_value GenR_SDL_GPUTextureSupportsSampleCount(mrb_state *mrb, mrb_valu
     }
 }
 
+static mrb_value GenR_SDL_GUIDToString(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GUID a0;
+    GenRead_SDL_GUID(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), &a0);
+    const char *src1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    char *a1 = SDL_strdup(src1 != NULL ? src1 : "");
+    int a2 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDL_GUIDToString(a0, a1, a2);
+    SDL_free(a1);
+    return mrb_nil_value();
+    }
+}
+
 static mrb_value GenR_SDL_GamepadConnected(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -3654,6 +3672,23 @@ static mrb_value GenR_SDL_GetError(mrb_state *mrb, mrb_value self)
     {
     const char * rv = SDL_GetError();
     return (rv == NULL ? mrb_nil_value() : mrb_str_new_cstr(mrb, rv));
+    }
+}
+
+static mrb_value GenR_SDL_GetEventDescription(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    const SDL_Event *a0 = (const SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    const char *src1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    char *a1 = SDL_strdup(src1 != NULL ? src1 : "");
+    int a2 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    int rv = SDL_GetEventDescription(a0, a1, a2);
+    SDL_free(a1);
+    return mrb_int_value(mrb, (mrb_int)rv);
     }
 }
 
@@ -12322,6 +12357,24 @@ static mrb_value GenR_SDL_TryLockSpinlock(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDL_UCS4ToUTF8(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    Uint32 a0 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    const char *src1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    char *a1 = SDL_strdup(src1 != NULL ? src1 : "");
+    char * rv = SDL_UCS4ToUTF8(a0, a1);
+    mrb_value rstr = rv == NULL ? mrb_nil_value() : mrb_str_new_cstr(mrb, rv);
+    if (rv != NULL) { SDL_free(rv); }
+    SDL_free(a1);
+    return rstr;
+    }
+}
+
 static mrb_value GenR_SDL_UnbindAudioStream(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -13441,6 +13494,7 @@ void SDLStaticGen_OpenRuby_sdl(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GPUTextureFormatTexelBlockSize", GenR_SDL_GPUTextureFormatTexelBlockSize, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GPUTextureSupportsFormat", GenR_SDL_GPUTextureSupportsFormat, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GPUTextureSupportsSampleCount", GenR_SDL_GPUTextureSupportsSampleCount, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GUIDToString", GenR_SDL_GUIDToString, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GamepadConnected", GenR_SDL_GamepadConnected, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GamepadEventsEnabled", GenR_SDL_GamepadEventsEnabled, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GamepadHasAxis", GenR_SDL_GamepadHasAxis, MRB_ARGS_ANY());
@@ -13503,6 +13557,7 @@ void SDLStaticGen_OpenRuby_sdl(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GetEnvironment", GenR_SDL_GetEnvironment, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetEnvironmentVariable", GenR_SDL_GetEnvironmentVariable, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetError", GenR_SDL_GetError, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GetEventDescription", GenR_SDL_GetEventDescription, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetFloatProperty", GenR_SDL_GetFloatProperty, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetGPUDeviceDriver", GenR_SDL_GetGPUDeviceDriver, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetGPUDeviceProperties", GenR_SDL_GetGPUDeviceProperties, MRB_ARGS_ANY());
@@ -14086,6 +14141,7 @@ void SDLStaticGen_OpenRuby_sdl(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "TimeToDateTime", GenR_SDL_TimeToDateTime, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "TimeToWindows", GenR_SDL_TimeToWindows, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "TryLockSpinlock", GenR_SDL_TryLockSpinlock, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "UCS4ToUTF8", GenR_SDL_UCS4ToUTF8, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "UnbindAudioStream", GenR_SDL_UnbindAudioStream, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "UnloadObject", GenR_SDL_UnloadObject, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "UnlockAudioStream", GenR_SDL_UnlockAudioStream, MRB_ARGS_ANY());

@@ -27,6 +27,18 @@ extern int SDLStaticGen_OpenLua_b2(lua_State *L);
 #ifndef SDLSTATIC_GEN_DISABLE_NK
 extern int SDLStaticGen_OpenLua_nk(lua_State *L);
 #endif
+#ifndef SDLSTATIC_GEN_DISABLE_GFX
+extern int SDLStaticGen_OpenLua_gfx(lua_State *L);
+#endif
+#ifndef SDLSTATIC_GEN_DISABLE_TOML
+extern int SDLStaticGen_OpenLua_toml(lua_State *L);
+#endif
+#ifndef SDLSTATIC_GEN_DISABLE_YAML
+extern int SDLStaticGen_OpenLua_yaml(lua_State *L);
+#endif
+#ifndef SDLSTATIC_GEN_DISABLE_MOG
+extern int SDLStaticGen_OpenLua_mog(lua_State *L);
+#endif
 #ifndef SDLSTATIC_GEN_DISABLE_CJSON
 extern int SDLStaticGen_OpenLua_cjson(lua_State *L);
 #endif
@@ -60,6 +72,18 @@ int SDLStatic_OpenGeneratedLuaBindings(lua_State *L)
 #endif
 #ifndef SDLSTATIC_GEN_DISABLE_NK
     SDLStaticGen_OpenLua_nk(L);
+#endif
+#ifndef SDLSTATIC_GEN_DISABLE_GFX
+    SDLStaticGen_OpenLua_gfx(L);
+#endif
+#ifndef SDLSTATIC_GEN_DISABLE_TOML
+    SDLStaticGen_OpenLua_toml(L);
+#endif
+#ifndef SDLSTATIC_GEN_DISABLE_YAML
+    SDLStaticGen_OpenLua_yaml(L);
+#endif
+#ifndef SDLSTATIC_GEN_DISABLE_MOG
+    SDLStaticGen_OpenLua_mog(L);
 #endif
 #ifndef SDLSTATIC_GEN_DISABLE_CJSON
     SDLStaticGen_OpenLua_cjson(L);

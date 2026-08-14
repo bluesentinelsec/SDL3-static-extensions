@@ -26,6 +26,10 @@ NAMESPACES = {
     "physfs": "vfs",
     "b2": "b2",
     "nk": "nk",
+    "gfx": "gfx",
+    "toml": "toml",
+    "yaml": "yaml",
+    "mog": "mog",
     "cjson": "json",
     "sdlstatic": "ext",
 }
@@ -296,6 +300,11 @@ def emit_cpp(manifest: Manifest, repo: Path) -> dict[str, dict[str, CppPlan]]:
         if "/net.h" in inc:
             # Net does not exist on Emscripten builds (no-stubs policy).
             guarded.append("#if __has_include(<SDL3_net/SDL_net.h>)")
+            guarded.append(inc)
+            guarded.append("#endif")
+        elif "/mog.h" in inc:
+            # HTTP is optional (SDLSTATIC_BUILD_HTTP).
+            guarded.append("#if __has_include(<mog/mog_c.h>)")
             guarded.append(inc)
             guarded.append("#endif")
         else:

@@ -57,7 +57,7 @@ collected before its tracks.
 
 Beyond the curated layer, generated bindings mirror the **entire C API**
 of every module into flat namespaces with C names minus prefixes — the
-same 2,156 functions in each language, plus enum constants:
+same 2,300+ functions in each language, plus enum constants:
 
 ```lua
 local s = SDL.CreateSurface(64, 48, SDL.PIXELFORMAT_RGBA8888)
@@ -75,7 +75,7 @@ B2.World_Step(w, 1.0 / 60.0, 4)
 ```
 
 Modules: `SDL`, `MIX`, `IMG`, `TTF`, `NET`, `PHYSFS`, `B2`, `NK`,
-`JSON`, `SDLStaticC`. Ownership is GC-safe by construction: pointers
+`GFX`, `TOML`, `YAML`, `MOG` (HTTP), `JSON`, `SDLStaticC`. Ownership is GC-safe by construction: pointers
 returned by create functions are destroyed by the GC exactly once, and
 calling the explicit destroy function first is also safe (never a
 double-free). Out-parameters become extra return values; structs marshal

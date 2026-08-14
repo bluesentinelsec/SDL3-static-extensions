@@ -2112,6 +2112,19 @@ static int GenL_SDL_GPUTextureSupportsSampleCount(lua_State *L)
     return 1;
 }
 
+static int GenL_SDL_GUIDToString(lua_State *L)
+{
+    (void)L;
+    SDL_GUID a0;
+    GenRead_SDL_GUID(L, 1, &a0);
+    const char *src1 = lua_isnoneornil(L, 2) ? "" : luaL_checkstring(L, 2);
+    char *a1 = SDL_strdup(src1);
+    int a2 = (int)luaL_checkinteger(L, 3);
+    SDL_GUIDToString(a0, a1, a2);
+    SDL_free(a1);
+    return 0;
+}
+
 static int GenL_SDL_GamepadConnected(lua_State *L)
 {
     (void)L;
@@ -2714,6 +2727,19 @@ static int GenL_SDL_GetError(lua_State *L)
     (void)L;
     const char * rv = SDL_GetError();
     if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDL_GetEventDescription(lua_State *L)
+{
+    (void)L;
+    const SDL_Event *a0 = (const SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    const char *src1 = lua_isnoneornil(L, 2) ? "" : luaL_checkstring(L, 2);
+    char *a1 = SDL_strdup(src1);
+    int a2 = (int)luaL_checkinteger(L, 3);
+    int rv = SDL_GetEventDescription(a0, a1, a2);
+    lua_pushinteger(L, (lua_Integer)rv);
+    SDL_free(a1);
     return 1;
 }
 
@@ -8827,6 +8853,19 @@ static int GenL_SDL_TryLockSpinlock(lua_State *L)
     return 2;
 }
 
+static int GenL_SDL_UCS4ToUTF8(lua_State *L)
+{
+    (void)L;
+    Uint32 a0 = (Uint32)luaL_checkinteger(L, 1);
+    const char *src1 = lua_isnoneornil(L, 2) ? "" : luaL_checkstring(L, 2);
+    char *a1 = SDL_strdup(src1);
+    char * rv = SDL_UCS4ToUTF8(a0, a1);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    if (rv != NULL) { SDL_free(rv); }
+    SDL_free(a1);
+    return 1;
+}
+
 static int GenL_SDL_UnbindAudioStream(lua_State *L)
 {
     (void)L;
@@ -9495,7 +9534,7 @@ static int GenL_SDL_utf8strnlen(lua_State *L)
 int SDLStaticGen_OpenLua_sdl(lua_State *L);
 int SDLStaticGen_OpenLua_sdl(lua_State *L)
 {
-    lua_createtable(L, 0, 871);
+    lua_createtable(L, 0, 874);
     lua_pushcfunction(L, GenL_SDL_AcquireCameraFrame);
     lua_setfield(L, -2, "AcquireCameraFrame");
     lua_pushcfunction(L, GenL_SDL_AcquireGPUCommandBuffer);
@@ -9812,6 +9851,8 @@ int SDLStaticGen_OpenLua_sdl(lua_State *L)
     lua_setfield(L, -2, "GPUTextureSupportsFormat");
     lua_pushcfunction(L, GenL_SDL_GPUTextureSupportsSampleCount);
     lua_setfield(L, -2, "GPUTextureSupportsSampleCount");
+    lua_pushcfunction(L, GenL_SDL_GUIDToString);
+    lua_setfield(L, -2, "GUIDToString");
     lua_pushcfunction(L, GenL_SDL_GamepadConnected);
     lua_setfield(L, -2, "GamepadConnected");
     lua_pushcfunction(L, GenL_SDL_GamepadEventsEnabled);
@@ -9936,6 +9977,8 @@ int SDLStaticGen_OpenLua_sdl(lua_State *L)
     lua_setfield(L, -2, "GetEnvironmentVariable");
     lua_pushcfunction(L, GenL_SDL_GetError);
     lua_setfield(L, -2, "GetError");
+    lua_pushcfunction(L, GenL_SDL_GetEventDescription);
+    lua_setfield(L, -2, "GetEventDescription");
     lua_pushcfunction(L, GenL_SDL_GetFloatProperty);
     lua_setfield(L, -2, "GetFloatProperty");
     lua_pushcfunction(L, GenL_SDL_GetGPUDeviceDriver);
@@ -11102,6 +11145,8 @@ int SDLStaticGen_OpenLua_sdl(lua_State *L)
     lua_setfield(L, -2, "TimeToWindows");
     lua_pushcfunction(L, GenL_SDL_TryLockSpinlock);
     lua_setfield(L, -2, "TryLockSpinlock");
+    lua_pushcfunction(L, GenL_SDL_UCS4ToUTF8);
+    lua_setfield(L, -2, "UCS4ToUTF8");
     lua_pushcfunction(L, GenL_SDL_UnbindAudioStream);
     lua_setfield(L, -2, "UnbindAudioStream");
     lua_pushcfunction(L, GenL_SDL_UnloadObject);

@@ -751,6 +751,30 @@ static int GenL_nk_color_fv(lua_State *L)
     return 1;
 }
 
+static int GenL_nk_color_hex_rgb(lua_State *L)
+{
+    (void)L;
+    const char *src0 = lua_isnoneornil(L, 1) ? "" : luaL_checkstring(L, 1);
+    char *a0 = SDL_strdup(src0);
+    struct nk_color a1;
+    GenRead_nk_color(L, 2, &a1);
+    nk_color_hex_rgb(a0, a1);
+    SDL_free(a0);
+    return 0;
+}
+
+static int GenL_nk_color_hex_rgba(lua_State *L)
+{
+    (void)L;
+    const char *src0 = lua_isnoneornil(L, 1) ? "" : luaL_checkstring(L, 1);
+    char *a0 = SDL_strdup(src0);
+    struct nk_color a1;
+    GenRead_nk_color(L, 2, &a1);
+    nk_color_hex_rgba(a0, a1);
+    SDL_free(a0);
+    return 0;
+}
+
 static int GenL_nk_color_hsv_b(lua_State *L)
 {
     (void)L;
@@ -4381,6 +4405,19 @@ static int GenL_nk_utf_decode(lua_State *L)
     return 2;
 }
 
+static int GenL_nk_utf_encode(lua_State *L)
+{
+    (void)L;
+    nk_rune a0 = (nk_rune)luaL_checkinteger(L, 1);
+    const char *src1 = lua_isnoneornil(L, 2) ? "" : luaL_checkstring(L, 2);
+    char *a1 = SDL_strdup(src1);
+    int a2 = (int)luaL_checkinteger(L, 3);
+    int rv = nk_utf_encode(a0, a1, a2);
+    lua_pushinteger(L, (lua_Integer)rv);
+    SDL_free(a1);
+    return 1;
+}
+
 static int GenL_nk_utf_len(lua_State *L)
 {
     (void)L;
@@ -4895,7 +4932,7 @@ static int GenL_nk_window_show_if(lua_State *L)
 int SDLStaticGen_OpenLua_nk(lua_State *L);
 int SDLStaticGen_OpenLua_nk(lua_State *L)
 {
-    lua_createtable(L, 0, 426);
+    lua_createtable(L, 0, 429);
     lua_pushcfunction(L, GenL_nk__begin);
     lua_setfield(L, -2, "_begin");
     lua_pushcfunction(L, GenL_nk__draw_begin);
@@ -5010,6 +5047,10 @@ int SDLStaticGen_OpenLua_nk(lua_State *L)
     lua_setfield(L, -2, "color_f");
     lua_pushcfunction(L, GenL_nk_color_fv);
     lua_setfield(L, -2, "color_fv");
+    lua_pushcfunction(L, GenL_nk_color_hex_rgb);
+    lua_setfield(L, -2, "color_hex_rgb");
+    lua_pushcfunction(L, GenL_nk_color_hex_rgba);
+    lua_setfield(L, -2, "color_hex_rgba");
     lua_pushcfunction(L, GenL_nk_color_hsv_b);
     lua_setfield(L, -2, "color_hsv_b");
     lua_pushcfunction(L, GenL_nk_color_hsv_bv);
@@ -5644,6 +5685,8 @@ int SDLStaticGen_OpenLua_nk(lua_State *L)
     lua_setfield(L, -2, "utf_at");
     lua_pushcfunction(L, GenL_nk_utf_decode);
     lua_setfield(L, -2, "utf_decode");
+    lua_pushcfunction(L, GenL_nk_utf_encode);
+    lua_setfield(L, -2, "utf_encode");
     lua_pushcfunction(L, GenL_nk_utf_len);
     lua_setfield(L, -2, "utf_len");
     lua_pushcfunction(L, GenL_nk_value_bool);
