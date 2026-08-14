@@ -147,6 +147,7 @@ LIBRARIES: list[LibrarySpec] = [
             "vfs/include/SDLStatic/*.h",
             "gui/include/SDLStatic/gui_grid.h",
             "tiled/include/SDLStatic/*.h",
+            "ttf/include/SDLStatic/*.h",
         ],
         includes=[],
         error_fn="SDL_GetError()",

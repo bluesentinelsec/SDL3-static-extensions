@@ -4,9 +4,11 @@
 #include "../src/gen_support_ruby.h"
 
 #include <SDLStatic/base64.h>
+#include <SDLStatic/bidi.h>
 #include <SDLStatic/chiptune.h>
 #include <SDLStatic/compress.h>
 #include <SDLStatic/crypto.h>
+#include <SDLStatic/debug_text.h>
 #include <SDLStatic/gpu_primitives.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/signals.h>
@@ -33,6 +35,20 @@ static void GenDtor_SDLStatic_FreeTiledMap(void *p)
 {
     SDLStatic_TiledMap *typed = (SDLStatic_TiledMap *)p;
     SDLStatic_FreeTiledMap(typed);
+}
+
+static mrb_value GenR_SDLStatic_BidiBaseIsRTL(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    const char *a0 = SDLStaticGen_RubyToStr(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool rv = SDLStatic_BidiBaseIsRTL(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
 }
 
 static mrb_value GenR_SDLStatic_CountSignalConnections(mrb_state *mrb, mrb_value self)
@@ -274,6 +290,18 @@ static mrb_value GenR_SDLStatic_OpenVFSRead(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_QuitDebugText(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_QuitDebugText();
+    return mrb_nil_value();
+    }
+}
+
 static mrb_value GenR_SDLStatic_SHA256(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -289,6 +317,19 @@ static mrb_value GenR_SDLStatic_SHA256(mrb_state *mrb, mrb_value self)
     rets[0] = mrb_bool_value((mrb_bool)(rv != 0));
     rets[1] = mrb_int_value(mrb, (mrb_int)io2);
     return mrb_ary_new_from_values(mrb, 2, rets);
+    }
+}
+
+static mrb_value GenR_SDLStatic_SetDebugTextSize(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    float a0 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    SDLStatic_SetDebugTextSize(a0);
+    return mrb_nil_value();
     }
 }
 
@@ -450,6 +491,7 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     struct RClass *mod;
     SDLStaticGen_RubyEnsureHandleClass(mrb);
     mod = mrb_define_module(mrb, "SDLStaticC");
+    mrb_define_module_function(mrb, mod, "BidiBaseIsRTL", GenR_SDLStatic_BidiBaseIsRTL, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CountSignalConnections", GenR_SDLStatic_CountSignalConnections, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateChipSFX", GenR_SDLStatic_CreateChipSFX, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateChipTone", GenR_SDLStatic_CreateChipTone, MRB_ARGS_ANY());
@@ -467,7 +509,9 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "LoadTiledMap", GenR_SDLStatic_LoadTiledMap, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "MountEncryptedArchiveFile", GenR_SDLStatic_MountEncryptedArchiveFile, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "OpenVFSRead", GenR_SDLStatic_OpenVFSRead, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "QuitDebugText", GenR_SDLStatic_QuitDebugText, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SHA256", GenR_SDLStatic_SHA256, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SetDebugTextSize", GenR_SDLStatic_SetDebugTextSize, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "TiledLayerCount", GenR_SDLStatic_TiledLayerCount, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "TiledLayerName", GenR_SDLStatic_TiledLayerName, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "TiledLayerType", GenR_SDLStatic_TiledLayerType, MRB_ARGS_ANY());

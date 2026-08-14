@@ -14,6 +14,10 @@
 
 ---
 
+<div align="center">
+  <img src="docs/assets/sse-banner.png" alt="SDL3 Static Extensions: a bag of holding erupting with game-development tools over an impossible-geometry block world" width="820">
+</div>
+
 SDL3 gives you a window, a renderer, input, and audio output — and then the
 dependency hunt begins: a mixer, an image loader, fonts, physics, a GUI, a
 data-format parser, an archive format, a scripting language. Each usually
@@ -34,7 +38,7 @@ and browser WebAssembly, and CI proves all of it on every push.
 | Audio: mixing, music, SFX, MIDI, chiptunes | `SDLStatic::Mixer` | SDL3_mixer 3.2.4 + vendored codecs, TiMidity, original MML synth |
 | 2D drawing primitives | `SDLStatic::Gfx` | SDL3_gfx + original GPU-batched equivalents |
 | Image loading/saving (13 formats) | `SDLStatic::Image` | SDL3_image, all-static codecs |
-| Text and fonts | `SDLStatic::TTF` | SDL3_ttf + minimal static FreeType |
+| Text and fonts, i18n shaping + BiDi | `SDLStatic::TTF` | SDL3_ttf + static FreeType, HarfBuzz, SheenBidi |
 | TCP/UDP networking | `SDLStatic::Net` | SDL3_net |
 | HTTP/S client + embedded server | `SDLStatic::Http` / `mog::mog` | [mog](https://github.com/bluesentinelsec/mog), statically linked |
 | Rigid-body physics | `SDLStatic::Physics` | Box2D v3 (pure C11) |
@@ -113,7 +117,7 @@ archive — ChaCha20 + PBKDF2 encrypted, authenticated before mounting.
 - **Delete, don't stub.** Features that would require shared libraries
   are removed from the headers — misuse fails at compile time, never at
   runtime.
-- **Tested where it runs.** 253 tests on six CI platforms (Linux, macOS,
+- **Tested where it runs.** 259 tests on six CI platforms (Linux, macOS,
   Windows, ASan+UBSan, Android emulator, browser WebAssembly) plus an
   iOS XCFramework batch job, with a link audit proving every test binary
   depends only on OS-built-in shared libraries.

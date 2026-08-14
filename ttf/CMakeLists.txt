@@ -7,9 +7,17 @@
 # their nine dependent public APIs are deleted (no-stubs; deps/SDL3_ttf.md).
 
 # The root project is CXX-only; the vendored SDL_ttf sources are C.
+# (HarfBuzz is C++ with a C API; it needs no exceptions or RTTI.)
 enable_language(C)
 
 add_library(SDLStatic_TTF STATIC
+  # Vendored HarfBuzz (Old MIT; deps/harfbuzz.md): official single-TU
+  # amalgamation, C++ but built with no exceptions/RTTI required.
+  harfbuzz/harfbuzz.cc
+  # Vendored SheenBidi (Apache-2.0; deps/sheenbidi.md): unity build.
+  sheenbidi/Source/SheenBidi.c
+  # SDLStatic addition (ours, zlib): UBA paragraph itemization helper.
+  src/sdlstatic_bidi.c
   src/SDL_ttf.c
   src/SDL_hashtable.c
   src/SDL_hashtable_ttf.c
@@ -35,6 +43,16 @@ target_include_directories(SDLStatic_TTF
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/harfbuzz
+    ${CMAKE_CURRENT_SOURCE_DIR}/sheenbidi/Headers
+    ${CMAKE_CURRENT_SOURCE_DIR}/sheenbidi/Source
+)
+
+target_compile_definitions(SDLStatic_TTF PRIVATE
+  TTF_USE_HARFBUZZ=1
+  HAVE_FREETYPE=1        # harfbuzz.cc: enable hb-ft
+  HB_NO_MMAP=1           # no platform mmap paths; keep the TU portable
+  SB_CONFIG_UNITY=1      # SheenBidi single-TU build
 )
 
 target_link_libraries(SDLStatic_TTF

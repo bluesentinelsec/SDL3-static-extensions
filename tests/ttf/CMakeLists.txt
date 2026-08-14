@@ -1,10 +1,15 @@
 add_executable(SDL3_static_extensions_ttf_test
   ttf_test.cpp
+  shaping_test.cpp
 )
 target_link_libraries(SDL3_static_extensions_ttf_test
   PRIVATE
     SDLStatic::TTF
     GTest::gtest_main
+)
+# shaping_test.cpp probes the vendored HarfBuzz directly.
+target_include_directories(SDL3_static_extensions_ttf_test SYSTEM PRIVATE
+  ${CMAKE_SOURCE_DIR}/ttf/harfbuzz
 )
 target_compile_definitions(SDL3_static_extensions_ttf_test PRIVATE
   TTF_TEST_ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets"

@@ -6,9 +6,11 @@
 #define SDLSTATIC_CPP_GEN_SDLSTATIC_H_
 
 #include <SDLStatic/base64.h>
+#include <SDLStatic/bidi.h>
 #include <SDLStatic/chiptune.h>
 #include <SDLStatic/compress.h>
 #include <SDLStatic/crypto.h>
+#include <SDLStatic/debug_text.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/tiled.h>
@@ -103,6 +105,9 @@ class TiledMapHandle {
 };
 
 // bool-returning C functions surfaced as Status.
+inline Status BidiBaseIsRTL(const char *utf8, int length) {
+  return ::SDLStatic_BidiBaseIsRTL(utf8, length) ? Status() : Status::FromSdl();
+}
 inline Status CryptoSelfTest() {
   return ::SDLStatic_CryptoSelfTest() ? Status() : Status::FromSdl();
 }
@@ -123,6 +128,7 @@ inline Status SHA256(const void *data, size_t dataSize, Uint8 digest[32]) {
 }
 
 // Everything else, aliased into the namespace unchanged.
+inline constexpr auto& BidiItemize = ::SDLStatic_BidiItemize;
 inline constexpr auto& ConnectSignal = ::SDLStatic_ConnectSignal;
 inline constexpr auto& CountSignalConnections = ::SDLStatic_CountSignalConnections;
 inline constexpr auto& CreateChipSFX = ::SDLStatic_CreateChipSFX;
@@ -140,6 +146,8 @@ inline constexpr auto& GuiGridEnd = ::SDLStatic_GuiGridEnd;
 inline constexpr auto& GuiGridNextRow = ::SDLStatic_GuiGridNextRow;
 inline constexpr auto& LoadVFSFile = ::SDLStatic_LoadVFSFile;
 inline constexpr auto& OpenVFSRead = ::SDLStatic_OpenVFSRead;
+inline constexpr auto& QuitDebugText = ::SDLStatic_QuitDebugText;
+inline constexpr auto& SetDebugTextSize = ::SDLStatic_SetDebugTextSize;
 
 }  // namespace ext
 }  // namespace sdlstatic
