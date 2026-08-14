@@ -10,6 +10,7 @@
 #include <SDLStatic/crypto.h>
 #include <SDLStatic/debug_text.h>
 #include <SDLStatic/gpu_primitives.h>
+#include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/tiled.h>
@@ -35,6 +36,12 @@ static void GenDtor_SDLStatic_FreeTiledMap(void *p)
 {
     SDLStatic_TiledMap *typed = (SDLStatic_TiledMap *)p;
     SDLStatic_FreeTiledMap(typed);
+}
+
+static void GenDtor_SDLStatic_DestroyGui(void *p)
+{
+    SDLStatic_Gui *typed = (SDLStatic_Gui *)p;
+    SDLStatic_DestroyGui(typed);
 }
 
 static int GenL_SDLStatic_BidiBaseIsRTL(lua_State *L)
@@ -92,6 +99,18 @@ static int GenL_SDLStatic_CreateChipTune(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_CreateGui(lua_State *L)
+{
+    (void)L;
+    SDL_Renderer *a0 = (SDL_Renderer *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Renderer");
+    size_t len1 = 0;
+    const char *a1 = luaL_checklstring(L, 2, &len1);
+    float a3 = (float)luaL_checknumber(L, 3);
+    SDLStatic_Gui * rv = SDLStatic_CreateGui(a0, (const void *)a1, (size_t)len1, a3);
+    SDLStaticGen_LuaPushOwned(L, (void *)rv, "SDLStatic_Gui", GenDtor_SDLStatic_DestroyGui);
+    return 1;
+}
+
 static int GenL_SDLStatic_CreateSignalEmitter(lua_State *L)
 {
     (void)L;
@@ -106,6 +125,14 @@ static int GenL_SDLStatic_CryptoSelfTest(lua_State *L)
     bool rv = SDLStatic_CryptoSelfTest();
     lua_pushboolean(L, (int)rv);
     return 1;
+}
+
+static int GenL_SDLStatic_DestroyGui(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaTakeHandle(L, 1, "SDLStatic_Gui");
+    SDLStatic_DestroyGui(a0);
+    return 0;
 }
 
 static int GenL_SDLStatic_DestroySignalEmitter(lua_State *L)
@@ -126,12 +153,34 @@ static int GenL_SDLStatic_DisconnectSignal(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_EncodeDataBase64(lua_State *L)
+{
+    (void)L;
+    size_t len0 = 0;
+    const char *a0 = luaL_checklstring(L, 1, &len0);
+    int io2 = (int)luaL_optinteger(L, 2, 0);
+    char * rv = SDLStatic_EncodeDataBase64((const void *)a0, (int)len0, &io2);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    if (rv != NULL) { SDL_free(rv); }
+    lua_pushinteger(L, (lua_Integer)io2);
+    return 2;
+}
+
 static int GenL_SDLStatic_FreeTiledMap(lua_State *L)
 {
     (void)L;
     SDLStatic_TiledMap *a0 = (SDLStatic_TiledMap *)SDLStaticGen_LuaTakeHandle(L, 1, "SDLStatic_TiledMap");
     SDLStatic_FreeTiledMap(a0);
     return 0;
+}
+
+static int GenL_SDLStatic_GuiContext(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    struct nk_context * rv = SDLStatic_GuiContext(a0);
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "nk_context");
+    return 1;
 }
 
 static int GenL_SDLStatic_GuiGridCell(lua_State *L)
@@ -167,6 +216,50 @@ static int GenL_SDLStatic_GuiGridNextRow(lua_State *L)
     return 0;
 }
 
+static int GenL_SDLStatic_GuiInputBegin(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDLStatic_GuiInputBegin(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GuiInputEnd(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDLStatic_GuiInputEnd(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GuiProcessEvent(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    const SDL_Event *a1 = (const SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_Event");
+    bool rv = SDLStatic_GuiProcessEvent(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiRender(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    bool rv = SDLStatic_GuiRender(a0);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiWantsInput(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    bool rv = SDLStatic_GuiWantsInput(a0);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_HMACSHA256(lua_State *L)
 {
     (void)L;
@@ -187,6 +280,18 @@ static int GenL_SDLStatic_LoadTiledMap(lua_State *L)
     const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checkstring(L, 1);
     SDLStatic_TiledMap * rv = SDLStatic_LoadTiledMap(a0);
     SDLStaticGen_LuaPushOwned(L, (void *)rv, "SDLStatic_TiledMap", GenDtor_SDLStatic_FreeTiledMap);
+    return 1;
+}
+
+static int GenL_SDLStatic_MountEncryptedArchive(lua_State *L)
+{
+    (void)L;
+    size_t len0 = 0;
+    const char *a0 = luaL_checklstring(L, 1, &len0);
+    const char *a2 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    const char *a3 = lua_isnoneornil(L, 3) ? NULL : luaL_checkstring(L, 3);
+    bool rv = SDLStatic_MountEncryptedArchive((const void *)a0, (int)len0, a2, a3);
+    lua_pushboolean(L, (int)rv);
     return 1;
 }
 
@@ -215,6 +320,18 @@ static int GenL_SDLStatic_QuitDebugText(lua_State *L)
     (void)L;
     SDLStatic_QuitDebugText();
     return 0;
+}
+
+static int GenL_SDLStatic_RenderDebugText(lua_State *L)
+{
+    (void)L;
+    SDL_Renderer *a0 = (SDL_Renderer *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Renderer");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    const char *a3 = lua_isnoneornil(L, 4) ? NULL : luaL_checkstring(L, 4);
+    bool rv = SDLStatic_RenderDebugText(a0, a1, a2, a3);
+    lua_pushboolean(L, (int)rv);
+    return 1;
 }
 
 static int GenL_SDLStatic_SHA256(lua_State *L)
@@ -348,7 +465,7 @@ static int GenL_SDLStatic_TiledTileWidth(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 32);
+    lua_createtable(L, 0, 43);
     lua_pushcfunction(L, GenL_SDLStatic_BidiBaseIsRTL);
     lua_setfield(L, -2, "BidiBaseIsRTL");
     lua_pushcfunction(L, GenL_SDLStatic_CountSignalConnections);
@@ -359,16 +476,24 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "CreateChipTone");
     lua_pushcfunction(L, GenL_SDLStatic_CreateChipTune);
     lua_setfield(L, -2, "CreateChipTune");
+    lua_pushcfunction(L, GenL_SDLStatic_CreateGui);
+    lua_setfield(L, -2, "CreateGui");
     lua_pushcfunction(L, GenL_SDLStatic_CreateSignalEmitter);
     lua_setfield(L, -2, "CreateSignalEmitter");
     lua_pushcfunction(L, GenL_SDLStatic_CryptoSelfTest);
     lua_setfield(L, -2, "CryptoSelfTest");
+    lua_pushcfunction(L, GenL_SDLStatic_DestroyGui);
+    lua_setfield(L, -2, "DestroyGui");
     lua_pushcfunction(L, GenL_SDLStatic_DestroySignalEmitter);
     lua_setfield(L, -2, "DestroySignalEmitter");
     lua_pushcfunction(L, GenL_SDLStatic_DisconnectSignal);
     lua_setfield(L, -2, "DisconnectSignal");
+    lua_pushcfunction(L, GenL_SDLStatic_EncodeDataBase64);
+    lua_setfield(L, -2, "EncodeDataBase64");
     lua_pushcfunction(L, GenL_SDLStatic_FreeTiledMap);
     lua_setfield(L, -2, "FreeTiledMap");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiContext);
+    lua_setfield(L, -2, "GuiContext");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridCell);
     lua_setfield(L, -2, "GuiGridCell");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridCellSpan);
@@ -377,16 +502,30 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "GuiGridEnd");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridNextRow);
     lua_setfield(L, -2, "GuiGridNextRow");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiInputBegin);
+    lua_setfield(L, -2, "GuiInputBegin");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiInputEnd);
+    lua_setfield(L, -2, "GuiInputEnd");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiProcessEvent);
+    lua_setfield(L, -2, "GuiProcessEvent");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiRender);
+    lua_setfield(L, -2, "GuiRender");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiWantsInput);
+    lua_setfield(L, -2, "GuiWantsInput");
     lua_pushcfunction(L, GenL_SDLStatic_HMACSHA256);
     lua_setfield(L, -2, "HMACSHA256");
     lua_pushcfunction(L, GenL_SDLStatic_LoadTiledMap);
     lua_setfield(L, -2, "LoadTiledMap");
+    lua_pushcfunction(L, GenL_SDLStatic_MountEncryptedArchive);
+    lua_setfield(L, -2, "MountEncryptedArchive");
     lua_pushcfunction(L, GenL_SDLStatic_MountEncryptedArchiveFile);
     lua_setfield(L, -2, "MountEncryptedArchiveFile");
     lua_pushcfunction(L, GenL_SDLStatic_OpenVFSRead);
     lua_setfield(L, -2, "OpenVFSRead");
     lua_pushcfunction(L, GenL_SDLStatic_QuitDebugText);
     lua_setfield(L, -2, "QuitDebugText");
+    lua_pushcfunction(L, GenL_SDLStatic_RenderDebugText);
+    lua_setfield(L, -2, "RenderDebugText");
     lua_pushcfunction(L, GenL_SDLStatic_SHA256);
     lua_setfield(L, -2, "SHA256");
     lua_pushcfunction(L, GenL_SDLStatic_SetDebugTextSize);

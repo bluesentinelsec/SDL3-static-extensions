@@ -1301,6 +1301,18 @@ static int GenL_TTF_StringToTag(lua_State *L)
     return 1;
 }
 
+static int GenL_TTF_TagToString(lua_State *L)
+{
+    (void)L;
+    Uint32 a0 = (Uint32)luaL_checkinteger(L, 1);
+    const char *src1 = lua_isnoneornil(L, 2) ? "" : luaL_checkstring(L, 2);
+    char *a1 = SDL_strdup(src1);
+    size_t a2 = (size_t)luaL_checkinteger(L, 3);
+    TTF_TagToString(a0, a1, a2);
+    SDL_free(a1);
+    return 0;
+}
+
 static int GenL_TTF_TextWrapWhitespaceVisible(lua_State *L)
 {
     (void)L;
@@ -1338,7 +1350,7 @@ static int GenL_TTF_WasInit(lua_State *L)
 int SDLStaticGen_OpenLua_ttf(lua_State *L);
 int SDLStaticGen_OpenLua_ttf(lua_State *L)
 {
-    lua_createtable(L, 0, 115);
+    lua_createtable(L, 0, 116);
     lua_pushcfunction(L, GenL_TTF_AddFallbackFont);
     lua_setfield(L, -2, "AddFallbackFont");
     lua_pushcfunction(L, GenL_TTF_AppendTextString);
@@ -1561,6 +1573,8 @@ int SDLStaticGen_OpenLua_ttf(lua_State *L)
     lua_setfield(L, -2, "SetTextWrapWidth");
     lua_pushcfunction(L, GenL_TTF_StringToTag);
     lua_setfield(L, -2, "StringToTag");
+    lua_pushcfunction(L, GenL_TTF_TagToString);
+    lua_setfield(L, -2, "TagToString");
     lua_pushcfunction(L, GenL_TTF_TextWrapWhitespaceVisible);
     lua_setfield(L, -2, "TextWrapWhitespaceVisible");
     lua_pushcfunction(L, GenL_TTF_UpdateText);

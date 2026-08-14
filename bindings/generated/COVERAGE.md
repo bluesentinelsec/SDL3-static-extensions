@@ -12,31 +12,35 @@ types). The full C API additionally stays reachable from C/C++.
 
 | Library | Functions | C++ raii | C++ status | C++ alias | Lua+Ruby bound | skipped |
 |---|---|---|---|---|---|---|
-| SDL3 core | 1205 | 545 | 143 | 492 | 871 | 334 |
+| SDL3 core | 1205 | 545 | 143 | 492 | 874 | 331 |
 | SDL_mixer | 94 | 79 | 2 | 9 | 84 | 10 |
 | SDL_image | 84 | 27 | 20 | 36 | 81 | 3 |
-| SDL_ttf | 117 | 101 | 1 | 12 | 115 | 2 |
+| SDL_ttf | 117 | 101 | 1 | 12 | 116 | 1 |
 | SDL_net | 34 | 15 | 1 | 15 | 27 | 7 |
-| PhysFS | 98 | 0 | 0 | 98 | 82 | 16 |
+| PhysFS | 98 | 0 | 0 | 98 | 83 | 15 |
 | Box2D | 421 | 120 | 0 | 299 | 385 | 36 |
-| Nuklear | 534 | 0 | 0 | 534 | 426 | 108 |
-| cJSON | 78 | 57 | 0 | 20 | 68 | 10 |
-| SDLStatic modules | 40 | 12 | 7 | 20 | 32 | 8 |
-| **Total** | 2705 | 956 | 174 | 1535 | 2171 | 534 |
+| Nuklear | 534 | 0 | 0 | 534 | 429 | 105 |
+| SDL3_gfx | 72 | 5 | 57 | 10 | 62 | 10 |
+| tomlc99 | 38 | 15 | 0 | 22 | 18 | 20 |
+| libyaml | 48 | 0 | 0 | 48 | 2 | 46 |
+| mog HTTP/S | 69 | 54 | 0 | 12 | 67 | 2 |
+| cJSON | 78 | 57 | 0 | 20 | 70 | 8 |
+| SDLStatic modules | 53 | 19 | 9 | 23 | 43 | 10 |
+| **Total** | 2945 | 1037 | 233 | 1630 | 2341 | 604 |
 
 ## Script-surface skip reasons
 
-- 236: unmarshalable parameter type
-- 113: unmarshalable return type
+- 289: unmarshalable parameter type
+- 129: unmarshalable return type
 - 76: stdlib clone
 - 53: math clone
 - 47: threading
-- 6: callback parameter
+- 7: callback parameter
 - 3: owned string, no free fn
 
 ## Per-library skipped functions
 
-<details><summary>SDL3 core (334)</summary>
+<details><summary>SDL3 core (331)</summary>
 
 - `SDL_AcquireGPUSwapchainTexture` — param swapchain_texture: SDL_GPUTexture**
 - `SDL_AddAtomicInt` — threading
@@ -88,7 +92,6 @@ types). The full C API additionally stays reachable from C/C++.
 - `SDL_GL_GetCurrentContext` — return type SDL_GLContext
 - `SDL_GL_GetProcAddress` — return type SDL_FunctionPointer
 - `SDL_GL_MakeCurrent` — param context: SDL_GLContext
-- `SDL_GUIDToString` — param pszGUID: char*
 - `SDL_GetAssertionHandler` — return type SDL_AssertionHandler
 - `SDL_GetAtomicInt` — threading
 - `SDL_GetAtomicPointer` — threading
@@ -108,7 +111,6 @@ types). The full C API additionally stays reachable from C/C++.
 - `SDL_GetDefaultLogOutputFunction` — return type SDL_LogOutputFunction
 - `SDL_GetDisplays` — return type SDL_DisplayID*
 - `SDL_GetEnvironmentVariables` — return type char**
-- `SDL_GetEventDescription` — param buf: char*
 - `SDL_GetEventFilter` — param filter: SDL_EventFilter*
 - `SDL_GetFullscreenDisplayModes` — return type SDL_DisplayMode**
 - `SDL_GetGamepadBindings` — return type SDL_GamepadBinding**
@@ -211,7 +213,6 @@ types). The full C API additionally stays reachable from C/C++.
 - `SDL_TryLockRWLockForReading` — threading
 - `SDL_TryLockRWLockForWriting` — threading
 - `SDL_TryWaitSemaphore` — threading
-- `SDL_UCS4ToUTF8` — param dst: char*
 - `SDL_UnbindAudioStreams` — param streams: SDL_AudioStream**
 - `SDL_UnlockJoysticks` — param cb0: <funcptr>*
 - `SDL_UnlockMutex` — threading
@@ -398,10 +399,9 @@ types). The full C API additionally stays reachable from C/C++.
 
 </details>
 
-<details><summary>SDL_ttf (2)</summary>
+<details><summary>SDL_ttf (1)</summary>
 
 - `TTF_GetTextSubStringsForRange` — return type TTF_SubString**
-- `TTF_TagToString` — param string: char*
 
 </details>
 
@@ -417,7 +417,7 @@ types). The full C API additionally stays reachable from C/C++.
 
 </details>
 
-<details><summary>PhysFS (16)</summary>
+<details><summary>PhysFS (15)</summary>
 
 - `PHYSFS_enumerate` — param c: PHYSFS_EnumerateCallback
 - `PHYSFS_enumerateFiles` — return type char**
@@ -431,7 +431,6 @@ types). The full C API additionally stays reachable from C/C++.
 - `PHYSFS_supportedArchiveTypes` — return type const PHYSFS_ArchiveInfo**
 - `PHYSFS_ucs4stricmp` — param str1: const PHYSFS_uint32*
 - `PHYSFS_utf16stricmp` — param str1: const PHYSFS_uint16*
-- `PHYSFS_utf8FromLatin1` — param dst: char*
 - `PHYSFS_utf8FromUcs2` — param src: const PHYSFS_uint16*
 - `PHYSFS_utf8FromUcs4` — param src: const PHYSFS_uint32*
 - `PHYSFS_utf8FromUtf16` — param src: const PHYSFS_uint16*
@@ -479,7 +478,7 @@ types). The full C API additionally stays reachable from C/C++.
 
 </details>
 
-<details><summary>Nuklear (108)</summary>
+<details><summary>Nuklear (105)</summary>
 
 - `nk_buffer_init_fixed` — param memory: void*
 - `nk_buffer_memory` — return type void*
@@ -490,8 +489,6 @@ types). The full C API additionally stays reachable from C/C++.
 - `nk_button_image_styled` — param img: struct nk_image
 - `nk_button_image_text` — param img: struct nk_image
 - `nk_button_image_text_styled` — param img: struct nk_image
-- `nk_color_hex_rgb` — param output: char*
-- `nk_color_hex_rgba` — param output: char*
 - `nk_combo` — param items: const char**
 - `nk_combo_begin_image` — param img: struct nk_image
 - `nk_combo_begin_image_label` — param arg2: struct nk_image
@@ -505,8 +502,8 @@ types). The full C API additionally stays reachable from C/C++.
 - `nk_contextual_item_image_text` — param arg1: struct nk_image
 - `nk_draw_list_add_image` — param texture: struct nk_image
 - `nk_edit_buffer` — param arg3: nk_plugin_filter
-- `nk_edit_string` — param buffer: char*
-- `nk_edit_string_zero_terminated` — param buffer: char*
+- `nk_edit_string` — param arg5: nk_plugin_filter
+- `nk_edit_string_zero_terminated` — param arg4: nk_plugin_filter
 - `nk_fill_polygon` — param points: const float*
 - `nk_font_atlas_add_compressed` — param memory: void*
 - `nk_font_atlas_add_from_memory` — param memory: void*
@@ -586,35 +583,132 @@ types). The full C API additionally stays reachable from C/C++.
 - `nk_tree_element_image_push_hashed` — param arg2: struct nk_image
 - `nk_tree_image_push_hashed` — param arg2: struct nk_image
 - `nk_tree_state_image_push` — param arg2: struct nk_image
-- `nk_utf_encode` — param arg1: char*
 - `nk_vec2iv` — param xy: const int*
 - `nk_vec2v` — param xy: const float*
 
 </details>
 
-<details><summary>cJSON (10)</summary>
+<details><summary>SDL3_gfx (10)</summary>
+
+- `aapolygonColor` — param vx: const Sint16*
+- `aapolygonRGBA` — param vx: const Sint16*
+- `bezierColor` — param vx: const Sint16*
+- `bezierRGBA` — param vx: const Sint16*
+- `filledPolygonColor` — param vx: const Sint16*
+- `filledPolygonRGBA` — param vx: const Sint16*
+- `gfxPrimitivesSetFont` — param fontdata: const void*
+- `polygonColor` — param vx: const Sint16*
+- `polygonRGBA` — param vx: const Sint16*
+- `texturedPolygon` — param vx: const Sint16*
+
+</details>
+
+<details><summary>tomlc99 (20)</summary>
+
+- `toml_bool_at` — return type toml_datum_t
+- `toml_bool_in` — return type toml_datum_t
+- `toml_double_at` — return type toml_datum_t
+- `toml_double_in` — return type toml_datum_t
+- `toml_int_at` — return type toml_datum_t
+- `toml_int_in` — return type toml_datum_t
+- `toml_parse_file` — param fp: FILE*
+- `toml_raw_at` — return type toml_raw_t
+- `toml_raw_in` — return type toml_raw_t
+- `toml_rtob` — param s: toml_raw_t
+- `toml_rtod` — param s: toml_raw_t
+- `toml_rtod_ex` — param s: toml_raw_t
+- `toml_rtoi` — param s: toml_raw_t
+- `toml_rtos` — param s: toml_raw_t
+- `toml_rtots` — param s: toml_raw_t
+- `toml_set_memutil` — param xxmalloc: <funcptr>*
+- `toml_string_at` — return type toml_datum_t
+- `toml_string_in` — return type toml_datum_t
+- `toml_timestamp_at` — return type toml_datum_t
+- `toml_timestamp_in` — return type toml_datum_t
+
+</details>
+
+<details><summary>libyaml (46)</summary>
+
+- `yaml_alias_event_initialize` — param event: yaml_event_t*
+- `yaml_document_add_mapping` — param document: yaml_document_t*
+- `yaml_document_add_scalar` — param document: yaml_document_t*
+- `yaml_document_add_sequence` — param document: yaml_document_t*
+- `yaml_document_append_mapping_pair` — param document: yaml_document_t*
+- `yaml_document_append_sequence_item` — param document: yaml_document_t*
+- `yaml_document_delete` — param document: yaml_document_t*
+- `yaml_document_end_event_initialize` — param event: yaml_event_t*
+- `yaml_document_get_node` — return type yaml_node_t*
+- `yaml_document_get_root_node` — return type yaml_node_t*
+- `yaml_document_initialize` — param document: yaml_document_t*
+- `yaml_document_start_event_initialize` — param event: yaml_event_t*
+- `yaml_emitter_close` — param emitter: yaml_emitter_t*
+- `yaml_emitter_delete` — param emitter: yaml_emitter_t*
+- `yaml_emitter_dump` — param emitter: yaml_emitter_t*
+- `yaml_emitter_emit` — param emitter: yaml_emitter_t*
+- `yaml_emitter_flush` — param emitter: yaml_emitter_t*
+- `yaml_emitter_initialize` — param emitter: yaml_emitter_t*
+- `yaml_emitter_open` — param emitter: yaml_emitter_t*
+- `yaml_emitter_set_break` — param emitter: yaml_emitter_t*
+- `yaml_emitter_set_canonical` — param emitter: yaml_emitter_t*
+- `yaml_emitter_set_encoding` — param emitter: yaml_emitter_t*
+- `yaml_emitter_set_indent` — param emitter: yaml_emitter_t*
+- `yaml_emitter_set_output` — param emitter: yaml_emitter_t*
+- `yaml_emitter_set_output_file` — param emitter: yaml_emitter_t*
+- `yaml_emitter_set_output_string` — param emitter: yaml_emitter_t*
+- `yaml_emitter_set_unicode` — param emitter: yaml_emitter_t*
+- `yaml_emitter_set_width` — param emitter: yaml_emitter_t*
+- `yaml_event_delete` — param event: yaml_event_t*
+- `yaml_mapping_end_event_initialize` — param event: yaml_event_t*
+- `yaml_mapping_start_event_initialize` — param event: yaml_event_t*
+- `yaml_parser_delete` — param parser: yaml_parser_t*
+- `yaml_parser_initialize` — param parser: yaml_parser_t*
+- `yaml_parser_load` — param parser: yaml_parser_t*
+- `yaml_parser_parse` — param parser: yaml_parser_t*
+- `yaml_parser_scan` — param parser: yaml_parser_t*
+- `yaml_parser_set_encoding` — param parser: yaml_parser_t*
+- `yaml_parser_set_input` — param parser: yaml_parser_t*
+- `yaml_parser_set_input_file` — param parser: yaml_parser_t*
+- `yaml_parser_set_input_string` — param parser: yaml_parser_t*
+- `yaml_scalar_event_initialize` — param event: yaml_event_t*
+- `yaml_sequence_end_event_initialize` — param event: yaml_event_t*
+- `yaml_sequence_start_event_initialize` — param event: yaml_event_t*
+- `yaml_stream_end_event_initialize` — param event: yaml_event_t*
+- `yaml_stream_start_event_initialize` — param event: yaml_event_t*
+- `yaml_token_delete` — param token: yaml_token_t*
+
+</details>
+
+<details><summary>mog HTTP/S (2)</summary>
+
+- `mog_server_route` — param handler: mog_handler_fn
+- `mog_server_set_default_handler` — param handler: mog_handler_fn
+
+</details>
+
+<details><summary>cJSON (8)</summary>
 
 - `cJSON_CreateDoubleArray` — param numbers: const double*
 - `cJSON_CreateFloatArray` — param numbers: const float*
 - `cJSON_CreateIntArray` — param numbers: const int*
 - `cJSON_CreateStringArray` — param strings: const char**
-- `cJSON_Minify` — param json: char*
 - `cJSON_ParseWithLengthOpts` — param return_parse_end: const char**
 - `cJSON_ParseWithOpts` — param return_parse_end: const char**
-- `cJSON_PrintPreallocated` — param buffer: char*
 - `cJSON_free` — param object: void*
 - `cJSON_malloc` — return type void*
 
 </details>
 
-<details><summary>SDLStatic modules (8)</summary>
+<details><summary>SDLStatic modules (10)</summary>
 
 - `SDLStatic_BidiItemize` — returns struct pointer
+- `SDLStatic_CompressData` — return type unsigned char*
 - `SDLStatic_ConnectSignal` — param callback: SDLStatic_SignalCallback
 - `SDLStatic_DecodeDataBase64` — return type unsigned char*
 - `SDLStatic_DecompressData` — return type unsigned char*
 - `SDLStatic_DecryptData` — return type unsigned char*
 - `SDLStatic_EmitSignal` — param args: void*
+- `SDLStatic_EncryptData` — return type unsigned char*
 - `SDLStatic_GuiGridBegin` — param weights: const float*
 - `SDLStatic_LoadVFSFile` — return type unsigned char*
 

@@ -35,3 +35,6 @@ target_link_libraries(SDLStatic_Cpp PUBLIC
 if(SDLSTATIC_BUILD_NET)
   target_link_libraries(SDLStatic_Cpp INTERFACE SDLStatic::Net)
 endif()
+if(SDLSTATIC_BUILD_HTTP)
+  target_link_libraries(SDLStatic_Cpp INTERFACE SDLStatic::Http)
+endif()

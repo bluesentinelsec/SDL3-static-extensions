@@ -7,4 +7,4 @@ target_link_libraries(SDL3_static_extensions_version_test
     GTest::gtest_main
 )
 cppboot_set_project_warnings(SDL3_static_extensions_version_test)
-gtest_discover_tests(SDL3_static_extensions_version_test)
+gtest_discover_tests(SDL3_static_extensions_version_test DISCOVERY_TIMEOUT 60)

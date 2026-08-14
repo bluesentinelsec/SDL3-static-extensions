@@ -59,7 +59,7 @@ write.
 Beyond the curated types, a generated surface (from `tools/bindgen`)
 covers **every function of every module**, namespaced per library:
 `sdlstatic::sdl`, `::mix`, `::img`, `::ttf`, `::net`, `::vfs`, `::b2`,
-`::nk`, `::json`, `::ext`.
+`::nk`, `::gfx`, `::toml`, `::yaml`, `::mog`, `::json`, `::ext`.
 
 - **RAII owners** for every resource with a create/destroy pair — 60+
   types, including by-value ids (`SDL_PropertiesID`, Box2D

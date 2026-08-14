@@ -10,7 +10,7 @@ target_compile_definitions(SDL3_static_extensions_image_test PRIVATE
   IMAGE_TEST_ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets"
 )
 cppboot_set_project_warnings(SDL3_static_extensions_image_test)
-gtest_discover_tests(SDL3_static_extensions_image_test)
+gtest_discover_tests(SDL3_static_extensions_image_test DISCOVERY_TIMEOUT 60)
 
 # Link audit: the test binary (static SDLStatic::Image + static SDL3) must
 # depend only on OS-built-in shared libraries — the project's core promise.

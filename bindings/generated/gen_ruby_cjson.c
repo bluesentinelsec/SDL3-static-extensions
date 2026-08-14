@@ -773,6 +773,21 @@ static mrb_value GenR_cJSON_IsTrue(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_cJSON_Minify(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    const char *src0 = SDLStaticGen_RubyToStr(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    char *a0 = SDL_strdup(src0 != NULL ? src0 : "");
+    cJSON_Minify(a0);
+    SDL_free(a0);
+    return mrb_nil_value();
+    }
+}
+
 static mrb_value GenR_cJSON_Parse(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -829,6 +844,24 @@ static mrb_value GenR_cJSON_PrintBuffered(mrb_state *mrb, mrb_value self)
     mrb_value rstr = rv == NULL ? mrb_nil_value() : mrb_str_new_cstr(mrb, rv);
     if (rv != NULL) { cJSON_free(rv); }
     return rstr;
+    }
+}
+
+static mrb_value GenR_cJSON_PrintPreallocated(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    cJSON *a0 = (cJSON *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "cJSON");
+    const char *src1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    char *a1 = SDL_strdup(src1 != NULL ? src1 : "");
+    int a2 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    cJSON_bool a3 = (cJSON_bool)SDLStaticGen_RubyToBool((argc > 3 ? argv[3] : mrb_nil_value()));
+    cJSON_bool rv = cJSON_PrintPreallocated(a0, a1, a2, a3);
+    SDL_free(a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
     }
 }
 
@@ -1011,10 +1044,12 @@ void SDLStaticGen_OpenRuby_cjson(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "IsRaw", GenR_cJSON_IsRaw, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "IsString", GenR_cJSON_IsString, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "IsTrue", GenR_cJSON_IsTrue, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "Minify", GenR_cJSON_Minify, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "Parse", GenR_cJSON_Parse, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ParseWithLength", GenR_cJSON_ParseWithLength, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "Print", GenR_cJSON_Print, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "PrintBuffered", GenR_cJSON_PrintBuffered, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "PrintPreallocated", GenR_cJSON_PrintPreallocated, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "PrintUnformatted", GenR_cJSON_PrintUnformatted, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ReplaceItemInArray", GenR_cJSON_ReplaceItemInArray, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ReplaceItemInObject", GenR_cJSON_ReplaceItemInObject, MRB_ARGS_ANY());

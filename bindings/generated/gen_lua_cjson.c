@@ -543,6 +543,16 @@ static int GenL_cJSON_IsTrue(lua_State *L)
     return 1;
 }
 
+static int GenL_cJSON_Minify(lua_State *L)
+{
+    (void)L;
+    const char *src0 = lua_isnoneornil(L, 1) ? "" : luaL_checkstring(L, 1);
+    char *a0 = SDL_strdup(src0);
+    cJSON_Minify(a0);
+    SDL_free(a0);
+    return 0;
+}
+
 static int GenL_cJSON_Parse(lua_State *L)
 {
     (void)L;
@@ -581,6 +591,20 @@ static int GenL_cJSON_PrintBuffered(lua_State *L)
     char * rv = cJSON_PrintBuffered(a0, a1, a2);
     if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
     if (rv != NULL) { cJSON_free(rv); }
+    return 1;
+}
+
+static int GenL_cJSON_PrintPreallocated(lua_State *L)
+{
+    (void)L;
+    cJSON *a0 = (cJSON *)SDLStaticGen_LuaCheckHandle(L, 1, "cJSON");
+    const char *src1 = lua_isnoneornil(L, 2) ? "" : luaL_checkstring(L, 2);
+    char *a1 = SDL_strdup(src1);
+    int a2 = (int)luaL_checkinteger(L, 3);
+    cJSON_bool a3 = (cJSON_bool)lua_toboolean(L, 4);
+    cJSON_bool rv = cJSON_PrintPreallocated(a0, a1, a2, a3);
+    lua_pushboolean(L, (int)rv);
+    SDL_free(a1);
     return 1;
 }
 
@@ -670,7 +694,7 @@ static int GenL_cJSON_Version(lua_State *L)
 int SDLStaticGen_OpenLua_cjson(lua_State *L);
 int SDLStaticGen_OpenLua_cjson(lua_State *L)
 {
-    lua_createtable(L, 0, 68);
+    lua_createtable(L, 0, 70);
     lua_pushcfunction(L, GenL_cJSON_AddArrayToObject);
     lua_setfield(L, -2, "AddArrayToObject");
     lua_pushcfunction(L, GenL_cJSON_AddBoolToObject);
@@ -783,6 +807,8 @@ int SDLStaticGen_OpenLua_cjson(lua_State *L)
     lua_setfield(L, -2, "IsString");
     lua_pushcfunction(L, GenL_cJSON_IsTrue);
     lua_setfield(L, -2, "IsTrue");
+    lua_pushcfunction(L, GenL_cJSON_Minify);
+    lua_setfield(L, -2, "Minify");
     lua_pushcfunction(L, GenL_cJSON_Parse);
     lua_setfield(L, -2, "Parse");
     lua_pushcfunction(L, GenL_cJSON_ParseWithLength);
@@ -791,6 +817,8 @@ int SDLStaticGen_OpenLua_cjson(lua_State *L)
     lua_setfield(L, -2, "Print");
     lua_pushcfunction(L, GenL_cJSON_PrintBuffered);
     lua_setfield(L, -2, "PrintBuffered");
+    lua_pushcfunction(L, GenL_cJSON_PrintPreallocated);
+    lua_setfield(L, -2, "PrintPreallocated");
     lua_pushcfunction(L, GenL_cJSON_PrintUnformatted);
     lua_setfield(L, -2, "PrintUnformatted");
     lua_pushcfunction(L, GenL_cJSON_ReplaceItemInArray);

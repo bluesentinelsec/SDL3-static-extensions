@@ -284,6 +284,11 @@ class _RubyEmitter:
                 post.append(f"GenPush_{base}(mrb, &out{i})")
                 i += 1
                 continue  # pure out-param: consumes no Ruby argument
+            elif pp.mode == "mutstr_in":
+                self.w(f"    const char *src{i} = SDLStaticGen_RubyToStr(mrb, {argval(arg_n)});")
+                self.w(f"    char *{v} = SDL_strdup(src{i} != NULL ? src{i} : \"\");")
+                call_args[i] = v
+                post.insert(0, f"FREE_MARK:{i}")
             elif pp.mode == "inout":
                 decl = pp.info.declared or base
                 if pp.info.kind == TK.ENUM:
@@ -333,6 +338,10 @@ class _RubyEmitter:
             else:
                 primary = f"SDLStaticGen_RubyPushHandle(mrb, (void *)rv, \"{ret.base}\")"
 
+        frees = [e for e in post if e.startswith("FREE_MARK:")]
+        post = [e for e in post if not e.startswith("FREE_MARK:")]
+        for fm in frees:
+            self.w(f"    SDL_free(a{fm.split(':')[1]});")
         outs = ([primary] if primary else []) + post
         if not outs:
             self.w("    return mrb_nil_value();")

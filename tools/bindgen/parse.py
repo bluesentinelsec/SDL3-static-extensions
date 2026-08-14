@@ -278,23 +278,41 @@ def parse_params(paramtext: str) -> tuple[list[Param], bool] | None:
     return params, variadic
 
 
+_C_TYPE_TAIL_KEYWORDS = {
+    "int", "char", "long", "short", "float", "double", "void", "bool",
+    "unsigned", "signed", "const",
+}
+
+
 def _split_decl(raw: str) -> tuple[CType, str] | None:
-    """Split 'const char *name' into (CType, name). Name may be absent."""
+    """Split 'const char *name' into (CType, name). Name may be absent.
+
+    Ambiguity rule: a single token, a trailing '*', or a trailing C type
+    keyword means the declaration is unnamed ("int", "unsigned int",
+    "struct nk_color") — parse the whole text as the type. Otherwise the
+    last identifier is the parameter name ("unsigned threads").
+    """
     raw = raw.strip()
-    # Whole-declaration-as-type first: unnamed params like "int" or
-    # "struct nk_color" must not have their tail eaten as a name
-    # ("int" -> type "i", name "nt").
+    tokens = raw.replace("*", " ").split()
+    unnamed = (
+        len(tokens) <= 1
+        or raw.rstrip().endswith("*")
+        or tokens[-1] in _C_TYPE_TAIL_KEYWORDS
+    )
+    if unnamed:
+        whole = parse_ctype(raw)
+        if whole is not None:
+            return whole, ""
+    m = re.fullmatch(r"(.+?)\s*([A-Za-z_][A-Za-z0-9_]*)?\s*", raw, flags=re.S)
+    if m:
+        typepart, name = m.group(1), m.group(2) or ""
+        probe = parse_ctype(typepart)
+        if probe is not None:
+            return probe, name
     whole = parse_ctype(raw)
     if whole is not None:
         return whole, ""
-    m = re.fullmatch(r"(.+?)\s*([A-Za-z_][A-Za-z0-9_]*)?\s*", raw, flags=re.S)
-    if not m:
-        return None
-    typepart, name = m.group(1), m.group(2) or ""
-    probe = parse_ctype(typepart)
-    if probe is None:
-        return None
-    return probe, name
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -302,42 +320,52 @@ def _split_decl(raw: str) -> tuple[CType, str] | None:
 
 _FUNC_PATTERNS = {
     "sdl": re.compile(
-        r"extern\s+SDL_DECLSPEC\s+(?P<ret>[^;()]*?)\s*SDLCALL\s+"
+        r"extern\s+SDL_DECLSPEC\s+(?P<ret>[^;()#]*?)\s*SDLCALL\s+"
         r"(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
         flags=re.S,
     ),
     "physfs": re.compile(
-        r"PHYSFS_DECL\s+(?P<ret>[^;()]*?[\s*])\s*"
+        r"PHYSFS_DECL\s+(?P<ret>[^;()#]*?[\s*])\s*"
         r"(?P<name>PHYSFS_[A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
         flags=re.S,
     ),
     "b2": re.compile(
-        r"B2_API\s+(?P<ret>[^;()]*?[\s*])\s*"
+        r"B2_API\s+(?P<ret>[^;()#]*?[\s*])\s*"
         r"(?P<name>b2[A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
         flags=re.S,
     ),
     "nk": re.compile(
-        r"NK_API\s+(?P<ret>[^;()]*?[\s*])\s*"
+        r"NK_API\s+(?P<ret>[^;()#]*?[\s*])\s*"
         r"(?P<name>nk_[A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
         flags=re.S,
     ),
     "cjson": re.compile(
-        r"CJSON_PUBLIC\(\s*(?P<ret>[^;()]*?)\s*\)\s+"
+        r"CJSON_PUBLIC\(\s*(?P<ret>[^;()#]*?)\s*\)\s+"
         r"(?P<name>cJSON_[A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
         flags=re.S,
     ),
     "toml": re.compile(
-        r"TOML_EXTERN\s+(?P<ret>[^;()]*?[\s*])\s*"
+        r"TOML_EXTERN\s+(?P<ret>[^;()#]*?[\s*])\s*"
         r"(?P<name>toml_[A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
         flags=re.S,
     ),
     "yaml": re.compile(
-        r"YAML_DECLARE\(\s*(?P<ret>[^;()]*?)\s*\)\s+"
+        r"YAML_DECLARE\(\s*(?P<ret>[^;()#]*?)\s*\)\s+"
         r"(?P<name>yaml_[A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
         flags=re.S,
     ),
+    "gfx": re.compile(
+        r"SDL3_(?:GFXPRIMITIVES|ROTOZOOM|FRAMERATE)_SCOPE\s+(?P<ret>[^;()#]*?[\s*])\s*"
+        r"(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
+        flags=re.S,
+    ),
+    "mog": re.compile(
+        r"MOG_C_API\s+(?P<ret>[^;()#]*?[\s*])\s*"
+        r"(?P<name>mog_[A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
+        flags=re.S,
+    ),
     "sdlstatic": re.compile(
-        r"extern\s+(?P<ret>[^;()]*?[\s*])\s*"
+        r"extern\s+(?P<ret>[^;()#]*?[\s*])\s*"
         r"(?P<name>SDLStatic_[A-Za-z0-9_]*)\s*\((?P<params>[^;]*?)\)\s*;",
         flags=re.S,
     ),

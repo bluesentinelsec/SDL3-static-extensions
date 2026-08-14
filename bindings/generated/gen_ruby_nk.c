@@ -997,6 +997,40 @@ static mrb_value GenR_nk_color_fv(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_nk_color_hex_rgb(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    const char *src0 = SDLStaticGen_RubyToStr(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    char *a0 = SDL_strdup(src0 != NULL ? src0 : "");
+    struct nk_color a1;
+    GenRead_nk_color(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &a1);
+    nk_color_hex_rgb(a0, a1);
+    SDL_free(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_nk_color_hex_rgba(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    const char *src0 = SDLStaticGen_RubyToStr(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    char *a0 = SDL_strdup(src0 != NULL ? src0 : "");
+    struct nk_color a1;
+    GenRead_nk_color(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &a1);
+    nk_color_hex_rgba(a0, a1);
+    SDL_free(a0);
+    return mrb_nil_value();
+    }
+}
+
 static mrb_value GenR_nk_color_hsv_b(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -6103,6 +6137,23 @@ static mrb_value GenR_nk_utf_decode(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_nk_utf_encode(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    nk_rune a0 = (nk_rune)SDLStaticGen_RubyToInt(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    const char *src1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    char *a1 = SDL_strdup(src1 != NULL ? src1 : "");
+    int a2 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    int rv = nk_utf_encode(a0, a1, a2);
+    SDL_free(a1);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
 static mrb_value GenR_nk_utf_len(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -6910,6 +6961,8 @@ void SDLStaticGen_OpenRuby_nk(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "color_dv", GenR_nk_color_dv, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "color_f", GenR_nk_color_f, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "color_fv", GenR_nk_color_fv, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "color_hex_rgb", GenR_nk_color_hex_rgb, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "color_hex_rgba", GenR_nk_color_hex_rgba, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "color_hsv_b", GenR_nk_color_hsv_b, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "color_hsv_bv", GenR_nk_color_hsv_bv, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "color_hsv_f", GenR_nk_color_hsv_f, MRB_ARGS_ANY());
@@ -7227,6 +7280,7 @@ void SDLStaticGen_OpenRuby_nk(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "triangle_from_direction", GenR_nk_triangle_from_direction, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "utf_at", GenR_nk_utf_at, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "utf_decode", GenR_nk_utf_decode, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "utf_encode", GenR_nk_utf_encode, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "utf_len", GenR_nk_utf_len, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "value_bool", GenR_nk_value_bool, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "value_color_byte", GenR_nk_value_color_byte, MRB_ARGS_ANY());

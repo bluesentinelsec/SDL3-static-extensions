@@ -655,6 +655,18 @@ static int GenL_PHYSFS_unmount(lua_State *L)
     return 1;
 }
 
+static int GenL_PHYSFS_utf8FromLatin1(lua_State *L)
+{
+    (void)L;
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checkstring(L, 1);
+    const char *src1 = lua_isnoneornil(L, 2) ? "" : luaL_checkstring(L, 2);
+    char *a1 = SDL_strdup(src1);
+    PHYSFS_uint64 a2 = (PHYSFS_uint64)luaL_checkinteger(L, 3);
+    PHYSFS_utf8FromLatin1(a0, a1, a2);
+    SDL_free(a1);
+    return 0;
+}
+
 static int GenL_PHYSFS_utf8ToUcs2(lua_State *L)
 {
     (void)L;
@@ -832,7 +844,7 @@ static int GenL_PHYSFS_writeULE64(lua_State *L)
 int SDLStaticGen_OpenLua_physfs(lua_State *L);
 int SDLStaticGen_OpenLua_physfs(lua_State *L)
 {
-    lua_createtable(L, 0, 82);
+    lua_createtable(L, 0, 83);
     lua_pushcfunction(L, GenL_PHYSFS_caseFold);
     lua_setfield(L, -2, "caseFold");
     lua_pushcfunction(L, GenL_PHYSFS_close);
@@ -963,6 +975,8 @@ int SDLStaticGen_OpenLua_physfs(lua_State *L)
     lua_setfield(L, -2, "tell");
     lua_pushcfunction(L, GenL_PHYSFS_unmount);
     lua_setfield(L, -2, "unmount");
+    lua_pushcfunction(L, GenL_PHYSFS_utf8FromLatin1);
+    lua_setfield(L, -2, "utf8FromLatin1");
     lua_pushcfunction(L, GenL_PHYSFS_utf8ToUcs2);
     lua_setfield(L, -2, "utf8ToUcs2");
     lua_pushcfunction(L, GenL_PHYSFS_utf8ToUcs4);

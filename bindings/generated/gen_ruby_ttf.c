@@ -1789,6 +1789,23 @@ static mrb_value GenR_TTF_StringToTag(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_TTF_TagToString(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    Uint32 a0 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    const char *src1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    char *a1 = SDL_strdup(src1 != NULL ? src1 : "");
+    size_t a2 = (size_t)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    TTF_TagToString(a0, a1, a2);
+    SDL_free(a1);
+    return mrb_nil_value();
+    }
+}
+
 static mrb_value GenR_TTF_TextWrapWhitespaceVisible(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -1956,6 +1973,7 @@ void SDLStaticGen_OpenRuby_ttf(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "SetTextWrapWhitespaceVisible", GenR_TTF_SetTextWrapWhitespaceVisible, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetTextWrapWidth", GenR_TTF_SetTextWrapWidth, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "StringToTag", GenR_TTF_StringToTag, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "TagToString", GenR_TTF_TagToString, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "TextWrapWhitespaceVisible", GenR_TTF_TextWrapWhitespaceVisible, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "UpdateText", GenR_TTF_UpdateText, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "Version", GenR_TTF_Version, MRB_ARGS_ANY());

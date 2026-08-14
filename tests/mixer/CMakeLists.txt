@@ -12,7 +12,7 @@ target_compile_definitions(SDL3_static_extensions_mixer_test PRIVATE
   MIXER_GM_PATCHES_DIR="${CMAKE_SOURCE_DIR}/mixer/gm-patches"
 )
 cppboot_set_project_warnings(SDL3_static_extensions_mixer_test)
-gtest_discover_tests(SDL3_static_extensions_mixer_test)
+gtest_discover_tests(SDL3_static_extensions_mixer_test DISCOVERY_TIMEOUT 60)
 
 # Link audit: static SDLStatic::Mixer + static SDL3 must depend only on
 # OS-built-in shared libraries — no codec libraries, ever.

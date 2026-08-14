@@ -124,6 +124,46 @@ LIBRARIES: list[LibrarySpec] = [
         includes=["<SDLStatic/nuklear.h>"],
     ),
     LibrarySpec(
+        key="gfx",
+        title="SDL3_gfx",
+        macro_style="gfx",
+        script_module="GFX",
+        prefix="",
+        headers=["gfx/include/SDL3_gfx/*.h"],
+        exclude_headers=["SDL3_gfxPrimitives_font.h"],
+        includes=["<SDL3_gfx/SDL3_gfxPrimitives.h>", "<SDL3_gfx/SDL3_rotozoom.h>",
+                  "<SDL3_gfx/SDL3_framerate.h>"],
+        error_fn="SDL_GetError()",
+    ),
+    LibrarySpec(
+        key="toml",
+        title="tomlc99",
+        macro_style="toml",
+        script_module="TOML",
+        prefix="toml_",
+        headers=["formats/include/toml.h"],
+        includes=["<toml.h>"],
+    ),
+    LibrarySpec(
+        key="yaml",
+        title="libyaml",
+        macro_style="yaml",
+        script_module="YAML",
+        prefix="yaml_",
+        headers=["formats/include/yaml.h"],
+        includes=["<yaml.h>"],
+    ),
+    LibrarySpec(
+        key="mog",
+        title="mog HTTP/S",
+        macro_style="mog",
+        script_module="MOG",
+        prefix="mog_",
+        headers=["mog-src/include/mog/mog_c.h"],
+        from_deps=True,
+        includes=["<mog/mog_c.h>"],
+    ),
+    LibrarySpec(
         key="cjson",
         free_fn="cJSON_free",
         title="cJSON",
@@ -145,6 +185,7 @@ LIBRARIES: list[LibrarySpec] = [
             "gfx/include/SDLStatic/*.h",
             "extras/include/SDLStatic/*.h",
             "vfs/include/SDLStatic/*.h",
+            "gui/include/SDLStatic/gui.h",
             "gui/include/SDLStatic/gui_grid.h",
             "tiled/include/SDLStatic/*.h",
             "ttf/include/SDLStatic/*.h",
@@ -291,6 +332,24 @@ RESOURCES: dict[str, list[ResourceSpec]] = {
         ResourceSpec("b2BodyId", "PhysicsBody", "b2DestroyBody", ["b2CreateBody"],
                      by_value=True, invalid_expr="!b2Body_IsValid({v})"),
     ],
+    "gfx": [
+        # Rotozoom hands back surfaces the caller owns.
+        ResourceSpec("SDL_Surface", "Surface", "SDL_DestroySurface",
+                     ["rotozoomSurface", "rotozoomSurfaceXY", "zoomSurface",
+                      "shrinkSurface", "rotateSurface90Degrees"]),
+    ],
+    "toml": [
+        ResourceSpec("toml_table_t", "TomlTable", "toml_free", ["toml_parse"]),
+    ],
+    "yaml": [],
+    "mog": [
+        ResourceSpec("mog_request", "Request", "mog_request_free",
+                     ["mog_request_new"]),
+        ResourceSpec("mog_response", "Response", "mog_response_free",
+                     ["mog_perform", "mog_get", "mog_post"]),
+        ResourceSpec("mog_server", "Server", "mog_server_free",
+                     ["mog_server_new"]),
+    ],
     "nk": [],
     "cjson": [
         ResourceSpec("cJSON", "JsonDocument", "cJSON_Delete",
@@ -300,6 +359,8 @@ RESOURCES: dict[str, list[ResourceSpec]] = {
     "sdlstatic": [
         ResourceSpec("SDLStatic_TiledMap", "TiledMapHandle", "SDLStatic_FreeTiledMap",
                      ["SDLStatic_LoadTiledMap"]),
+        ResourceSpec("SDLStatic_Gui", "GuiHandle", "SDLStatic_DestroyGui",
+                     ["SDLStatic_CreateGui"]),
     ],
 }
 

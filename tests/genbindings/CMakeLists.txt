@@ -10,7 +10,7 @@ target_link_libraries(SDL3_static_extensions_genbindings_test
     GTest::gtest_main
 )
 cppboot_set_project_warnings(SDL3_static_extensions_genbindings_test)
-gtest_discover_tests(SDL3_static_extensions_genbindings_test)
+gtest_discover_tests(SDL3_static_extensions_genbindings_test DISCOVERY_TIMEOUT 60)
 
 find_package(Python3 COMPONENTS Interpreter)
 if(Python3_Interpreter_FOUND)

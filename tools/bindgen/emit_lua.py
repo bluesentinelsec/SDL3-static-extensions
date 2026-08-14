@@ -278,6 +278,11 @@ class _LibEmitter:
                 nret += 1
                 i += 1
                 continue  # pure out-param: consumes no Lua argument
+            elif pp.mode == "mutstr_in":
+                self.w(f"    const char *src{i} = lua_isnoneornil(L, {arg_n}) ? \"\" : luaL_checkstring(L, {arg_n});")
+                self.w(f"    char *{v} = SDL_strdup(src{i});")
+                call_args[i] = v
+                post.insert(0, f"    SDL_free(a{i});")
             elif pp.mode == "inout":
                 decl = pp.info.declared or base
                 if pp.info.kind == TK.ENUM:

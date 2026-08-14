@@ -27,6 +27,18 @@ extern void SDLStaticGen_OpenRuby_b2(mrb_state *mrb);
 #ifndef SDLSTATIC_GEN_DISABLE_NK
 extern void SDLStaticGen_OpenRuby_nk(mrb_state *mrb);
 #endif
+#ifndef SDLSTATIC_GEN_DISABLE_GFX
+extern void SDLStaticGen_OpenRuby_gfx(mrb_state *mrb);
+#endif
+#ifndef SDLSTATIC_GEN_DISABLE_TOML
+extern void SDLStaticGen_OpenRuby_toml(mrb_state *mrb);
+#endif
+#ifndef SDLSTATIC_GEN_DISABLE_YAML
+extern void SDLStaticGen_OpenRuby_yaml(mrb_state *mrb);
+#endif
+#ifndef SDLSTATIC_GEN_DISABLE_MOG
+extern void SDLStaticGen_OpenRuby_mog(mrb_state *mrb);
+#endif
 #ifndef SDLSTATIC_GEN_DISABLE_CJSON
 extern void SDLStaticGen_OpenRuby_cjson(mrb_state *mrb);
 #endif
@@ -60,6 +72,18 @@ void SDLStatic_OpenGeneratedRubyBindings(mrb_state *mrb)
 #endif
 #ifndef SDLSTATIC_GEN_DISABLE_NK
     SDLStaticGen_OpenRuby_nk(mrb);
+#endif
+#ifndef SDLSTATIC_GEN_DISABLE_GFX
+    SDLStaticGen_OpenRuby_gfx(mrb);
+#endif
+#ifndef SDLSTATIC_GEN_DISABLE_TOML
+    SDLStaticGen_OpenRuby_toml(mrb);
+#endif
+#ifndef SDLSTATIC_GEN_DISABLE_YAML
+    SDLStaticGen_OpenRuby_yaml(mrb);
+#endif
+#ifndef SDLSTATIC_GEN_DISABLE_MOG
+    SDLStaticGen_OpenRuby_mog(mrb);
 #endif
 #ifndef SDLSTATIC_GEN_DISABLE_CJSON
     SDLStaticGen_OpenRuby_cjson(mrb);

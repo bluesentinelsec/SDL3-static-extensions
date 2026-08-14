@@ -7,7 +7,7 @@ target_link_libraries(SDL3_static_extensions_gui_test
     GTest::gtest_main
 )
 cppboot_set_project_warnings(SDL3_static_extensions_gui_test)
-gtest_discover_tests(SDL3_static_extensions_gui_test)
+gtest_discover_tests(SDL3_static_extensions_gui_test DISCOVERY_TIMEOUT 60)
 
 # Link audit: static Nuklear + backend must depend only on OS-built-in libs.
 find_package(Python3 COMPONENTS Interpreter)

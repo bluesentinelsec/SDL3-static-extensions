@@ -938,6 +938,23 @@ static mrb_value GenR_PHYSFS_unmount(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_PHYSFS_utf8FromLatin1(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    const char *a0 = SDLStaticGen_RubyToStr(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    const char *src1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    char *a1 = SDL_strdup(src1 != NULL ? src1 : "");
+    PHYSFS_uint64 a2 = (PHYSFS_uint64)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    PHYSFS_utf8FromLatin1(a0, a1, a2);
+    SDL_free(a1);
+    return mrb_nil_value();
+    }
+}
+
 static mrb_value GenR_PHYSFS_utf8ToUcs2(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -1251,6 +1268,7 @@ void SDLStaticGen_OpenRuby_physfs(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "symbolicLinksPermitted", GenR_PHYSFS_symbolicLinksPermitted, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "tell", GenR_PHYSFS_tell, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "unmount", GenR_PHYSFS_unmount, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "utf8FromLatin1", GenR_PHYSFS_utf8FromLatin1, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "utf8ToUcs2", GenR_PHYSFS_utf8ToUcs2, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "utf8ToUcs4", GenR_PHYSFS_utf8ToUcs4, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "utf8ToUtf16", GenR_PHYSFS_utf8ToUtf16, MRB_ARGS_ANY());
