@@ -3383,6 +3383,9 @@ static bool CollectGlyphsFromFont(TTF_Font *font, const char *text, size_t lengt
         pos->y_offset = hb_glyph_position[i].y_offset;
         pos->offset = (int)hb_glyph_info[i].cluster;
         if (!Find_GlyphByIndex(font, pos->index, 0, 0, 0, 0, 0, 0, &pos->glyph, NULL)) {
+            /* SDLStatic local fix: upstream leaked the harfbuzz buffer on
+             * this error path (LeakSanitizer, malformed-font corpus). */
+            hb_buffer_destroy(hb_buffer);
             return SDL_SetError("Couldn't find glyph %u in font", pos->index);
         }
     }

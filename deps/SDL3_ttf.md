@@ -61,6 +61,9 @@ Removal pass (no-stubs policy — removed APIs fail at build time):
   inert as API surface).
 - Hardening fixes to vendored code (found by the coverage/robustness suite
   under ASan+UBSan; kept local, no upstream PRs):
+  - `CollectGlyphsFromFont` (HarfBuzz path): destroy the hb_buffer before
+    the glyph-lookup error return — upstream leaks it (LeakSanitizer,
+    malformed-font corpus; found when shaping was enabled in v0.2.0)
   - `BUILD_RENDER_LINE` macro: skip glyphs with a NULL bitmap buffer
     (e.g. spaces) — `NULL + alignment` pointer arithmetic is UB and fired
     on every render containing a space.
