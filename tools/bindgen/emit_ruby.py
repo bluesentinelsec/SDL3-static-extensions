@@ -423,7 +423,7 @@ def emit_ruby(manifest: Manifest, repo: Path) -> dict[str, dict[str, ScriptPlan]
                 seen_const.add(cname)
                 em.w(f"    mrb_define_const(mrb, mod, \"{cname}\", mrb_int_value(mrb, (mrb_int){value}));")
         em.w("}")
-        (outdir / f"gen_ruby_{lib.key}.c").write_text("\n".join(em.out, encoding="utf-8") + "\n")
+        (outdir / f"gen_ruby_{lib.key}.c").write_text("\n".join(em.out) + "\n", encoding="utf-8")
         opens.append(f"SDLStaticGen_OpenRuby_{lib.key}")
 
     reg = [
@@ -449,5 +449,5 @@ def emit_ruby(manifest: Manifest, repo: Path) -> dict[str, dict[str, ScriptPlan]
         reg.append(f"#endif")
     reg.append("}")
     reg.append("")
-    (outdir / "gen_ruby_register.c").write_text("\n".join(reg, encoding="utf-8"))
+    (outdir / "gen_ruby_register.c").write_text("\n".join(reg), encoding="utf-8")
     return outcomes
