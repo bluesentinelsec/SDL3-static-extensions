@@ -57,7 +57,7 @@ and browser WebAssembly, and CI proves all of it on every push.
 include(FetchContent)
 FetchContent_Declare(SDL3_static_extensions
   GIT_REPOSITORY https://github.com/bluesentinelsec/SDL3-static-extensions.git
-  GIT_TAG        v0.1.0)
+  GIT_TAG        v0.2.0)
 FetchContent_MakeAvailable(SDL3_static_extensions)
 
 add_executable(my_game main.c)
