@@ -74,6 +74,39 @@ while SDLStaticC.GuiPumpEvents(gui) do
 end
 ```
 
+### High-DPI
+
+Create the window with `SDL_WINDOW_HIGH_PIXEL_DENSITY` and the GUI adapts
+automatically: the font is baked at the window's pixel density (so text
+is crisp on Retina rather than half-size) and mouse input is scaled to
+match, so hit-testing lines up. The GUI then lays out in **pixels**;
+`SDLStatic_GuiScale(gui)` returns that density, so multiply your own
+point-based sizes by it to stay density-independent:
+
+```c
+const float s = SDLStatic_GuiScale(gui);          /* 2.0 on Retina */
+nk_layout_row_dynamic(ctx, 46.0f * s, 2);         /* 46pt row */
+```
+
+Windowless (software) renderers stay at 1.0, so headless tests and
+non-Retina displays are unaffected.
+
+### Keyboard and theming from scripts
+
+`SDLStatic_GuiKeyPressed(gui, SDL_SCANCODE_ESCAPE)` reports keys seen
+during the last pump — SDL's keyboard-state API returns a raw array that
+cannot cross a binding boundary, so this is how scripts implement
+"Escape quits". `SDLStatic_GuiPushStyleColor` / `PopStyleColor` theme the
+window background, text, buttons and header for the same reason:
+Nuklear's own style stack takes union-typed style items.
+
+```lua
+SDLStaticC.GuiPushStyleColor(gui, SDLStaticC.SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND,
+                             {r = 28, g = 30, b = 38, a = 255})
+-- ...build the window...
+SDLStaticC.GuiPopStyleColor(gui, 1)
+```
+
 `GuiPumpEvents` exists because `SDL_Event` is a union and cannot cross a
 script boundary — it is the supported way to feed input to the GUI from
 Lua and Ruby. Three idioms to know: `nk_bool` crosses as a real boolean

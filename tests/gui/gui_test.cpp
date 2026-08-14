@@ -457,4 +457,66 @@ TEST_F(GuiHarness, PumpEventsDrainsQueueAndReportsQuit)
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
 }
 
+// Key queries: what lets scripts implement "Escape quits" (SDL's keyboard
+// state API cannot cross the binding boundary).
+TEST_F(GuiHarness, KeyPressedReportsThisFramesKeys)
+{
+    ASSERT_TRUE(SDL_InitSubSystem(SDL_INIT_EVENTS)) << SDL_GetError();
+
+    SDL_Event key;
+    SDL_zero(key);
+    key.type = SDL_EVENT_KEY_DOWN;
+    key.key.scancode = SDL_SCANCODE_ESCAPE;
+    ASSERT_TRUE(SDL_PushEvent(&key));
+    EXPECT_TRUE(SDLStatic_GuiPumpEvents(gui_));
+    EXPECT_TRUE(SDLStatic_GuiKeyPressed(gui_, SDL_SCANCODE_ESCAPE));
+    EXPECT_FALSE(SDLStatic_GuiKeyPressed(gui_, SDL_SCANCODE_A)) << "only keys seen";
+
+    // The set is per-frame: a pump with no keys clears it.
+    EXPECT_TRUE(SDLStatic_GuiPumpEvents(gui_));
+    EXPECT_FALSE(SDLStatic_GuiKeyPressed(gui_, SDL_SCANCODE_ESCAPE));
+
+    // Out-of-range and null are safe.
+    EXPECT_FALSE(SDLStatic_GuiKeyPressed(gui_, -1));
+    EXPECT_FALSE(SDLStatic_GuiKeyPressed(gui_, 999999));
+    EXPECT_FALSE(SDLStatic_GuiKeyPressed(nullptr, SDL_SCANCODE_ESCAPE));
+
+    SDL_QuitSubSystem(SDL_INIT_EVENTS);
+}
+
+// Theming: Nuklear's own style stack takes union-typed items, so this is
+// the entry point Lua and Ruby can reach.
+TEST_F(GuiHarness, StyleColorPushPopRestoresTheme)
+{
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+    const struct nk_color before = ctx->style.window.fixed_background.data.color;
+    const struct nk_color text_before = ctx->style.text.color;
+
+    ASSERT_TRUE(SDLStatic_GuiPushStyleColor(
+        gui_, SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND, SDL_Color{10, 20, 30, 255}));
+    ASSERT_TRUE(SDLStatic_GuiPushStyleColor(gui_, SDLSTATIC_GUI_COLOR_TEXT,
+                                            SDL_Color{1, 2, 3, 255}));
+    EXPECT_EQ(ctx->style.window.fixed_background.data.color.r, 10);
+    EXPECT_EQ(ctx->style.text.color.g, 2) << "plain-colour stack too";
+
+    // Pops unwind both stacks in LIFO order, whichever kind each push used.
+    SDLStatic_GuiPopStyleColor(gui_, 2);
+    EXPECT_EQ(ctx->style.window.fixed_background.data.color.r, before.r);
+    EXPECT_EQ(ctx->style.text.color.g, text_before.g);
+
+    // Over-popping and null are safe no-ops.
+    SDLStatic_GuiPopStyleColor(gui_, 5);
+    SDLStatic_GuiPopStyleColor(nullptr, 1);
+    EXPECT_FALSE(SDLStatic_GuiPushStyleColor(nullptr, SDLSTATIC_GUI_COLOR_BUTTON,
+                                             SDL_Color{0, 0, 0, 255}));
+}
+
+// A windowless (software) renderer stays at 1.0 so headless tests and
+// non-Retina displays are unaffected by the high-DPI path.
+TEST_F(GuiHarness, ScaleDefaultsToOneWithoutAWindow)
+{
+    EXPECT_FLOAT_EQ(SDLStatic_GuiScale(gui_), 1.0f);
+    EXPECT_FLOAT_EQ(SDLStatic_GuiScale(nullptr), 1.0f);
+}
+
 } // namespace

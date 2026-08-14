@@ -32,6 +32,16 @@ static void GenRead_SDLStatic_ChipToneDesc(mrb_state *mrb, mrb_value h, SDLStati
     out->vibrato_semitones = (float)SDLStaticGen_RubyFieldNum(mrb, h, "vibrato_semitones");
 }
 
+static void GenRead_SDL_Color(mrb_state *mrb, mrb_value h, SDL_Color *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!mrb_hash_p(h)) { return; }
+    out->r = (Uint8)SDLStaticGen_RubyFieldInt(mrb, h, "r");
+    out->g = (Uint8)SDLStaticGen_RubyFieldInt(mrb, h, "g");
+    out->b = (Uint8)SDLStaticGen_RubyFieldInt(mrb, h, "b");
+    out->a = (Uint8)SDLStaticGen_RubyFieldInt(mrb, h, "a");
+}
+
 static void GenDtor_SDLStatic_FreeTiledMap(void *p)
 {
     SDLStatic_TiledMap *typed = (SDLStatic_TiledMap *)p;
@@ -324,6 +334,34 @@ static mrb_value GenR_SDLStatic_GuiInputEnd(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_GuiKeyPressed(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool rv = SDLStatic_GuiKeyPressed(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiPopStyleColor(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_GuiPopStyleColor(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
 static mrb_value GenR_SDLStatic_GuiProcessEvent(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -351,6 +389,22 @@ static mrb_value GenR_SDLStatic_GuiPumpEvents(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_GuiPushStyleColor(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    SDLStatic_GuiStyleColor a1 = (SDLStatic_GuiStyleColor)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDL_Color a2;
+    GenRead_SDL_Color(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), &a2);
+    bool rv = SDLStatic_GuiPushStyleColor(a0, a1, a2);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
 static mrb_value GenR_SDLStatic_GuiRender(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -361,6 +415,19 @@ static mrb_value GenR_SDLStatic_GuiRender(mrb_state *mrb, mrb_value self)
     SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
     bool rv = SDLStatic_GuiRender(a0);
     return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiScale(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    float rv = SDLStatic_GuiScale(a0);
+    return mrb_float_value(mrb, (mrb_float)rv);
     }
 }
 
@@ -691,9 +758,13 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GuiGridNextRow", GenR_SDLStatic_GuiGridNextRow, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiInputBegin", GenR_SDLStatic_GuiInputBegin, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiInputEnd", GenR_SDLStatic_GuiInputEnd, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiKeyPressed", GenR_SDLStatic_GuiKeyPressed, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiPopStyleColor", GenR_SDLStatic_GuiPopStyleColor, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiProcessEvent", GenR_SDLStatic_GuiProcessEvent, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiPumpEvents", GenR_SDLStatic_GuiPumpEvents, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiPushStyleColor", GenR_SDLStatic_GuiPushStyleColor, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiRender", GenR_SDLStatic_GuiRender, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiScale", GenR_SDLStatic_GuiScale, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiWantsInput", GenR_SDLStatic_GuiWantsInput, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "HMACSHA256", GenR_SDLStatic_HMACSHA256, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "LoadTiledMap", GenR_SDLStatic_LoadTiledMap, MRB_ARGS_ANY());
@@ -729,4 +800,10 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_const(mrb, mod, "SDLSTATIC_CHIP_NOISE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_CHIP_NOISE));
     mrb_define_const(mrb, mod, "SDLSTATIC_CHIP_NOISE_METALLIC", mrb_int_value(mrb, (mrb_int)SDLSTATIC_CHIP_NOISE_METALLIC));
     mrb_define_const(mrb, mod, "SDLSTATIC_CHIP_SINE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_CHIP_SINE));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_COLOR_TEXT", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_COLOR_TEXT));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_COLOR_BUTTON", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_COLOR_BUTTON));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_COLOR_BUTTON_HOVER", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_COLOR_BUTTON_HOVER));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_COLOR_BUTTON_TEXT", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_COLOR_BUTTON_TEXT));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_COLOR_HEADER", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_COLOR_HEADER));
 }

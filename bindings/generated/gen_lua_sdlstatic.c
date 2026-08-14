@@ -32,6 +32,16 @@ static void GenRead_SDLStatic_ChipToneDesc(lua_State *L, int idx, SDLStatic_Chip
     out->vibrato_semitones = (float)SDLStaticGen_LuaFieldNum(L, idx, "vibrato_semitones");
 }
 
+static void GenRead_SDL_Color(lua_State *L, int idx, SDL_Color *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    out->r = (Uint8)SDLStaticGen_LuaFieldInt(L, idx, "r");
+    out->g = (Uint8)SDLStaticGen_LuaFieldInt(L, idx, "g");
+    out->b = (Uint8)SDLStaticGen_LuaFieldInt(L, idx, "b");
+    out->a = (Uint8)SDLStaticGen_LuaFieldInt(L, idx, "a");
+}
+
 static void GenDtor_SDLStatic_FreeTiledMap(void *p)
 {
     SDLStatic_TiledMap *typed = (SDLStatic_TiledMap *)p;
@@ -232,6 +242,25 @@ static int GenL_SDLStatic_GuiInputEnd(lua_State *L)
     return 0;
 }
 
+static int GenL_SDLStatic_GuiKeyPressed(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    bool rv = SDLStatic_GuiKeyPressed(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiPopStyleColor(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    SDLStatic_GuiPopStyleColor(a0, a1);
+    return 0;
+}
+
 static int GenL_SDLStatic_GuiProcessEvent(lua_State *L)
 {
     (void)L;
@@ -251,12 +280,33 @@ static int GenL_SDLStatic_GuiPumpEvents(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_GuiPushStyleColor(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDLStatic_GuiStyleColor a1 = (SDLStatic_GuiStyleColor)luaL_checkinteger(L, 2);
+    SDL_Color a2;
+    GenRead_SDL_Color(L, 3, &a2);
+    bool rv = SDLStatic_GuiPushStyleColor(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_GuiRender(lua_State *L)
 {
     (void)L;
     SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
     bool rv = SDLStatic_GuiRender(a0);
     lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiScale(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    float rv = SDLStatic_GuiScale(a0);
+    lua_pushnumber(L, (lua_Number)rv);
     return 1;
 }
 
@@ -474,7 +524,7 @@ static int GenL_SDLStatic_TiledTileWidth(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 44);
+    lua_createtable(L, 0, 48);
     lua_pushcfunction(L, GenL_SDLStatic_BidiBaseIsRTL);
     lua_setfield(L, -2, "BidiBaseIsRTL");
     lua_pushcfunction(L, GenL_SDLStatic_CountSignalConnections);
@@ -515,12 +565,20 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "GuiInputBegin");
     lua_pushcfunction(L, GenL_SDLStatic_GuiInputEnd);
     lua_setfield(L, -2, "GuiInputEnd");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiKeyPressed);
+    lua_setfield(L, -2, "GuiKeyPressed");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiPopStyleColor);
+    lua_setfield(L, -2, "GuiPopStyleColor");
     lua_pushcfunction(L, GenL_SDLStatic_GuiProcessEvent);
     lua_setfield(L, -2, "GuiProcessEvent");
     lua_pushcfunction(L, GenL_SDLStatic_GuiPumpEvents);
     lua_setfield(L, -2, "GuiPumpEvents");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiPushStyleColor);
+    lua_setfield(L, -2, "GuiPushStyleColor");
     lua_pushcfunction(L, GenL_SDLStatic_GuiRender);
     lua_setfield(L, -2, "GuiRender");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiScale);
+    lua_setfield(L, -2, "GuiScale");
     lua_pushcfunction(L, GenL_SDLStatic_GuiWantsInput);
     lua_setfield(L, -2, "GuiWantsInput");
     lua_pushcfunction(L, GenL_SDLStatic_HMACSHA256);
@@ -591,6 +649,18 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "SDLSTATIC_CHIP_NOISE_METALLIC");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_CHIP_SINE);
     lua_setfield(L, -2, "SDLSTATIC_CHIP_SINE");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_COLOR_TEXT);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_COLOR_TEXT");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_COLOR_BUTTON);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_COLOR_BUTTON");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_COLOR_BUTTON_HOVER);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_COLOR_BUTTON_HOVER");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_COLOR_BUTTON_TEXT);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_COLOR_BUTTON_TEXT");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_COLOR_HEADER);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_COLOR_HEADER");
     lua_setglobal(L, "SDLStaticC");
     return 0;
 }

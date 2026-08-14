@@ -163,6 +163,16 @@ class GuiHandle {
   Status GuiPumpEvents() {
     return ::SDLStatic_GuiPumpEvents(value_) ? Status() : Status::FromSdl();
   }
+  Status GuiKeyPressed(int scancode) {
+    return ::SDLStatic_GuiKeyPressed(value_, scancode) ? Status() : Status::FromSdl();
+  }
+  Status GuiPushStyleColor(SDLStatic_GuiStyleColor which, SDL_Color color) {
+    return ::SDLStatic_GuiPushStyleColor(value_, which, color) ? Status() : Status::FromSdl();
+  }
+  void GuiPopStyleColor(int count) { ::SDLStatic_GuiPopStyleColor(value_, count); }
+  float GuiScale() {
+    return ::SDLStatic_GuiScale(value_);
+  }
   Status GuiRender() {
     return ::SDLStatic_GuiRender(value_) ? Status() : Status::FromSdl();
   }

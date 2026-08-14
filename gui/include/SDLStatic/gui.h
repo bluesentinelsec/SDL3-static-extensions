@@ -86,6 +86,41 @@ extern bool SDLStatic_GuiWantsInput(SDLStatic_Gui *gui);
  *  cannot cross the script boundary. */
 extern bool SDLStatic_GuiPumpEvents(SDLStatic_Gui *gui);
 
+/** True when `scancode` (an SDL_Scancode) went down during the most recent
+ *  pump/input pass. Gives Lua and Ruby keyboard input, which SDL's own
+ *  keyboard-state API cannot provide across the binding boundary — e.g.
+ *  quitting on Escape. */
+extern bool SDLStatic_GuiKeyPressed(SDLStatic_Gui *gui, int scancode);
+
+/** Themable colours (see SDLStatic_GuiPushStyleColor). Nuklear's own
+ *  style stack takes union-typed style items, which cannot cross a script
+ *  boundary — this is the theming entry point Lua and Ruby can use, and a
+ *  convenience for C and C++. */
+typedef enum SDLStatic_GuiStyleColor
+{
+    SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND = 0,
+    SDLSTATIC_GUI_COLOR_TEXT,
+    SDLSTATIC_GUI_COLOR_BUTTON,
+    SDLSTATIC_GUI_COLOR_BUTTON_HOVER,
+    SDLSTATIC_GUI_COLOR_BUTTON_TEXT,
+    SDLSTATIC_GUI_COLOR_HEADER
+} SDLStatic_GuiStyleColor;
+
+/** Push one themed colour. Pushes nest; undo them with
+ *  SDLStatic_GuiPopStyleColor in LIFO order (typically once per frame,
+ *  after nk_end). Returns false on a bad argument or stack overflow. */
+extern bool SDLStatic_GuiPushStyleColor(SDLStatic_Gui *gui, SDLStatic_GuiStyleColor which,
+                                        SDL_Color color);
+
+/** Undo `count` pushes made by SDLStatic_GuiPushStyleColor. */
+extern void SDLStatic_GuiPopStyleColor(SDLStatic_Gui *gui, int count);
+
+/** Pixel density the GUI is rendering at (1.0 on a normal display, 2.0 on
+ *  a Retina window created with SDL_WINDOW_HIGH_PIXEL_DENSITY). The GUI
+ *  lays out and hit-tests in pixels; multiply your own point-based sizes by
+ *  this to stay density-independent. */
+extern float SDLStatic_GuiScale(SDLStatic_Gui *gui);
+
 /**
  * Convert this frame's draw list and render it through the bound renderer,
  * then clear Nuklear state for the next frame.

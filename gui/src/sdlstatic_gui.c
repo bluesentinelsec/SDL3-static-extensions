@@ -26,6 +26,10 @@ struct SDLStatic_Gui
     struct nk_buffer cmds;
     SDL_Texture *font_texture;
     void *font_copy;
+    float scale;   /* window pixel density: UI/input work in pixels */
+    Uint8 style_kind[32]; /* 0 = style item, 1 = plain colour (pop order) */
+    int style_depth;
+    Uint8 pressed[(SDL_SCANCODE_COUNT + 7) / 8]; /* keys down this frame */
 };
 
 /* ------------------------------------------------------- clipboard ----- */
@@ -71,6 +75,23 @@ SDLStatic_Gui *SDLStatic_CreateGui(SDL_Renderer *renderer, const void *font_data
     {
         font_size = 13.0f;
     }
+    /* High-DPI: an SDL_WINDOW_HIGH_PIXEL_DENSITY window renders into a
+     * backbuffer measured in pixels while events arrive in points. Bake the
+     * font at the pixel size and scale input to match, so the UI is crisp
+     * and hit-testing lines up. Windowless (software) renderers stay 1.0. */
+    float scale = 1.0f;
+    {
+        SDL_Window *window = SDL_GetRenderWindow(renderer);
+        if (window != NULL)
+        {
+            const float density = SDL_GetWindowPixelDensity(window);
+            if (density > 0.0f)
+            {
+                scale = density;
+            }
+        }
+    }
+    font_size *= scale;
 
     SDLStatic_Gui *gui = (SDLStatic_Gui *)SDL_calloc(1, sizeof(SDLStatic_Gui));
     if (gui == NULL)
@@ -78,6 +99,7 @@ SDLStatic_Gui *SDLStatic_CreateGui(SDL_Renderer *renderer, const void *font_data
         return NULL;
     }
     gui->renderer = renderer;
+    gui->scale = scale;
 
     if (!nk_init_default(&gui->ctx, NULL))
     {
@@ -162,6 +184,7 @@ void SDLStatic_GuiInputBegin(SDLStatic_Gui *gui)
 {
     if (gui != NULL)
     {
+        SDL_memset(gui->pressed, 0, sizeof(gui->pressed));
         nk_input_begin(&gui->ctx);
     }
 }
@@ -177,6 +200,90 @@ void SDLStatic_GuiInputEnd(SDLStatic_Gui *gui)
 bool SDLStatic_GuiWantsInput(SDLStatic_Gui *gui)
 {
     return (gui != NULL) && nk_item_is_any_active(&gui->ctx);
+}
+
+bool SDLStatic_GuiPushStyleColor(SDLStatic_Gui *gui, SDLStatic_GuiStyleColor which,
+                                 SDL_Color color)
+{
+    if (gui == NULL || gui->style_depth >= (int)SDL_arraysize(gui->style_kind))
+    {
+        return false;
+    }
+    struct nk_context *ctx = &gui->ctx;
+    const struct nk_color nkc = nk_rgba(color.r, color.g, color.b, color.a);
+    struct nk_style_item *item = NULL;
+    struct nk_color *plain = NULL;
+
+    switch (which)
+    {
+    case SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND:
+        item = &ctx->style.window.fixed_background;
+        break;
+    case SDLSTATIC_GUI_COLOR_BUTTON:
+        item = &ctx->style.button.normal;
+        break;
+    case SDLSTATIC_GUI_COLOR_BUTTON_HOVER:
+        item = &ctx->style.button.hover;
+        break;
+    case SDLSTATIC_GUI_COLOR_HEADER:
+        item = &ctx->style.window.header.normal;
+        break;
+    case SDLSTATIC_GUI_COLOR_TEXT:
+        plain = &ctx->style.text.color;
+        break;
+    case SDLSTATIC_GUI_COLOR_BUTTON_TEXT:
+        plain = &ctx->style.button.text_normal;
+        break;
+    default:
+        SDL_InvalidParamError("which");
+        return false;
+    }
+
+    if (item != NULL)
+    {
+        nk_style_push_style_item(ctx, item, nk_style_item_color(nkc));
+        gui->style_kind[gui->style_depth++] = 0;
+    }
+    else
+    {
+        nk_style_push_color(ctx, plain, nkc);
+        gui->style_kind[gui->style_depth++] = 1;
+    }
+    return true;
+}
+
+void SDLStatic_GuiPopStyleColor(SDLStatic_Gui *gui, int count)
+{
+    if (gui == NULL)
+    {
+        return;
+    }
+    while (count-- > 0 && gui->style_depth > 0)
+    {
+        gui->style_depth--;
+        if (gui->style_kind[gui->style_depth] == 0)
+        {
+            nk_style_pop_style_item(&gui->ctx);
+        }
+        else
+        {
+            nk_style_pop_color(&gui->ctx);
+        }
+    }
+}
+
+bool SDLStatic_GuiKeyPressed(SDLStatic_Gui *gui, int scancode)
+{
+    if (gui == NULL || scancode < 0 || scancode >= SDL_SCANCODE_COUNT)
+    {
+        return false;
+    }
+    return (gui->pressed[scancode / 8] & (Uint8)(1u << (scancode % 8))) != 0;
+}
+
+float SDLStatic_GuiScale(SDLStatic_Gui *gui)
+{
+    return (gui != NULL) ? gui->scale : 1.0f;
 }
 
 bool SDLStatic_GuiPumpEvents(SDLStatic_Gui *gui)
@@ -306,13 +413,14 @@ bool SDLStatic_GuiProcessEvent(SDLStatic_Gui *gui, const SDL_Event *event)
     switch (event->type)
     {
     case SDL_EVENT_MOUSE_MOTION:
-        nk_input_motion(ctx, (int)event->motion.x, (int)event->motion.y);
+        nk_input_motion(ctx, (int)(event->motion.x * gui->scale),
+                        (int)(event->motion.y * gui->scale));
         return true;
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
     case SDL_EVENT_MOUSE_BUTTON_UP: {
         const bool down = (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN);
-        const int x = (int)event->button.x;
-        const int y = (int)event->button.y;
+        const int x = (int)(event->button.x * gui->scale);
+        const int y = (int)(event->button.y * gui->scale);
         enum nk_buttons button = NK_BUTTON_LEFT;
         if (event->button.button == SDL_BUTTON_MIDDLE)
         {
@@ -350,6 +458,13 @@ bool SDLStatic_GuiProcessEvent(SDLStatic_Gui *gui, const SDL_Event *event)
         return true;
     }
     case SDL_EVENT_KEY_DOWN:
+        if (event->key.scancode >= 0 && event->key.scancode < SDL_SCANCODE_COUNT)
+        {
+            gui->pressed[event->key.scancode / 8] |=
+                (Uint8)(1u << (event->key.scancode % 8));
+        }
+        /* fall through to Nuklear key translation */
+        SDL_FALLTHROUGH;
     case SDL_EVENT_KEY_UP:
         HandleKey(ctx, &event->key, event->type == SDL_EVENT_KEY_DOWN);
         return true;
