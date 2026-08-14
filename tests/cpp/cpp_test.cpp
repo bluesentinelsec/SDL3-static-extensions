@@ -209,7 +209,10 @@ TEST(GameSliceTest, ComposedModulesThroughRaii) {
       std::string(CPP_TEST_ASSETS_DIR) + "/media_encrypted.bin", "openSesame");
   ASSERT_TRUE(mount.ok());
 
-  ASSERT_TRUE(SDL_Init(0)) << SDL_GetError();
+  // SdlInit is declared before the owners below, so it is destroyed last —
+  // the ordering guarantee the guard exists to provide.
+  Result<sdlstatic::SdlInit> sdl = sdlstatic::SdlInit::Create(0);
+  ASSERT_TRUE(sdl.ok()) << sdl.status().message();
   Result<sdlstatic::Surface> canvas = sdlstatic::Surface::Create(64, 64);
   ASSERT_TRUE(canvas.ok());
   Result<sdlstatic::Renderer> renderer = sdlstatic::Renderer::CreateSoftware(*canvas);
@@ -233,7 +236,22 @@ TEST(GameSliceTest, ComposedModulesThroughRaii) {
   }
   nk_end(gui->context());
   EXPECT_TRUE(gui->Render().ok());
-  SDL_Quit();
+  // No SDL_Quit here: the SdlInit guard runs it after every owner above.
 }
+
+TEST(SdlInitTest, GuardOrdersMixerTeardownAfterOwners) {
+  // Regression for the pong_cpp crash: a Mixer destroyed after SDL audio
+  // teardown segfaulted in MIX_DestroyMixer. With the guard declared
+  // first, the mixer always dies while SDL is still alive.
+  Result<sdlstatic::SdlInit> sdl = sdlstatic::SdlInit::Create(0);
+  ASSERT_TRUE(sdl.ok());
+  const SDL_AudioSpec spec = {SDL_AUDIO_F32, 2, 44100};
+  Result<sdlstatic::Mixer> mixer = sdlstatic::Mixer::CreateHeadless(spec);
+  ASSERT_TRUE(mixer.ok()) << mixer.status().message();
+  Result<sdlstatic::Audio> tone = mixer->Load(
+      std::string(CPP_TEST_ASSETS_DIR) + "/../../mixer/assets/sfx_coin.wav");
+  ASSERT_TRUE(tone.ok());
+  (void)mixer->Play(*tone);
+}  // teardown order: Audio/Track, Mixer, then SdlInit -> SDL_Quit
 
 }  // namespace
