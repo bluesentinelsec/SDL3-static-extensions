@@ -656,6 +656,8 @@ static void MakeMeta(lua_State *L, const char *name, const luaL_Reg *methods, lu
     lua_pop(L, 1);
 }
 
+extern int SDLStatic_OpenGeneratedLuaBindings(lua_State *L);
+
 bool SDLStatic_OpenLuaBindings(lua_State *L)
 {
     static const luaL_Reg app_methods[] = {
@@ -715,5 +717,9 @@ bool SDLStatic_OpenLuaBindings(lua_State *L)
     MakeMeta(L, MAP_MT, map_methods, LMapGc);
     luaL_newlib(L, module_fns);
     lua_setglobal(L, "SDLStatic");
+    /* Generated flat mirror of the full C API (SDL, MIX, IMG, TTF, NET,
+     * PHYSFS, B2, NK, JSON, SDLStaticC tables); see
+     * bindings/generated/COVERAGE.md. */
+    SDLStatic_OpenGeneratedLuaBindings(L);
     return true;
 }

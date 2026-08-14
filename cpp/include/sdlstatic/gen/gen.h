@@ -8,7 +8,9 @@
 #include "sdlstatic/gen/mix.h"
 #include "sdlstatic/gen/img.h"
 #include "sdlstatic/gen/ttf.h"
+#if __has_include(<SDL3_net/SDL_net.h>)
 #include "sdlstatic/gen/net.h"
+#endif
 #include "sdlstatic/gen/physfs.h"
 #include "sdlstatic/gen/b2.h"
 #include "sdlstatic/gen/nk.h"

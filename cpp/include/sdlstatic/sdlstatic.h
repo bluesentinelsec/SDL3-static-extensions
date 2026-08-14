@@ -12,6 +12,7 @@
 #include "sdlstatic/script.h"   // IWYU pragma: export
 #include "sdlstatic/status.h"   // IWYU pragma: export
 #include "sdlstatic/filesystem.h"  // IWYU pragma: export
+#include "sdlstatic/gen/gen.h"      // IWYU pragma: export
 #include "sdlstatic/tilemap.h"   // IWYU pragma: export
 #include "sdlstatic/ui.h"          // IWYU pragma: export
 

@@ -423,18 +423,26 @@ def emit_ruby(manifest: Manifest, repo: Path) -> dict[str, dict[str, ScriptPlan]
         opens.append(f"SDLStaticGen_OpenRuby_{lib.key}")
 
     reg = [
-        "/* GENERATED FILE - DO NOT EDIT. Aggregate mruby registration. */",
+        "/* GENERATED FILE - DO NOT EDIT. Aggregate mruby registration.",
+        " * SDLSTATIC_GEN_DISABLE_<LIB> gates modules whose CMake option is",
+        " * off on this platform (e.g. NET on Emscripten). */",
         "#include \"../src/gen_support_ruby.h\"",
         "",
     ]
-    for o in opens:
+    for lib, o in zip(LIBRARIES, opens):
+        guard = f"SDLSTATIC_GEN_DISABLE_{lib.key.upper()}"
+        reg.append(f"#ifndef {guard}")
         reg.append(f"extern void {o}(mrb_state *mrb);")
+        reg.append(f"#endif")
     reg.append("")
     reg.append("void SDLStatic_OpenGeneratedRubyBindings(mrb_state *mrb);")
     reg.append("void SDLStatic_OpenGeneratedRubyBindings(mrb_state *mrb)")
     reg.append("{")
-    for o in opens:
+    for lib, o in zip(LIBRARIES, opens):
+        guard = f"SDLSTATIC_GEN_DISABLE_{lib.key.upper()}"
+        reg.append(f"#ifndef {guard}")
         reg.append(f"    {o}(mrb);")
+        reg.append(f"#endif")
     reg.append("}")
     reg.append("")
     (outdir / "gen_ruby_register.c").write_text("\n".join(reg))

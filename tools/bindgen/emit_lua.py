@@ -429,18 +429,26 @@ def emit_lua(manifest: Manifest, repo: Path) -> dict[str, dict[str, ScriptPlan]]
         opens.append(f"SDLStaticGen_OpenLua_{lib.key}")
 
     reg = [
-        "/* GENERATED FILE - DO NOT EDIT. Aggregate Lua registration. */",
+        "/* GENERATED FILE - DO NOT EDIT. Aggregate Lua registration.",
+        " * SDLSTATIC_GEN_DISABLE_<LIB> gates modules whose CMake option is",
+        " * off on this platform (e.g. NET on Emscripten). */",
         "#include \"../src/gen_support_lua.h\"",
         "",
     ]
-    for o in opens:
+    for lib, o in zip(LIBRARIES, opens):
+        guard = f"SDLSTATIC_GEN_DISABLE_{lib.key.upper()}"
+        reg.append(f"#ifndef {guard}")
         reg.append(f"extern int {o}(lua_State *L);")
+        reg.append(f"#endif")
     reg.append("")
     reg.append("int SDLStatic_OpenGeneratedLuaBindings(lua_State *L);")
     reg.append("int SDLStatic_OpenGeneratedLuaBindings(lua_State *L)")
     reg.append("{")
-    for o in opens:
+    for lib, o in zip(LIBRARIES, opens):
+        guard = f"SDLSTATIC_GEN_DISABLE_{lib.key.upper()}"
+        reg.append(f"#ifndef {guard}")
         reg.append(f"    {o}(L);")
+        reg.append(f"#endif")
     reg.append("    return 0;")
     reg.append("}")
     reg.append("")

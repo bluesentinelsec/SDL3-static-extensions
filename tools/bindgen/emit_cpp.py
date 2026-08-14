@@ -283,6 +283,15 @@ def emit_cpp(manifest: Manifest, repo: Path) -> dict[str, dict[str, CppPlan]]:
         (outdir / f"{lib.key}.h").write_text("\n".join(lines))
         umbrella_includes.append(f'#include "sdlstatic/gen/{lib.key}.h"')
 
+    guarded = []
+    for inc in umbrella_includes:
+        if "/net.h" in inc:
+            # Net does not exist on Emscripten builds (no-stubs policy).
+            guarded.append("#if __has_include(<SDL3_net/SDL_net.h>)")
+            guarded.append(inc)
+            guarded.append("#endif")
+        else:
+            guarded.append(inc)
     umbrella = [
         "// GENERATED FILE - DO NOT EDIT.",
         "// Umbrella for the generated C++ surface: every parsed C API,",
@@ -290,7 +299,7 @@ def emit_cpp(manifest: Manifest, repo: Path) -> dict[str, dict[str, CppPlan]]:
         "#ifndef SDLSTATIC_CPP_GEN_GEN_H_",
         "#define SDLSTATIC_CPP_GEN_GEN_H_",
         "",
-        *umbrella_includes,
+        *guarded,
         "",
         "#endif  // SDLSTATIC_CPP_GEN_GEN_H_",
         "",
