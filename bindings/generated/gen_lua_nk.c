@@ -267,7 +267,7 @@ static int GenL_nk_buffer_push(lua_State *L)
     struct nk_buffer *a0 = (struct nk_buffer *)SDLStaticGen_LuaCheckHandle(L, 1, "nk_buffer");
     enum nk_buffer_allocation_type a1 = (enum nk_buffer_allocation_type)luaL_checkinteger(L, 2);
     size_t len2 = 0;
-    const char *a2 = luaL_checklstring(L, 3, &len2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checklstring(L, 3, &len2);
     nk_size a4 = (nk_size)luaL_checkinteger(L, 4);
     nk_buffer_push(a0, a1, (const void *)a2, (nk_size)len2, a4);
     return 0;
@@ -2843,7 +2843,7 @@ static int GenL_nk_murmur_hash(lua_State *L)
 {
     (void)L;
     size_t len0 = 0;
-    const char *a0 = luaL_checklstring(L, 1, &len0);
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checklstring(L, 1, &len0);
     nk_hash a2 = (nk_hash)luaL_checkinteger(L, 2);
     nk_hash rv = nk_murmur_hash((const void *)a0, (int)len0, a2);
     lua_pushinteger(L, (lua_Integer)rv);

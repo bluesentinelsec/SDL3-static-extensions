@@ -479,7 +479,7 @@ static int GenL_MIX_LoadAudioNoCopy(lua_State *L)
     (void)L;
     MIX_Mixer *a0 = (MIX_Mixer *)SDLStaticGen_LuaCheckHandle(L, 1, "MIX_Mixer");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     bool a3 = (bool)lua_toboolean(L, 3);
     MIX_Audio * rv = MIX_LoadAudioNoCopy(a0, (const void *)a1, (size_t)len1, a3);
     SDLStaticGen_LuaPushHandle(L, (void *)rv, "MIX_Audio");
@@ -512,7 +512,7 @@ static int GenL_MIX_LoadRawAudio(lua_State *L)
     (void)L;
     MIX_Mixer *a0 = (MIX_Mixer *)SDLStaticGen_LuaCheckHandle(L, 1, "MIX_Mixer");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     SDL_AudioSpec tmp3;
     const SDL_AudioSpec *a3 = NULL;
     if (!lua_isnoneornil(L, 3)) {
@@ -529,7 +529,7 @@ static int GenL_MIX_LoadRawAudioNoCopy(lua_State *L)
     (void)L;
     MIX_Mixer *a0 = (MIX_Mixer *)SDLStaticGen_LuaCheckHandle(L, 1, "MIX_Mixer");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     SDL_AudioSpec tmp3;
     const SDL_AudioSpec *a3 = NULL;
     if (!lua_isnoneornil(L, 3)) {

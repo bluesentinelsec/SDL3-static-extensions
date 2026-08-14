@@ -715,7 +715,7 @@ static int GenL_PHYSFS_writeBytes(lua_State *L)
     (void)L;
     PHYSFS_File *a0 = (PHYSFS_File *)SDLStaticGen_LuaCheckHandle(L, 1, "PHYSFS_File");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     PHYSFS_sint64 rv = PHYSFS_writeBytes(a0, (const void *)a1, (PHYSFS_uint64)len1);
     lua_pushinteger(L, (lua_Integer)rv);
     return 1;

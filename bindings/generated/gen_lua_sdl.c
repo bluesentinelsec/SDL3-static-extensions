@@ -5692,7 +5692,7 @@ static int GenL_SDL_IOFromConstMem(lua_State *L)
 {
     (void)L;
     size_t len0 = 0;
-    const char *a0 = luaL_checklstring(L, 1, &len0);
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checklstring(L, 1, &len0);
     SDL_IOStream * rv = SDL_IOFromConstMem((const void *)a0, (size_t)len0);
     SDLStaticGen_LuaPushOwned(L, (void *)rv, "SDL_IOStream", GenDtor_SDL_CloseIO);
     return 1;
@@ -6322,7 +6322,7 @@ static int GenL_SDL_PushGPUComputeUniformData(lua_State *L)
     SDL_GPUCommandBuffer *a0 = (SDL_GPUCommandBuffer *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUCommandBuffer");
     Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
     size_t len2 = 0;
-    const char *a2 = luaL_checklstring(L, 3, &len2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checklstring(L, 3, &len2);
     SDL_PushGPUComputeUniformData(a0, a1, (const void *)a2, (Uint32)len2);
     return 0;
 }
@@ -6342,7 +6342,7 @@ static int GenL_SDL_PushGPUFragmentUniformData(lua_State *L)
     SDL_GPUCommandBuffer *a0 = (SDL_GPUCommandBuffer *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUCommandBuffer");
     Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
     size_t len2 = 0;
-    const char *a2 = luaL_checklstring(L, 3, &len2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checklstring(L, 3, &len2);
     SDL_PushGPUFragmentUniformData(a0, a1, (const void *)a2, (Uint32)len2);
     return 0;
 }
@@ -6353,7 +6353,7 @@ static int GenL_SDL_PushGPUVertexUniformData(lua_State *L)
     SDL_GPUCommandBuffer *a0 = (SDL_GPUCommandBuffer *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUCommandBuffer");
     Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
     size_t len2 = 0;
-    const char *a2 = luaL_checklstring(L, 3, &len2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checklstring(L, 3, &len2);
     SDL_PushGPUVertexUniformData(a0, a1, (const void *)a2, (Uint32)len2);
     return 0;
 }
@@ -6363,7 +6363,7 @@ static int GenL_SDL_PutAudioStreamData(lua_State *L)
     (void)L;
     SDL_AudioStream *a0 = (SDL_AudioStream *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_AudioStream");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     bool rv = SDL_PutAudioStreamData(a0, (const void *)a1, (int)len1);
     lua_pushboolean(L, (int)rv);
     return 1;
@@ -7310,7 +7310,7 @@ static int GenL_SDL_SaveFile(lua_State *L)
     (void)L;
     const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checkstring(L, 1);
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     bool rv = SDL_SaveFile(a0, (const void *)a1, (size_t)len1);
     lua_pushboolean(L, (int)rv);
     return 1;
@@ -7321,7 +7321,7 @@ static int GenL_SDL_SaveFile_IO(lua_State *L)
     (void)L;
     SDL_IOStream *a0 = (SDL_IOStream *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_IOStream");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     bool a3 = (bool)lua_toboolean(L, 3);
     bool rv = SDL_SaveFile_IO(a0, (const void *)a1, (size_t)len1, a3);
     lua_pushboolean(L, (int)rv);
@@ -7394,7 +7394,7 @@ static int GenL_SDL_SendGamepadEffect(lua_State *L)
     (void)L;
     SDL_Gamepad *a0 = (SDL_Gamepad *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Gamepad");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     bool rv = SDL_SendGamepadEffect(a0, (const void *)a1, (int)len1);
     lua_pushboolean(L, (int)rv);
     return 1;
@@ -7405,7 +7405,7 @@ static int GenL_SDL_SendJoystickEffect(lua_State *L)
     (void)L;
     SDL_Joystick *a0 = (SDL_Joystick *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Joystick");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     bool rv = SDL_SendJoystickEffect(a0, (const void *)a1, (int)len1);
     lua_pushboolean(L, (int)rv);
     return 1;
@@ -7600,7 +7600,7 @@ static int GenL_SDL_SetGPURenderStateFragmentUniforms(lua_State *L)
     SDL_GPURenderState *a0 = (SDL_GPURenderState *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPURenderState");
     Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
     size_t len2 = 0;
-    const char *a2 = luaL_checklstring(L, 3, &len2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checklstring(L, 3, &len2);
     bool rv = SDL_SetGPURenderStateFragmentUniforms(a0, a1, (const void *)a2, (Uint32)len2);
     lua_pushboolean(L, (int)rv);
     return 1;
@@ -9155,7 +9155,7 @@ static int GenL_SDL_WriteIO(lua_State *L)
     (void)L;
     SDL_IOStream *a0 = (SDL_IOStream *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_IOStream");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     size_t rv = SDL_WriteIO(a0, (const void *)a1, (size_t)len1);
     lua_pushinteger(L, (lua_Integer)rv);
     return 1;
@@ -9237,7 +9237,7 @@ static int GenL_SDL_WriteStorageFile(lua_State *L)
     SDL_Storage *a0 = (SDL_Storage *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Storage");
     const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
     size_t len2 = 0;
-    const char *a2 = luaL_checklstring(L, 3, &len2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checklstring(L, 3, &len2);
     bool rv = SDL_WriteStorageFile(a0, a1, (const void *)a2, (Uint64)len2);
     lua_pushboolean(L, (int)rv);
     return 1;
@@ -9452,7 +9452,7 @@ static int GenL_SDL_hid_send_feature_report(lua_State *L)
     (void)L;
     SDL_hid_device *a0 = (SDL_hid_device *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_hid_device");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     int rv = SDL_hid_send_feature_report(a0, (const void *)a1, (size_t)len1);
     lua_pushinteger(L, (lua_Integer)rv);
     return 1;
@@ -9473,7 +9473,7 @@ static int GenL_SDL_hid_write(lua_State *L)
     (void)L;
     SDL_hid_device *a0 = (SDL_hid_device *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_hid_device");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     int rv = SDL_hid_write(a0, (const void *)a1, (size_t)len1);
     lua_pushinteger(L, (lua_Integer)rv);
     return 1;
