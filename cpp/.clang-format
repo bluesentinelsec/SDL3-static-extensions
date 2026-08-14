@@ -1,0 +1,4 @@
+# Google style for the C++ bindings only; the rest of the repo keeps its
+# existing formatting.
+BasedOnStyle: Google
+ColumnLimit: 100
