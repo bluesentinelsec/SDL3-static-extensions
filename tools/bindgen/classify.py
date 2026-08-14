@@ -24,7 +24,7 @@ from .model import (
     Manifest,
     Struct,
 )
-from .spec import LIBRARIES, RESOURCES, LibrarySpec
+from .spec import LIBRARIES, POD_SKIP_FIELD_STRUCTS, RESOURCES, LibrarySpec
 
 
 class TK(PyEnum):
@@ -112,9 +112,15 @@ class TypeTable:
         st = self.structs.get(name)
         ok = False
         if st is not None and st.complete and not st.is_union and st.fields:
-            ok = all(self._field_ok(f.type) for f in st.fields)
+            if name in POD_SKIP_FIELD_STRUCTS:
+                ok = any(self._field_ok(f.type) for f in st.fields)
+            else:
+                ok = all(self._field_ok(f.type) for f in st.fields)
         self._pod_cache[name] = ok
         return ok
+
+    def field_marshalable(self, t: CType) -> bool:
+        return self._field_ok(t)
 
     def _field_ok(self, t: CType) -> bool:
         if t.pointers:

@@ -301,3 +301,18 @@ RESOURCES: dict[str, list[ResourceSpec]] = {
                      ["SDLStatic_LoadTiledMap"]),
     ],
 }
+
+
+# Structs marshaled as POD even though some fields are unmarshalable
+# (userData pointers, task callbacks). Those fields are simply skipped:
+# omitted on push, left zero on read. Curated — never applied broadly,
+# because it would silently break handle semantics for types like
+# SDL_Surface whose pointer fields are the payload.
+POD_SKIP_FIELD_STRUCTS: set[str] = {
+    "b2WorldDef",
+    "b2BodyDef",
+    "b2ShapeDef",
+    "b2ChainDef",
+    "b2Filter",
+    "b2QueryFilter",
+}

@@ -91,6 +91,8 @@ class _LibEmitter:
                 self.w("    memset(out, 0, sizeof(*out));")
                 self.w("    if (!lua_istable(L, idx)) { return; }")
                 for f in st.fields:
+                    if not self.tt.field_marshalable(f.type):
+                        continue
                     self._emit_field_read(sname, f)
                 self.w("}")
                 self.w()
@@ -99,6 +101,8 @@ class _LibEmitter:
                 self.w("{")
                 self.w(f"    lua_createtable(L, 0, {len(st.fields)});")
                 for f in st.fields:
+                    if not self.tt.field_marshalable(f.type):
+                        continue
                     self._emit_field_push(sname, f)
                 self.w("}")
                 self.w()

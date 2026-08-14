@@ -38,6 +38,66 @@ static mrb_value GenPush_b2AABB(mrb_state *mrb, const b2AABB *in)
     return h;
 }
 
+static void GenRead_b2Rot(mrb_state *mrb, mrb_value h, b2Rot *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!mrb_hash_p(h)) { return; }
+    out->c = (float)SDLStaticGen_RubyFieldNum(mrb, h, "c");
+    out->s = (float)SDLStaticGen_RubyFieldNum(mrb, h, "s");
+}
+
+static mrb_value GenPush_b2Rot(mrb_state *mrb, const b2Rot *in)
+{
+    mrb_value h = mrb_hash_new(mrb);
+    SDLStaticGen_RubyHashSet(mrb, h, "c", mrb_float_value(mrb, (mrb_float)in->c));
+    SDLStaticGen_RubyHashSet(mrb, h, "s", mrb_float_value(mrb, (mrb_float)in->s));
+    return h;
+}
+
+static void GenRead_b2BodyDef(mrb_state *mrb, mrb_value h, b2BodyDef *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!mrb_hash_p(h)) { return; }
+    out->type = (b2BodyType)SDLStaticGen_RubyFieldInt(mrb, h, "type");
+    GenRead_b2Vec2(mrb, SDLStaticGen_RubyFieldGet(mrb, h, "position"), &out->position);
+    GenRead_b2Rot(mrb, SDLStaticGen_RubyFieldGet(mrb, h, "rotation"), &out->rotation);
+    GenRead_b2Vec2(mrb, SDLStaticGen_RubyFieldGet(mrb, h, "linearVelocity"), &out->linearVelocity);
+    out->angularVelocity = (float)SDLStaticGen_RubyFieldNum(mrb, h, "angularVelocity");
+    out->linearDamping = (float)SDLStaticGen_RubyFieldNum(mrb, h, "linearDamping");
+    out->angularDamping = (float)SDLStaticGen_RubyFieldNum(mrb, h, "angularDamping");
+    out->gravityScale = (float)SDLStaticGen_RubyFieldNum(mrb, h, "gravityScale");
+    out->sleepThreshold = (float)SDLStaticGen_RubyFieldNum(mrb, h, "sleepThreshold");
+    out->enableSleep = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "enableSleep");
+    out->isAwake = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "isAwake");
+    out->fixedRotation = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "fixedRotation");
+    out->isBullet = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "isBullet");
+    out->isEnabled = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "isEnabled");
+    out->allowFastRotation = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "allowFastRotation");
+    out->internalValue = (int)SDLStaticGen_RubyFieldInt(mrb, h, "internalValue");
+}
+
+static mrb_value GenPush_b2BodyDef(mrb_state *mrb, const b2BodyDef *in)
+{
+    mrb_value h = mrb_hash_new(mrb);
+    SDLStaticGen_RubyHashSet(mrb, h, "type", mrb_int_value(mrb, (mrb_int)in->type));
+    SDLStaticGen_RubyHashSet(mrb, h, "position", GenPush_b2Vec2(mrb, &in->position));
+    SDLStaticGen_RubyHashSet(mrb, h, "rotation", GenPush_b2Rot(mrb, &in->rotation));
+    SDLStaticGen_RubyHashSet(mrb, h, "linearVelocity", GenPush_b2Vec2(mrb, &in->linearVelocity));
+    SDLStaticGen_RubyHashSet(mrb, h, "angularVelocity", mrb_float_value(mrb, (mrb_float)in->angularVelocity));
+    SDLStaticGen_RubyHashSet(mrb, h, "linearDamping", mrb_float_value(mrb, (mrb_float)in->linearDamping));
+    SDLStaticGen_RubyHashSet(mrb, h, "angularDamping", mrb_float_value(mrb, (mrb_float)in->angularDamping));
+    SDLStaticGen_RubyHashSet(mrb, h, "gravityScale", mrb_float_value(mrb, (mrb_float)in->gravityScale));
+    SDLStaticGen_RubyHashSet(mrb, h, "sleepThreshold", mrb_float_value(mrb, (mrb_float)in->sleepThreshold));
+    SDLStaticGen_RubyHashSet(mrb, h, "enableSleep", mrb_bool_value((mrb_bool)(in->enableSleep != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "isAwake", mrb_bool_value((mrb_bool)(in->isAwake != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "fixedRotation", mrb_bool_value((mrb_bool)(in->fixedRotation != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "isBullet", mrb_bool_value((mrb_bool)(in->isBullet != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "isEnabled", mrb_bool_value((mrb_bool)(in->isEnabled != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "allowFastRotation", mrb_bool_value((mrb_bool)(in->allowFastRotation != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "internalValue", mrb_int_value(mrb, (mrb_int)in->internalValue));
+    return h;
+}
+
 static void GenRead_b2BodyId(mrb_state *mrb, mrb_value h, b2BodyId *out)
 {
     memset(out, 0, sizeof(*out));
@@ -82,6 +142,72 @@ static mrb_value GenPush_b2CastOutput(mrb_state *mrb, const b2CastOutput *in)
     SDLStaticGen_RubyHashSet(mrb, h, "fraction", mrb_float_value(mrb, (mrb_float)in->fraction));
     SDLStaticGen_RubyHashSet(mrb, h, "iterations", mrb_int_value(mrb, (mrb_int)in->iterations));
     SDLStaticGen_RubyHashSet(mrb, h, "hit", mrb_bool_value((mrb_bool)(in->hit != 0)));
+    return h;
+}
+
+static void GenRead_b2SurfaceMaterial(mrb_state *mrb, mrb_value h, b2SurfaceMaterial *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!mrb_hash_p(h)) { return; }
+    out->friction = (float)SDLStaticGen_RubyFieldNum(mrb, h, "friction");
+    out->restitution = (float)SDLStaticGen_RubyFieldNum(mrb, h, "restitution");
+    out->rollingResistance = (float)SDLStaticGen_RubyFieldNum(mrb, h, "rollingResistance");
+    out->tangentSpeed = (float)SDLStaticGen_RubyFieldNum(mrb, h, "tangentSpeed");
+    out->userMaterialId = (int)SDLStaticGen_RubyFieldInt(mrb, h, "userMaterialId");
+    out->customColor = (uint32_t)SDLStaticGen_RubyFieldInt(mrb, h, "customColor");
+}
+
+static mrb_value GenPush_b2SurfaceMaterial(mrb_state *mrb, const b2SurfaceMaterial *in)
+{
+    mrb_value h = mrb_hash_new(mrb);
+    SDLStaticGen_RubyHashSet(mrb, h, "friction", mrb_float_value(mrb, (mrb_float)in->friction));
+    SDLStaticGen_RubyHashSet(mrb, h, "restitution", mrb_float_value(mrb, (mrb_float)in->restitution));
+    SDLStaticGen_RubyHashSet(mrb, h, "rollingResistance", mrb_float_value(mrb, (mrb_float)in->rollingResistance));
+    SDLStaticGen_RubyHashSet(mrb, h, "tangentSpeed", mrb_float_value(mrb, (mrb_float)in->tangentSpeed));
+    SDLStaticGen_RubyHashSet(mrb, h, "userMaterialId", mrb_int_value(mrb, (mrb_int)in->userMaterialId));
+    SDLStaticGen_RubyHashSet(mrb, h, "customColor", mrb_int_value(mrb, (mrb_int)in->customColor));
+    return h;
+}
+
+static void GenRead_b2Filter(mrb_state *mrb, mrb_value h, b2Filter *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!mrb_hash_p(h)) { return; }
+    out->categoryBits = (uint64_t)SDLStaticGen_RubyFieldInt(mrb, h, "categoryBits");
+    out->maskBits = (uint64_t)SDLStaticGen_RubyFieldInt(mrb, h, "maskBits");
+    out->groupIndex = (int)SDLStaticGen_RubyFieldInt(mrb, h, "groupIndex");
+}
+
+static mrb_value GenPush_b2Filter(mrb_state *mrb, const b2Filter *in)
+{
+    mrb_value h = mrb_hash_new(mrb);
+    SDLStaticGen_RubyHashSet(mrb, h, "categoryBits", mrb_int_value(mrb, (mrb_int)in->categoryBits));
+    SDLStaticGen_RubyHashSet(mrb, h, "maskBits", mrb_int_value(mrb, (mrb_int)in->maskBits));
+    SDLStaticGen_RubyHashSet(mrb, h, "groupIndex", mrb_int_value(mrb, (mrb_int)in->groupIndex));
+    return h;
+}
+
+static void GenRead_b2ChainDef(mrb_state *mrb, mrb_value h, b2ChainDef *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!mrb_hash_p(h)) { return; }
+    out->count = (int)SDLStaticGen_RubyFieldInt(mrb, h, "count");
+    out->materialCount = (int)SDLStaticGen_RubyFieldInt(mrb, h, "materialCount");
+    GenRead_b2Filter(mrb, SDLStaticGen_RubyFieldGet(mrb, h, "filter"), &out->filter);
+    out->isLoop = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "isLoop");
+    out->enableSensorEvents = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "enableSensorEvents");
+    out->internalValue = (int)SDLStaticGen_RubyFieldInt(mrb, h, "internalValue");
+}
+
+static mrb_value GenPush_b2ChainDef(mrb_state *mrb, const b2ChainDef *in)
+{
+    mrb_value h = mrb_hash_new(mrb);
+    SDLStaticGen_RubyHashSet(mrb, h, "count", mrb_int_value(mrb, (mrb_int)in->count));
+    SDLStaticGen_RubyHashSet(mrb, h, "materialCount", mrb_int_value(mrb, (mrb_int)in->materialCount));
+    SDLStaticGen_RubyHashSet(mrb, h, "filter", GenPush_b2Filter(mrb, &in->filter));
+    SDLStaticGen_RubyHashSet(mrb, h, "isLoop", mrb_bool_value((mrb_bool)(in->isLoop != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "enableSensorEvents", mrb_bool_value((mrb_bool)(in->enableSensorEvents != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "internalValue", mrb_int_value(mrb, (mrb_int)in->internalValue));
     return h;
 }
 
@@ -313,22 +439,6 @@ static mrb_value GenPush_b2ShapeProxy(mrb_state *mrb, const b2ShapeProxy *in)
     return h;
 }
 
-static void GenRead_b2Rot(mrb_state *mrb, mrb_value h, b2Rot *out)
-{
-    memset(out, 0, sizeof(*out));
-    if (!mrb_hash_p(h)) { return; }
-    out->c = (float)SDLStaticGen_RubyFieldNum(mrb, h, "c");
-    out->s = (float)SDLStaticGen_RubyFieldNum(mrb, h, "s");
-}
-
-static mrb_value GenPush_b2Rot(mrb_state *mrb, const b2Rot *in)
-{
-    mrb_value h = mrb_hash_new(mrb);
-    SDLStaticGen_RubyHashSet(mrb, h, "c", mrb_float_value(mrb, (mrb_float)in->c));
-    SDLStaticGen_RubyHashSet(mrb, h, "s", mrb_float_value(mrb, (mrb_float)in->s));
-    return h;
-}
-
 static void GenRead_b2Transform(mrb_state *mrb, mrb_value h, b2Transform *out)
 {
     memset(out, 0, sizeof(*out));
@@ -387,24 +497,6 @@ static mrb_value GenPush_b2ExplosionDef(mrb_state *mrb, const b2ExplosionDef *in
     SDLStaticGen_RubyHashSet(mrb, h, "radius", mrb_float_value(mrb, (mrb_float)in->radius));
     SDLStaticGen_RubyHashSet(mrb, h, "falloff", mrb_float_value(mrb, (mrb_float)in->falloff));
     SDLStaticGen_RubyHashSet(mrb, h, "impulsePerLength", mrb_float_value(mrb, (mrb_float)in->impulsePerLength));
-    return h;
-}
-
-static void GenRead_b2Filter(mrb_state *mrb, mrb_value h, b2Filter *out)
-{
-    memset(out, 0, sizeof(*out));
-    if (!mrb_hash_p(h)) { return; }
-    out->categoryBits = (uint64_t)SDLStaticGen_RubyFieldInt(mrb, h, "categoryBits");
-    out->maskBits = (uint64_t)SDLStaticGen_RubyFieldInt(mrb, h, "maskBits");
-    out->groupIndex = (int)SDLStaticGen_RubyFieldInt(mrb, h, "groupIndex");
-}
-
-static mrb_value GenPush_b2Filter(mrb_state *mrb, const b2Filter *in)
-{
-    mrb_value h = mrb_hash_new(mrb);
-    SDLStaticGen_RubyHashSet(mrb, h, "categoryBits", mrb_int_value(mrb, (mrb_int)in->categoryBits));
-    SDLStaticGen_RubyHashSet(mrb, h, "maskBits", mrb_int_value(mrb, (mrb_int)in->maskBits));
-    SDLStaticGen_RubyHashSet(mrb, h, "groupIndex", mrb_int_value(mrb, (mrb_int)in->groupIndex));
     return h;
 }
 
@@ -616,6 +708,40 @@ static void GenRead_b2ShapeCastPairInput(mrb_state *mrb, mrb_value h, b2ShapeCas
     out->canEncroach = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "canEncroach");
 }
 
+static void GenRead_b2ShapeDef(mrb_state *mrb, mrb_value h, b2ShapeDef *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!mrb_hash_p(h)) { return; }
+    GenRead_b2SurfaceMaterial(mrb, SDLStaticGen_RubyFieldGet(mrb, h, "material"), &out->material);
+    out->density = (float)SDLStaticGen_RubyFieldNum(mrb, h, "density");
+    GenRead_b2Filter(mrb, SDLStaticGen_RubyFieldGet(mrb, h, "filter"), &out->filter);
+    out->isSensor = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "isSensor");
+    out->enableSensorEvents = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "enableSensorEvents");
+    out->enableContactEvents = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "enableContactEvents");
+    out->enableHitEvents = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "enableHitEvents");
+    out->enablePreSolveEvents = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "enablePreSolveEvents");
+    out->invokeContactCreation = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "invokeContactCreation");
+    out->updateBodyMass = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "updateBodyMass");
+    out->internalValue = (int)SDLStaticGen_RubyFieldInt(mrb, h, "internalValue");
+}
+
+static mrb_value GenPush_b2ShapeDef(mrb_state *mrb, const b2ShapeDef *in)
+{
+    mrb_value h = mrb_hash_new(mrb);
+    SDLStaticGen_RubyHashSet(mrb, h, "material", GenPush_b2SurfaceMaterial(mrb, &in->material));
+    SDLStaticGen_RubyHashSet(mrb, h, "density", mrb_float_value(mrb, (mrb_float)in->density));
+    SDLStaticGen_RubyHashSet(mrb, h, "filter", GenPush_b2Filter(mrb, &in->filter));
+    SDLStaticGen_RubyHashSet(mrb, h, "isSensor", mrb_bool_value((mrb_bool)(in->isSensor != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "enableSensorEvents", mrb_bool_value((mrb_bool)(in->enableSensorEvents != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "enableContactEvents", mrb_bool_value((mrb_bool)(in->enableContactEvents != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "enableHitEvents", mrb_bool_value((mrb_bool)(in->enableHitEvents != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "enablePreSolveEvents", mrb_bool_value((mrb_bool)(in->enablePreSolveEvents != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "invokeContactCreation", mrb_bool_value((mrb_bool)(in->invokeContactCreation != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "updateBodyMass", mrb_bool_value((mrb_bool)(in->updateBodyMass != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "internalValue", mrb_int_value(mrb, (mrb_int)in->internalValue));
+    return h;
+}
+
 static mrb_value GenPush_b2SimplexVertex(mrb_state *mrb, const b2SimplexVertex *in)
 {
     mrb_value h = mrb_hash_new(mrb);
@@ -635,30 +761,6 @@ static mrb_value GenPush_b2Simplex(mrb_state *mrb, const b2Simplex *in)
     SDLStaticGen_RubyHashSet(mrb, h, "v2", GenPush_b2SimplexVertex(mrb, &in->v2));
     SDLStaticGen_RubyHashSet(mrb, h, "v3", GenPush_b2SimplexVertex(mrb, &in->v3));
     SDLStaticGen_RubyHashSet(mrb, h, "count", mrb_int_value(mrb, (mrb_int)in->count));
-    return h;
-}
-
-static void GenRead_b2SurfaceMaterial(mrb_state *mrb, mrb_value h, b2SurfaceMaterial *out)
-{
-    memset(out, 0, sizeof(*out));
-    if (!mrb_hash_p(h)) { return; }
-    out->friction = (float)SDLStaticGen_RubyFieldNum(mrb, h, "friction");
-    out->restitution = (float)SDLStaticGen_RubyFieldNum(mrb, h, "restitution");
-    out->rollingResistance = (float)SDLStaticGen_RubyFieldNum(mrb, h, "rollingResistance");
-    out->tangentSpeed = (float)SDLStaticGen_RubyFieldNum(mrb, h, "tangentSpeed");
-    out->userMaterialId = (int)SDLStaticGen_RubyFieldInt(mrb, h, "userMaterialId");
-    out->customColor = (uint32_t)SDLStaticGen_RubyFieldInt(mrb, h, "customColor");
-}
-
-static mrb_value GenPush_b2SurfaceMaterial(mrb_state *mrb, const b2SurfaceMaterial *in)
-{
-    mrb_value h = mrb_hash_new(mrb);
-    SDLStaticGen_RubyHashSet(mrb, h, "friction", mrb_float_value(mrb, (mrb_float)in->friction));
-    SDLStaticGen_RubyHashSet(mrb, h, "restitution", mrb_float_value(mrb, (mrb_float)in->restitution));
-    SDLStaticGen_RubyHashSet(mrb, h, "rollingResistance", mrb_float_value(mrb, (mrb_float)in->rollingResistance));
-    SDLStaticGen_RubyHashSet(mrb, h, "tangentSpeed", mrb_float_value(mrb, (mrb_float)in->tangentSpeed));
-    SDLStaticGen_RubyHashSet(mrb, h, "userMaterialId", mrb_int_value(mrb, (mrb_int)in->userMaterialId));
-    SDLStaticGen_RubyHashSet(mrb, h, "customColor", mrb_int_value(mrb, (mrb_int)in->customColor));
     return h;
 }
 
@@ -698,6 +800,40 @@ static mrb_value GenPush_b2Version(mrb_state *mrb, const b2Version *in)
     SDLStaticGen_RubyHashSet(mrb, h, "major", mrb_int_value(mrb, (mrb_int)in->major));
     SDLStaticGen_RubyHashSet(mrb, h, "minor", mrb_int_value(mrb, (mrb_int)in->minor));
     SDLStaticGen_RubyHashSet(mrb, h, "revision", mrb_int_value(mrb, (mrb_int)in->revision));
+    return h;
+}
+
+static void GenRead_b2WorldDef(mrb_state *mrb, mrb_value h, b2WorldDef *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!mrb_hash_p(h)) { return; }
+    GenRead_b2Vec2(mrb, SDLStaticGen_RubyFieldGet(mrb, h, "gravity"), &out->gravity);
+    out->restitutionThreshold = (float)SDLStaticGen_RubyFieldNum(mrb, h, "restitutionThreshold");
+    out->hitEventThreshold = (float)SDLStaticGen_RubyFieldNum(mrb, h, "hitEventThreshold");
+    out->contactHertz = (float)SDLStaticGen_RubyFieldNum(mrb, h, "contactHertz");
+    out->contactDampingRatio = (float)SDLStaticGen_RubyFieldNum(mrb, h, "contactDampingRatio");
+    out->maxContactPushSpeed = (float)SDLStaticGen_RubyFieldNum(mrb, h, "maxContactPushSpeed");
+    out->maximumLinearSpeed = (float)SDLStaticGen_RubyFieldNum(mrb, h, "maximumLinearSpeed");
+    out->enableSleep = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "enableSleep");
+    out->enableContinuous = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "enableContinuous");
+    out->workerCount = (int)SDLStaticGen_RubyFieldInt(mrb, h, "workerCount");
+    out->internalValue = (int)SDLStaticGen_RubyFieldInt(mrb, h, "internalValue");
+}
+
+static mrb_value GenPush_b2WorldDef(mrb_state *mrb, const b2WorldDef *in)
+{
+    mrb_value h = mrb_hash_new(mrb);
+    SDLStaticGen_RubyHashSet(mrb, h, "gravity", GenPush_b2Vec2(mrb, &in->gravity));
+    SDLStaticGen_RubyHashSet(mrb, h, "restitutionThreshold", mrb_float_value(mrb, (mrb_float)in->restitutionThreshold));
+    SDLStaticGen_RubyHashSet(mrb, h, "hitEventThreshold", mrb_float_value(mrb, (mrb_float)in->hitEventThreshold));
+    SDLStaticGen_RubyHashSet(mrb, h, "contactHertz", mrb_float_value(mrb, (mrb_float)in->contactHertz));
+    SDLStaticGen_RubyHashSet(mrb, h, "contactDampingRatio", mrb_float_value(mrb, (mrb_float)in->contactDampingRatio));
+    SDLStaticGen_RubyHashSet(mrb, h, "maxContactPushSpeed", mrb_float_value(mrb, (mrb_float)in->maxContactPushSpeed));
+    SDLStaticGen_RubyHashSet(mrb, h, "maximumLinearSpeed", mrb_float_value(mrb, (mrb_float)in->maximumLinearSpeed));
+    SDLStaticGen_RubyHashSet(mrb, h, "enableSleep", mrb_bool_value((mrb_bool)(in->enableSleep != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "enableContinuous", mrb_bool_value((mrb_bool)(in->enableContinuous != 0)));
+    SDLStaticGen_RubyHashSet(mrb, h, "workerCount", mrb_int_value(mrb, (mrb_int)in->workerCount));
+    SDLStaticGen_RubyHashSet(mrb, h, "internalValue", mrb_int_value(mrb, (mrb_int)in->internalValue));
     return h;
 }
 
@@ -2375,7 +2511,12 @@ static mrb_value GenR_b2CreateBody(mrb_state *mrb, mrb_value self)
     {
     b2WorldId a0;
     GenRead_b2WorldId(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), &a0);
-    const b2BodyDef *a1 = (const b2BodyDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "b2BodyDef");
+    b2BodyDef tmp1;
+    const b2BodyDef *a1 = NULL;
+    if (argc > 1 && mrb_hash_p(argv[1])) {
+        GenRead_b2BodyDef(mrb, argv[1], &tmp1);
+        a1 = &tmp1;
+    }
     b2BodyId rv = b2CreateBody(a0, a1);
     return GenPush_b2BodyId(mrb, &rv);
     }
@@ -2390,7 +2531,12 @@ static mrb_value GenR_b2CreateCapsuleShape(mrb_state *mrb, mrb_value self)
     {
     b2BodyId a0;
     GenRead_b2BodyId(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), &a0);
-    const b2ShapeDef *a1 = (const b2ShapeDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "b2ShapeDef");
+    b2ShapeDef tmp1;
+    const b2ShapeDef *a1 = NULL;
+    if (argc > 1 && mrb_hash_p(argv[1])) {
+        GenRead_b2ShapeDef(mrb, argv[1], &tmp1);
+        a1 = &tmp1;
+    }
     b2Capsule tmp2;
     const b2Capsule *a2 = NULL;
     if (argc > 2 && mrb_hash_p(argv[2])) {
@@ -2411,7 +2557,12 @@ static mrb_value GenR_b2CreateChain(mrb_state *mrb, mrb_value self)
     {
     b2BodyId a0;
     GenRead_b2BodyId(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), &a0);
-    const b2ChainDef *a1 = (const b2ChainDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "b2ChainDef");
+    b2ChainDef tmp1;
+    const b2ChainDef *a1 = NULL;
+    if (argc > 1 && mrb_hash_p(argv[1])) {
+        GenRead_b2ChainDef(mrb, argv[1], &tmp1);
+        a1 = &tmp1;
+    }
     b2ChainId rv = b2CreateChain(a0, a1);
     return GenPush_b2ChainId(mrb, &rv);
     }
@@ -2426,7 +2577,12 @@ static mrb_value GenR_b2CreateCircleShape(mrb_state *mrb, mrb_value self)
     {
     b2BodyId a0;
     GenRead_b2BodyId(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), &a0);
-    const b2ShapeDef *a1 = (const b2ShapeDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "b2ShapeDef");
+    b2ShapeDef tmp1;
+    const b2ShapeDef *a1 = NULL;
+    if (argc > 1 && mrb_hash_p(argv[1])) {
+        GenRead_b2ShapeDef(mrb, argv[1], &tmp1);
+        a1 = &tmp1;
+    }
     b2Circle tmp2;
     const b2Circle *a2 = NULL;
     if (argc > 2 && mrb_hash_p(argv[2])) {
@@ -2507,7 +2663,12 @@ static mrb_value GenR_b2CreatePolygonShape(mrb_state *mrb, mrb_value self)
     {
     b2BodyId a0;
     GenRead_b2BodyId(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), &a0);
-    const b2ShapeDef *a1 = (const b2ShapeDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "b2ShapeDef");
+    b2ShapeDef tmp1;
+    const b2ShapeDef *a1 = NULL;
+    if (argc > 1 && mrb_hash_p(argv[1])) {
+        GenRead_b2ShapeDef(mrb, argv[1], &tmp1);
+        a1 = &tmp1;
+    }
     b2Polygon tmp2;
     const b2Polygon *a2 = NULL;
     if (argc > 2 && mrb_hash_p(argv[2])) {
@@ -2558,7 +2719,12 @@ static mrb_value GenR_b2CreateSegmentShape(mrb_state *mrb, mrb_value self)
     {
     b2BodyId a0;
     GenRead_b2BodyId(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), &a0);
-    const b2ShapeDef *a1 = (const b2ShapeDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "b2ShapeDef");
+    b2ShapeDef tmp1;
+    const b2ShapeDef *a1 = NULL;
+    if (argc > 1 && mrb_hash_p(argv[1])) {
+        GenRead_b2ShapeDef(mrb, argv[1], &tmp1);
+        a1 = &tmp1;
+    }
     b2Segment tmp2;
     const b2Segment *a2 = NULL;
     if (argc > 2 && mrb_hash_p(argv[2])) {
@@ -2607,9 +2773,38 @@ static mrb_value GenR_b2CreateWorld(mrb_state *mrb, mrb_value self)
     (void)self;
     mrb_get_args(mrb, "*", &argv, &argc);
     {
-    const b2WorldDef *a0 = (const b2WorldDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2WorldDef");
+    b2WorldDef tmp0;
+    const b2WorldDef *a0 = NULL;
+    if (argc > 0 && mrb_hash_p(argv[0])) {
+        GenRead_b2WorldDef(mrb, argv[0], &tmp0);
+        a0 = &tmp0;
+    }
     b2WorldId rv = b2CreateWorld(a0);
     return GenPush_b2WorldId(mrb, &rv);
+    }
+}
+
+static mrb_value GenR_b2DefaultBodyDef(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2BodyDef rv = b2DefaultBodyDef();
+    return GenPush_b2BodyDef(mrb, &rv);
+    }
+}
+
+static mrb_value GenR_b2DefaultChainDef(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2ChainDef rv = b2DefaultChainDef();
+    return GenPush_b2ChainDef(mrb, &rv);
     }
 }
 
@@ -2649,6 +2844,18 @@ static mrb_value GenR_b2DefaultQueryFilter(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_b2DefaultShapeDef(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2ShapeDef rv = b2DefaultShapeDef();
+    return GenPush_b2ShapeDef(mrb, &rv);
+    }
+}
+
 static mrb_value GenR_b2DefaultSurfaceMaterial(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -2658,6 +2865,18 @@ static mrb_value GenR_b2DefaultSurfaceMaterial(mrb_state *mrb, mrb_value self)
     {
     b2SurfaceMaterial rv = b2DefaultSurfaceMaterial();
     return GenPush_b2SurfaceMaterial(mrb, &rv);
+    }
+}
+
+static mrb_value GenR_b2DefaultWorldDef(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2WorldDef rv = b2DefaultWorldDef();
+    return GenPush_b2WorldDef(mrb, &rv);
     }
 }
 
@@ -6848,10 +7067,14 @@ void SDLStaticGen_OpenRuby_b2(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "CreateWeldJoint", GenR_b2CreateWeldJoint, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateWheelJoint", GenR_b2CreateWheelJoint, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateWorld", GenR_b2CreateWorld, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DefaultBodyDef", GenR_b2DefaultBodyDef, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DefaultChainDef", GenR_b2DefaultChainDef, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DefaultExplosionDef", GenR_b2DefaultExplosionDef, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DefaultFilter", GenR_b2DefaultFilter, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DefaultQueryFilter", GenR_b2DefaultQueryFilter, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DefaultShapeDef", GenR_b2DefaultShapeDef, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DefaultSurfaceMaterial", GenR_b2DefaultSurfaceMaterial, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DefaultWorldDef", GenR_b2DefaultWorldDef, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DestroyBody", GenR_b2DestroyBody, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DestroyChain", GenR_b2DestroyChain, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DestroyJoint", GenR_b2DestroyJoint, MRB_ARGS_ANY());

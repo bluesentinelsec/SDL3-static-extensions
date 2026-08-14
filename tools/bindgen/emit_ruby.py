@@ -118,6 +118,8 @@ class _RubyEmitter:
                 self.w("    memset(out, 0, sizeof(*out));")
                 self.w("    if (!mrb_hash_p(h)) { return; }")
                 for f in st.fields:
+                    if not self.tt.field_marshalable(f.type):
+                        continue
                     self._emit_field_read(f)
                 self.w("}")
                 self.w()
@@ -126,6 +128,8 @@ class _RubyEmitter:
                 self.w("{")
                 self.w("    mrb_value h = mrb_hash_new(mrb);")
                 for f in st.fields:
+                    if not self.tt.field_marshalable(f.type):
+                        continue
                     self._emit_field_push(f)
                 self.w("    return h;")
                 self.w("}")

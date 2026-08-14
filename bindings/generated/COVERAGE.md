@@ -18,16 +18,16 @@ types). The full C API additionally stays reachable from C/C++.
 | SDL_ttf | 108 | 93 | 1 | 11 | 106 | 2 |
 | SDL_net | 34 | 15 | 1 | 15 | 27 | 7 |
 | PhysFS | 98 | 0 | 0 | 98 | 82 | 16 |
-| Box2D | 422 | 120 | 0 | 300 | 382 | 40 |
+| Box2D | 422 | 120 | 0 | 300 | 386 | 36 |
 | Nuklear | 534 | 0 | 0 | 534 | 426 | 108 |
 | cJSON | 78 | 57 | 0 | 20 | 68 | 10 |
 | SDLStatic modules | 36 | 12 | 6 | 17 | 29 | 7 |
-| **Total** | 2693 | 948 | 173 | 1532 | 2156 | 537 |
+| **Total** | 2693 | 948 | 173 | 1532 | 2160 | 533 |
 
 ## Script-surface skip reasons
 
 - 236: unmarshalable parameter type
-- 116: unmarshalable return type
+- 112: unmarshalable return type
 - 76: stdlib clone
 - 53: math clone
 - 47: threading
@@ -438,12 +438,10 @@ types). The full C API additionally stays reachable from C/C++.
 
 </details>
 
-<details><summary>Box2D (40)</summary>
+<details><summary>Box2D (36)</summary>
 
 - `b2Body_GetUserData` — return type void*
 - `b2Body_SetUserData` — param userData: void*
-- `b2DefaultBodyDef` — return type b2BodyDef
-- `b2DefaultChainDef` — return type b2ChainDef
 - `b2DefaultDebugDraw` — return type b2DebugDraw
 - `b2DefaultDistanceJointDef` — return type b2DistanceJointDef
 - `b2DefaultFilterJointDef` — return type b2FilterJointDef
@@ -451,10 +449,8 @@ types). The full C API additionally stays reachable from C/C++.
 - `b2DefaultMouseJointDef` — return type b2MouseJointDef
 - `b2DefaultPrismaticJointDef` — return type b2PrismaticJointDef
 - `b2DefaultRevoluteJointDef` — return type b2RevoluteJointDef
-- `b2DefaultShapeDef` — return type b2ShapeDef
 - `b2DefaultWeldJointDef` — return type b2WeldJointDef
 - `b2DefaultWheelJointDef` — return type b2WheelJointDef
-- `b2DefaultWorldDef` — return type b2WorldDef
 - `b2DynamicTree_Create` — return type b2DynamicTree
 - `b2DynamicTree_Query` — param callback: b2TreeQueryCallbackFcn*
 - `b2DynamicTree_RayCast` — param callback: b2TreeRayCastCallbackFcn*

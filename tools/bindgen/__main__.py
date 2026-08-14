@@ -52,6 +52,11 @@ def main() -> int:
     ap.add_argument("--repo", type=Path, default=Path("."))
     ap.add_argument("--deps", type=Path, default=Path("build/_deps"))
     ap.add_argument("--stats-only", action="store_true")
+    ap.add_argument(
+        "--check", action="store_true",
+        help="regenerate into a temp tree and fail if it differs from the "
+             "committed output (codegen freshness)",
+    )
     args = ap.parse_args()
 
     manifest = build_manifest(args.repo, args.deps)
@@ -64,11 +69,45 @@ def main() -> int:
     from .emit_ruby import emit_ruby
     from .emit_report import emit_report
 
+    target = args.repo
+    if args.check:
+        import shutil
+        import tempfile
+
+        tmp = Path(tempfile.mkdtemp(prefix="bindgen-check-"))
+        # emit_cpp includes SDLStatic module headers by name only, so a bare
+        # skeleton suffices.
+        (tmp / "gui" / "include" / "SDLStatic").mkdir(parents=True)
+        shutil.copy(args.repo / "gui" / "include" / "SDLStatic" / "nuklear.h",
+                    tmp / "gui" / "include" / "SDLStatic" / "nuklear.h")
+        target = tmp
+
     outcomes = {}
-    outcomes["cpp"] = emit_cpp(manifest, args.repo)
-    outcomes["lua"] = emit_lua(manifest, args.repo)
-    outcomes["ruby"] = emit_ruby(manifest, args.repo)
-    emit_report(manifest, outcomes, args.repo)
+    outcomes["cpp"] = emit_cpp(manifest, target)
+    outcomes["lua"] = emit_lua(manifest, target)
+    outcomes["ruby"] = emit_ruby(manifest, target)
+    emit_report(manifest, outcomes, target)
+
+    if args.check:
+        import filecmp
+
+        stale: list[str] = []
+        for rel_dir in ("cpp/include/sdlstatic/gen", "bindings/generated"):
+            fresh_dir = target / rel_dir
+            committed_dir = args.repo / rel_dir
+            for fresh in sorted(fresh_dir.iterdir()):
+                committed = committed_dir / fresh.name
+                if not committed.exists() or not filecmp.cmp(
+                    fresh, committed, shallow=False
+                ):
+                    stale.append(str(committed))
+        if stale:
+            print("bindgen: committed output is stale; regenerate with "
+                  "`python3 -m tools.bindgen`:", file=sys.stderr)
+            for s in stale:
+                print(f"  {s}", file=sys.stderr)
+            return 1
+        print("bindgen: committed output is up to date")
     return 0
 
 

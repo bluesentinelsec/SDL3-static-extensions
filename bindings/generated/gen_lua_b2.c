@@ -44,6 +44,88 @@ static void GenPush_b2AABB(lua_State *L, const b2AABB *in)
     lua_setfield(L, -2, "upperBound");
 }
 
+static void GenRead_b2Rot(lua_State *L, int idx, b2Rot *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    out->c = (float)SDLStaticGen_LuaFieldNum(L, idx, "c");
+    out->s = (float)SDLStaticGen_LuaFieldNum(L, idx, "s");
+}
+
+static void GenPush_b2Rot(lua_State *L, const b2Rot *in)
+{
+    lua_createtable(L, 0, 2);
+    lua_pushnumber(L, (lua_Number)in->c);
+    lua_setfield(L, -2, "c");
+    lua_pushnumber(L, (lua_Number)in->s);
+    lua_setfield(L, -2, "s");
+}
+
+static void GenRead_b2BodyDef(lua_State *L, int idx, b2BodyDef *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    out->type = (b2BodyType)SDLStaticGen_LuaFieldInt(L, idx, "type");
+    lua_getfield(L, idx, "position");
+    GenRead_b2Vec2(L, lua_gettop(L), &out->position);
+    lua_pop(L, 1);
+    lua_getfield(L, idx, "rotation");
+    GenRead_b2Rot(L, lua_gettop(L), &out->rotation);
+    lua_pop(L, 1);
+    lua_getfield(L, idx, "linearVelocity");
+    GenRead_b2Vec2(L, lua_gettop(L), &out->linearVelocity);
+    lua_pop(L, 1);
+    out->angularVelocity = (float)SDLStaticGen_LuaFieldNum(L, idx, "angularVelocity");
+    out->linearDamping = (float)SDLStaticGen_LuaFieldNum(L, idx, "linearDamping");
+    out->angularDamping = (float)SDLStaticGen_LuaFieldNum(L, idx, "angularDamping");
+    out->gravityScale = (float)SDLStaticGen_LuaFieldNum(L, idx, "gravityScale");
+    out->sleepThreshold = (float)SDLStaticGen_LuaFieldNum(L, idx, "sleepThreshold");
+    out->enableSleep = (bool)SDLStaticGen_LuaFieldBool(L, idx, "enableSleep");
+    out->isAwake = (bool)SDLStaticGen_LuaFieldBool(L, idx, "isAwake");
+    out->fixedRotation = (bool)SDLStaticGen_LuaFieldBool(L, idx, "fixedRotation");
+    out->isBullet = (bool)SDLStaticGen_LuaFieldBool(L, idx, "isBullet");
+    out->isEnabled = (bool)SDLStaticGen_LuaFieldBool(L, idx, "isEnabled");
+    out->allowFastRotation = (bool)SDLStaticGen_LuaFieldBool(L, idx, "allowFastRotation");
+    out->internalValue = (int)SDLStaticGen_LuaFieldInt(L, idx, "internalValue");
+}
+
+static void GenPush_b2BodyDef(lua_State *L, const b2BodyDef *in)
+{
+    lua_createtable(L, 0, 18);
+    lua_pushinteger(L, (lua_Integer)in->type);
+    lua_setfield(L, -2, "type");
+    GenPush_b2Vec2(L, &in->position);
+    lua_setfield(L, -2, "position");
+    GenPush_b2Rot(L, &in->rotation);
+    lua_setfield(L, -2, "rotation");
+    GenPush_b2Vec2(L, &in->linearVelocity);
+    lua_setfield(L, -2, "linearVelocity");
+    lua_pushnumber(L, (lua_Number)in->angularVelocity);
+    lua_setfield(L, -2, "angularVelocity");
+    lua_pushnumber(L, (lua_Number)in->linearDamping);
+    lua_setfield(L, -2, "linearDamping");
+    lua_pushnumber(L, (lua_Number)in->angularDamping);
+    lua_setfield(L, -2, "angularDamping");
+    lua_pushnumber(L, (lua_Number)in->gravityScale);
+    lua_setfield(L, -2, "gravityScale");
+    lua_pushnumber(L, (lua_Number)in->sleepThreshold);
+    lua_setfield(L, -2, "sleepThreshold");
+    lua_pushboolean(L, (int)in->enableSleep);
+    lua_setfield(L, -2, "enableSleep");
+    lua_pushboolean(L, (int)in->isAwake);
+    lua_setfield(L, -2, "isAwake");
+    lua_pushboolean(L, (int)in->fixedRotation);
+    lua_setfield(L, -2, "fixedRotation");
+    lua_pushboolean(L, (int)in->isBullet);
+    lua_setfield(L, -2, "isBullet");
+    lua_pushboolean(L, (int)in->isEnabled);
+    lua_setfield(L, -2, "isEnabled");
+    lua_pushboolean(L, (int)in->allowFastRotation);
+    lua_setfield(L, -2, "allowFastRotation");
+    lua_pushinteger(L, (lua_Integer)in->internalValue);
+    lua_setfield(L, -2, "internalValue");
+}
+
 static void GenRead_b2BodyId(lua_State *L, int idx, b2BodyId *out)
 {
     memset(out, 0, sizeof(*out));
@@ -101,6 +183,86 @@ static void GenPush_b2CastOutput(lua_State *L, const b2CastOutput *in)
     lua_setfield(L, -2, "iterations");
     lua_pushboolean(L, (int)in->hit);
     lua_setfield(L, -2, "hit");
+}
+
+static void GenRead_b2SurfaceMaterial(lua_State *L, int idx, b2SurfaceMaterial *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    out->friction = (float)SDLStaticGen_LuaFieldNum(L, idx, "friction");
+    out->restitution = (float)SDLStaticGen_LuaFieldNum(L, idx, "restitution");
+    out->rollingResistance = (float)SDLStaticGen_LuaFieldNum(L, idx, "rollingResistance");
+    out->tangentSpeed = (float)SDLStaticGen_LuaFieldNum(L, idx, "tangentSpeed");
+    out->userMaterialId = (int)SDLStaticGen_LuaFieldInt(L, idx, "userMaterialId");
+    out->customColor = (uint32_t)SDLStaticGen_LuaFieldInt(L, idx, "customColor");
+}
+
+static void GenPush_b2SurfaceMaterial(lua_State *L, const b2SurfaceMaterial *in)
+{
+    lua_createtable(L, 0, 6);
+    lua_pushnumber(L, (lua_Number)in->friction);
+    lua_setfield(L, -2, "friction");
+    lua_pushnumber(L, (lua_Number)in->restitution);
+    lua_setfield(L, -2, "restitution");
+    lua_pushnumber(L, (lua_Number)in->rollingResistance);
+    lua_setfield(L, -2, "rollingResistance");
+    lua_pushnumber(L, (lua_Number)in->tangentSpeed);
+    lua_setfield(L, -2, "tangentSpeed");
+    lua_pushinteger(L, (lua_Integer)in->userMaterialId);
+    lua_setfield(L, -2, "userMaterialId");
+    lua_pushinteger(L, (lua_Integer)in->customColor);
+    lua_setfield(L, -2, "customColor");
+}
+
+static void GenRead_b2Filter(lua_State *L, int idx, b2Filter *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    out->categoryBits = (uint64_t)SDLStaticGen_LuaFieldInt(L, idx, "categoryBits");
+    out->maskBits = (uint64_t)SDLStaticGen_LuaFieldInt(L, idx, "maskBits");
+    out->groupIndex = (int)SDLStaticGen_LuaFieldInt(L, idx, "groupIndex");
+}
+
+static void GenPush_b2Filter(lua_State *L, const b2Filter *in)
+{
+    lua_createtable(L, 0, 3);
+    lua_pushinteger(L, (lua_Integer)in->categoryBits);
+    lua_setfield(L, -2, "categoryBits");
+    lua_pushinteger(L, (lua_Integer)in->maskBits);
+    lua_setfield(L, -2, "maskBits");
+    lua_pushinteger(L, (lua_Integer)in->groupIndex);
+    lua_setfield(L, -2, "groupIndex");
+}
+
+static void GenRead_b2ChainDef(lua_State *L, int idx, b2ChainDef *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    out->count = (int)SDLStaticGen_LuaFieldInt(L, idx, "count");
+    out->materialCount = (int)SDLStaticGen_LuaFieldInt(L, idx, "materialCount");
+    lua_getfield(L, idx, "filter");
+    GenRead_b2Filter(L, lua_gettop(L), &out->filter);
+    lua_pop(L, 1);
+    out->isLoop = (bool)SDLStaticGen_LuaFieldBool(L, idx, "isLoop");
+    out->enableSensorEvents = (bool)SDLStaticGen_LuaFieldBool(L, idx, "enableSensorEvents");
+    out->internalValue = (int)SDLStaticGen_LuaFieldInt(L, idx, "internalValue");
+}
+
+static void GenPush_b2ChainDef(lua_State *L, const b2ChainDef *in)
+{
+    lua_createtable(L, 0, 9);
+    lua_pushinteger(L, (lua_Integer)in->count);
+    lua_setfield(L, -2, "count");
+    lua_pushinteger(L, (lua_Integer)in->materialCount);
+    lua_setfield(L, -2, "materialCount");
+    GenPush_b2Filter(L, &in->filter);
+    lua_setfield(L, -2, "filter");
+    lua_pushboolean(L, (int)in->isLoop);
+    lua_setfield(L, -2, "isLoop");
+    lua_pushboolean(L, (int)in->enableSensorEvents);
+    lua_setfield(L, -2, "enableSensorEvents");
+    lua_pushinteger(L, (lua_Integer)in->internalValue);
+    lua_setfield(L, -2, "internalValue");
 }
 
 static void GenRead_b2ChainId(lua_State *L, int idx, b2ChainId *out)
@@ -381,23 +543,6 @@ static void GenPush_b2ShapeProxy(lua_State *L, const b2ShapeProxy *in)
     lua_setfield(L, -2, "radius");
 }
 
-static void GenRead_b2Rot(lua_State *L, int idx, b2Rot *out)
-{
-    memset(out, 0, sizeof(*out));
-    if (!lua_istable(L, idx)) { return; }
-    out->c = (float)SDLStaticGen_LuaFieldNum(L, idx, "c");
-    out->s = (float)SDLStaticGen_LuaFieldNum(L, idx, "s");
-}
-
-static void GenPush_b2Rot(lua_State *L, const b2Rot *in)
-{
-    lua_createtable(L, 0, 2);
-    lua_pushnumber(L, (lua_Number)in->c);
-    lua_setfield(L, -2, "c");
-    lua_pushnumber(L, (lua_Number)in->s);
-    lua_setfield(L, -2, "s");
-}
-
 static void GenRead_b2Transform(lua_State *L, int idx, b2Transform *out)
 {
     memset(out, 0, sizeof(*out));
@@ -481,26 +626,6 @@ static void GenPush_b2ExplosionDef(lua_State *L, const b2ExplosionDef *in)
     lua_setfield(L, -2, "falloff");
     lua_pushnumber(L, (lua_Number)in->impulsePerLength);
     lua_setfield(L, -2, "impulsePerLength");
-}
-
-static void GenRead_b2Filter(lua_State *L, int idx, b2Filter *out)
-{
-    memset(out, 0, sizeof(*out));
-    if (!lua_istable(L, idx)) { return; }
-    out->categoryBits = (uint64_t)SDLStaticGen_LuaFieldInt(L, idx, "categoryBits");
-    out->maskBits = (uint64_t)SDLStaticGen_LuaFieldInt(L, idx, "maskBits");
-    out->groupIndex = (int)SDLStaticGen_LuaFieldInt(L, idx, "groupIndex");
-}
-
-static void GenPush_b2Filter(lua_State *L, const b2Filter *in)
-{
-    lua_createtable(L, 0, 3);
-    lua_pushinteger(L, (lua_Integer)in->categoryBits);
-    lua_setfield(L, -2, "categoryBits");
-    lua_pushinteger(L, (lua_Integer)in->maskBits);
-    lua_setfield(L, -2, "maskBits");
-    lua_pushinteger(L, (lua_Integer)in->groupIndex);
-    lua_setfield(L, -2, "groupIndex");
 }
 
 static void GenPush_b2Hull(lua_State *L, const b2Hull *in)
@@ -769,6 +894,54 @@ static void GenRead_b2ShapeCastPairInput(lua_State *L, int idx, b2ShapeCastPairI
     out->canEncroach = (bool)SDLStaticGen_LuaFieldBool(L, idx, "canEncroach");
 }
 
+static void GenRead_b2ShapeDef(lua_State *L, int idx, b2ShapeDef *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    lua_getfield(L, idx, "material");
+    GenRead_b2SurfaceMaterial(L, lua_gettop(L), &out->material);
+    lua_pop(L, 1);
+    out->density = (float)SDLStaticGen_LuaFieldNum(L, idx, "density");
+    lua_getfield(L, idx, "filter");
+    GenRead_b2Filter(L, lua_gettop(L), &out->filter);
+    lua_pop(L, 1);
+    out->isSensor = (bool)SDLStaticGen_LuaFieldBool(L, idx, "isSensor");
+    out->enableSensorEvents = (bool)SDLStaticGen_LuaFieldBool(L, idx, "enableSensorEvents");
+    out->enableContactEvents = (bool)SDLStaticGen_LuaFieldBool(L, idx, "enableContactEvents");
+    out->enableHitEvents = (bool)SDLStaticGen_LuaFieldBool(L, idx, "enableHitEvents");
+    out->enablePreSolveEvents = (bool)SDLStaticGen_LuaFieldBool(L, idx, "enablePreSolveEvents");
+    out->invokeContactCreation = (bool)SDLStaticGen_LuaFieldBool(L, idx, "invokeContactCreation");
+    out->updateBodyMass = (bool)SDLStaticGen_LuaFieldBool(L, idx, "updateBodyMass");
+    out->internalValue = (int)SDLStaticGen_LuaFieldInt(L, idx, "internalValue");
+}
+
+static void GenPush_b2ShapeDef(lua_State *L, const b2ShapeDef *in)
+{
+    lua_createtable(L, 0, 12);
+    GenPush_b2SurfaceMaterial(L, &in->material);
+    lua_setfield(L, -2, "material");
+    lua_pushnumber(L, (lua_Number)in->density);
+    lua_setfield(L, -2, "density");
+    GenPush_b2Filter(L, &in->filter);
+    lua_setfield(L, -2, "filter");
+    lua_pushboolean(L, (int)in->isSensor);
+    lua_setfield(L, -2, "isSensor");
+    lua_pushboolean(L, (int)in->enableSensorEvents);
+    lua_setfield(L, -2, "enableSensorEvents");
+    lua_pushboolean(L, (int)in->enableContactEvents);
+    lua_setfield(L, -2, "enableContactEvents");
+    lua_pushboolean(L, (int)in->enableHitEvents);
+    lua_setfield(L, -2, "enableHitEvents");
+    lua_pushboolean(L, (int)in->enablePreSolveEvents);
+    lua_setfield(L, -2, "enablePreSolveEvents");
+    lua_pushboolean(L, (int)in->invokeContactCreation);
+    lua_setfield(L, -2, "invokeContactCreation");
+    lua_pushboolean(L, (int)in->updateBodyMass);
+    lua_setfield(L, -2, "updateBodyMass");
+    lua_pushinteger(L, (lua_Integer)in->internalValue);
+    lua_setfield(L, -2, "internalValue");
+}
+
 static void GenPush_b2SimplexVertex(lua_State *L, const b2SimplexVertex *in)
 {
     lua_createtable(L, 0, 6);
@@ -797,35 +970,6 @@ static void GenPush_b2Simplex(lua_State *L, const b2Simplex *in)
     lua_setfield(L, -2, "v3");
     lua_pushinteger(L, (lua_Integer)in->count);
     lua_setfield(L, -2, "count");
-}
-
-static void GenRead_b2SurfaceMaterial(lua_State *L, int idx, b2SurfaceMaterial *out)
-{
-    memset(out, 0, sizeof(*out));
-    if (!lua_istable(L, idx)) { return; }
-    out->friction = (float)SDLStaticGen_LuaFieldNum(L, idx, "friction");
-    out->restitution = (float)SDLStaticGen_LuaFieldNum(L, idx, "restitution");
-    out->rollingResistance = (float)SDLStaticGen_LuaFieldNum(L, idx, "rollingResistance");
-    out->tangentSpeed = (float)SDLStaticGen_LuaFieldNum(L, idx, "tangentSpeed");
-    out->userMaterialId = (int)SDLStaticGen_LuaFieldInt(L, idx, "userMaterialId");
-    out->customColor = (uint32_t)SDLStaticGen_LuaFieldInt(L, idx, "customColor");
-}
-
-static void GenPush_b2SurfaceMaterial(lua_State *L, const b2SurfaceMaterial *in)
-{
-    lua_createtable(L, 0, 6);
-    lua_pushnumber(L, (lua_Number)in->friction);
-    lua_setfield(L, -2, "friction");
-    lua_pushnumber(L, (lua_Number)in->restitution);
-    lua_setfield(L, -2, "restitution");
-    lua_pushnumber(L, (lua_Number)in->rollingResistance);
-    lua_setfield(L, -2, "rollingResistance");
-    lua_pushnumber(L, (lua_Number)in->tangentSpeed);
-    lua_setfield(L, -2, "tangentSpeed");
-    lua_pushinteger(L, (lua_Integer)in->userMaterialId);
-    lua_setfield(L, -2, "userMaterialId");
-    lua_pushinteger(L, (lua_Integer)in->customColor);
-    lua_setfield(L, -2, "customColor");
 }
 
 static void GenRead_b2Sweep(lua_State *L, int idx, b2Sweep *out)
@@ -886,6 +1030,52 @@ static void GenPush_b2Version(lua_State *L, const b2Version *in)
     lua_setfield(L, -2, "minor");
     lua_pushinteger(L, (lua_Integer)in->revision);
     lua_setfield(L, -2, "revision");
+}
+
+static void GenRead_b2WorldDef(lua_State *L, int idx, b2WorldDef *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    lua_getfield(L, idx, "gravity");
+    GenRead_b2Vec2(L, lua_gettop(L), &out->gravity);
+    lua_pop(L, 1);
+    out->restitutionThreshold = (float)SDLStaticGen_LuaFieldNum(L, idx, "restitutionThreshold");
+    out->hitEventThreshold = (float)SDLStaticGen_LuaFieldNum(L, idx, "hitEventThreshold");
+    out->contactHertz = (float)SDLStaticGen_LuaFieldNum(L, idx, "contactHertz");
+    out->contactDampingRatio = (float)SDLStaticGen_LuaFieldNum(L, idx, "contactDampingRatio");
+    out->maxContactPushSpeed = (float)SDLStaticGen_LuaFieldNum(L, idx, "maxContactPushSpeed");
+    out->maximumLinearSpeed = (float)SDLStaticGen_LuaFieldNum(L, idx, "maximumLinearSpeed");
+    out->enableSleep = (bool)SDLStaticGen_LuaFieldBool(L, idx, "enableSleep");
+    out->enableContinuous = (bool)SDLStaticGen_LuaFieldBool(L, idx, "enableContinuous");
+    out->workerCount = (int)SDLStaticGen_LuaFieldInt(L, idx, "workerCount");
+    out->internalValue = (int)SDLStaticGen_LuaFieldInt(L, idx, "internalValue");
+}
+
+static void GenPush_b2WorldDef(lua_State *L, const b2WorldDef *in)
+{
+    lua_createtable(L, 0, 17);
+    GenPush_b2Vec2(L, &in->gravity);
+    lua_setfield(L, -2, "gravity");
+    lua_pushnumber(L, (lua_Number)in->restitutionThreshold);
+    lua_setfield(L, -2, "restitutionThreshold");
+    lua_pushnumber(L, (lua_Number)in->hitEventThreshold);
+    lua_setfield(L, -2, "hitEventThreshold");
+    lua_pushnumber(L, (lua_Number)in->contactHertz);
+    lua_setfield(L, -2, "contactHertz");
+    lua_pushnumber(L, (lua_Number)in->contactDampingRatio);
+    lua_setfield(L, -2, "contactDampingRatio");
+    lua_pushnumber(L, (lua_Number)in->maxContactPushSpeed);
+    lua_setfield(L, -2, "maxContactPushSpeed");
+    lua_pushnumber(L, (lua_Number)in->maximumLinearSpeed);
+    lua_setfield(L, -2, "maximumLinearSpeed");
+    lua_pushboolean(L, (int)in->enableSleep);
+    lua_setfield(L, -2, "enableSleep");
+    lua_pushboolean(L, (int)in->enableContinuous);
+    lua_setfield(L, -2, "enableContinuous");
+    lua_pushinteger(L, (lua_Integer)in->workerCount);
+    lua_setfield(L, -2, "workerCount");
+    lua_pushinteger(L, (lua_Integer)in->internalValue);
+    lua_setfield(L, -2, "internalValue");
 }
 
 static void GenRead_b2WorldId(lua_State *L, int idx, b2WorldId *out)
@@ -2138,7 +2328,12 @@ static int GenL_b2CreateBody(lua_State *L)
     (void)L;
     b2WorldId a0;
     GenRead_b2WorldId(L, 1, &a0);
-    const b2BodyDef *a1 = (const b2BodyDef *)SDLStaticGen_LuaCheckHandle(L, 2, "b2BodyDef");
+    b2BodyDef tmp1;
+    const b2BodyDef *a1 = NULL;
+    if (!lua_isnoneornil(L, 2)) {
+        GenRead_b2BodyDef(L, 2, &tmp1);
+        a1 = &tmp1;
+    }
     b2BodyId rv = b2CreateBody(a0, a1);
     GenPush_b2BodyId(L, &rv);
     return 1;
@@ -2149,7 +2344,12 @@ static int GenL_b2CreateCapsuleShape(lua_State *L)
     (void)L;
     b2BodyId a0;
     GenRead_b2BodyId(L, 1, &a0);
-    const b2ShapeDef *a1 = (const b2ShapeDef *)SDLStaticGen_LuaCheckHandle(L, 2, "b2ShapeDef");
+    b2ShapeDef tmp1;
+    const b2ShapeDef *a1 = NULL;
+    if (!lua_isnoneornil(L, 2)) {
+        GenRead_b2ShapeDef(L, 2, &tmp1);
+        a1 = &tmp1;
+    }
     b2Capsule tmp2;
     const b2Capsule *a2 = NULL;
     if (!lua_isnoneornil(L, 3)) {
@@ -2166,7 +2366,12 @@ static int GenL_b2CreateChain(lua_State *L)
     (void)L;
     b2BodyId a0;
     GenRead_b2BodyId(L, 1, &a0);
-    const b2ChainDef *a1 = (const b2ChainDef *)SDLStaticGen_LuaCheckHandle(L, 2, "b2ChainDef");
+    b2ChainDef tmp1;
+    const b2ChainDef *a1 = NULL;
+    if (!lua_isnoneornil(L, 2)) {
+        GenRead_b2ChainDef(L, 2, &tmp1);
+        a1 = &tmp1;
+    }
     b2ChainId rv = b2CreateChain(a0, a1);
     GenPush_b2ChainId(L, &rv);
     return 1;
@@ -2177,7 +2382,12 @@ static int GenL_b2CreateCircleShape(lua_State *L)
     (void)L;
     b2BodyId a0;
     GenRead_b2BodyId(L, 1, &a0);
-    const b2ShapeDef *a1 = (const b2ShapeDef *)SDLStaticGen_LuaCheckHandle(L, 2, "b2ShapeDef");
+    b2ShapeDef tmp1;
+    const b2ShapeDef *a1 = NULL;
+    if (!lua_isnoneornil(L, 2)) {
+        GenRead_b2ShapeDef(L, 2, &tmp1);
+        a1 = &tmp1;
+    }
     b2Circle tmp2;
     const b2Circle *a2 = NULL;
     if (!lua_isnoneornil(L, 3)) {
@@ -2238,7 +2448,12 @@ static int GenL_b2CreatePolygonShape(lua_State *L)
     (void)L;
     b2BodyId a0;
     GenRead_b2BodyId(L, 1, &a0);
-    const b2ShapeDef *a1 = (const b2ShapeDef *)SDLStaticGen_LuaCheckHandle(L, 2, "b2ShapeDef");
+    b2ShapeDef tmp1;
+    const b2ShapeDef *a1 = NULL;
+    if (!lua_isnoneornil(L, 2)) {
+        GenRead_b2ShapeDef(L, 2, &tmp1);
+        a1 = &tmp1;
+    }
     b2Polygon tmp2;
     const b2Polygon *a2 = NULL;
     if (!lua_isnoneornil(L, 3)) {
@@ -2277,7 +2492,12 @@ static int GenL_b2CreateSegmentShape(lua_State *L)
     (void)L;
     b2BodyId a0;
     GenRead_b2BodyId(L, 1, &a0);
-    const b2ShapeDef *a1 = (const b2ShapeDef *)SDLStaticGen_LuaCheckHandle(L, 2, "b2ShapeDef");
+    b2ShapeDef tmp1;
+    const b2ShapeDef *a1 = NULL;
+    if (!lua_isnoneornil(L, 2)) {
+        GenRead_b2ShapeDef(L, 2, &tmp1);
+        a1 = &tmp1;
+    }
     b2Segment tmp2;
     const b2Segment *a2 = NULL;
     if (!lua_isnoneornil(L, 3)) {
@@ -2314,9 +2534,30 @@ static int GenL_b2CreateWheelJoint(lua_State *L)
 static int GenL_b2CreateWorld(lua_State *L)
 {
     (void)L;
-    const b2WorldDef *a0 = (const b2WorldDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2WorldDef");
+    b2WorldDef tmp0;
+    const b2WorldDef *a0 = NULL;
+    if (!lua_isnoneornil(L, 1)) {
+        GenRead_b2WorldDef(L, 1, &tmp0);
+        a0 = &tmp0;
+    }
     b2WorldId rv = b2CreateWorld(a0);
     GenPush_b2WorldId(L, &rv);
+    return 1;
+}
+
+static int GenL_b2DefaultBodyDef(lua_State *L)
+{
+    (void)L;
+    b2BodyDef rv = b2DefaultBodyDef();
+    GenPush_b2BodyDef(L, &rv);
+    return 1;
+}
+
+static int GenL_b2DefaultChainDef(lua_State *L)
+{
+    (void)L;
+    b2ChainDef rv = b2DefaultChainDef();
+    GenPush_b2ChainDef(L, &rv);
     return 1;
 }
 
@@ -2344,11 +2585,27 @@ static int GenL_b2DefaultQueryFilter(lua_State *L)
     return 1;
 }
 
+static int GenL_b2DefaultShapeDef(lua_State *L)
+{
+    (void)L;
+    b2ShapeDef rv = b2DefaultShapeDef();
+    GenPush_b2ShapeDef(L, &rv);
+    return 1;
+}
+
 static int GenL_b2DefaultSurfaceMaterial(lua_State *L)
 {
     (void)L;
     b2SurfaceMaterial rv = b2DefaultSurfaceMaterial();
     GenPush_b2SurfaceMaterial(L, &rv);
+    return 1;
+}
+
+static int GenL_b2DefaultWorldDef(lua_State *L)
+{
+    (void)L;
+    b2WorldDef rv = b2DefaultWorldDef();
+    GenPush_b2WorldDef(L, &rv);
     return 1;
 }
 
@@ -5248,7 +5505,7 @@ static int GenL_b2Yield(lua_State *L)
 int SDLStaticGen_OpenLua_b2(lua_State *L);
 int SDLStaticGen_OpenLua_b2(lua_State *L)
 {
-    lua_createtable(L, 0, 382);
+    lua_createtable(L, 0, 386);
     lua_pushcfunction(L, GenL_b2Atan2);
     lua_setfield(L, -2, "Atan2");
     lua_pushcfunction(L, GenL_b2Body_ApplyAngularImpulse);
@@ -5471,14 +5728,22 @@ int SDLStaticGen_OpenLua_b2(lua_State *L)
     lua_setfield(L, -2, "CreateWheelJoint");
     lua_pushcfunction(L, GenL_b2CreateWorld);
     lua_setfield(L, -2, "CreateWorld");
+    lua_pushcfunction(L, GenL_b2DefaultBodyDef);
+    lua_setfield(L, -2, "DefaultBodyDef");
+    lua_pushcfunction(L, GenL_b2DefaultChainDef);
+    lua_setfield(L, -2, "DefaultChainDef");
     lua_pushcfunction(L, GenL_b2DefaultExplosionDef);
     lua_setfield(L, -2, "DefaultExplosionDef");
     lua_pushcfunction(L, GenL_b2DefaultFilter);
     lua_setfield(L, -2, "DefaultFilter");
     lua_pushcfunction(L, GenL_b2DefaultQueryFilter);
     lua_setfield(L, -2, "DefaultQueryFilter");
+    lua_pushcfunction(L, GenL_b2DefaultShapeDef);
+    lua_setfield(L, -2, "DefaultShapeDef");
     lua_pushcfunction(L, GenL_b2DefaultSurfaceMaterial);
     lua_setfield(L, -2, "DefaultSurfaceMaterial");
+    lua_pushcfunction(L, GenL_b2DefaultWorldDef);
+    lua_setfield(L, -2, "DefaultWorldDef");
     lua_pushcfunction(L, GenL_b2DestroyBody);
     lua_setfield(L, -2, "DestroyBody");
     lua_pushcfunction(L, GenL_b2DestroyChain);
