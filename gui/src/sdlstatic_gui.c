@@ -1,0 +1,412 @@
+/*
+ * sdlstatic_gui.c — SDL3 backend for Nuklear (SDLStatic GUI).
+ *
+ * Original SDLStatic code (zlib). This is the single translation unit that
+ * compiles the vendored Nuklear implementation; everything else includes
+ * the SDLStatic/nuklear.h wrapper for declarations only.
+ */
+#define NK_IMPLEMENTATION
+#include <SDLStatic/nuklear.h>
+
+#include <SDLStatic/gui.h>
+
+typedef struct GuiVertex
+{
+    float pos[2];
+    float uv[2];
+    float col[4]; /* SDL_FColor-compatible */
+} GuiVertex;
+
+struct SDLStatic_Gui
+{
+    SDL_Renderer *renderer;
+    struct nk_context ctx;
+    struct nk_font_atlas atlas;
+    struct nk_draw_null_texture tex_null;
+    struct nk_buffer cmds;
+    SDL_Texture *font_texture;
+    void *font_copy;
+};
+
+/* ------------------------------------------------------- clipboard ----- */
+
+static void ClipboardCopy(nk_handle usr, const char *text, int len)
+{
+    (void)usr;
+    char *owned = (char *)SDL_malloc((size_t)len + 1);
+    if (owned != NULL)
+    {
+        SDL_memcpy(owned, text, (size_t)len);
+        owned[len] = '\0';
+        SDL_SetClipboardText(owned);
+        SDL_free(owned);
+    }
+}
+
+static void ClipboardPaste(nk_handle usr, struct nk_text_edit *edit)
+{
+    (void)usr;
+    char *text = SDL_GetClipboardText();
+    if (text != NULL)
+    {
+        if (*text != '\0')
+        {
+            nk_textedit_paste(edit, text, nk_strlen(text));
+        }
+        SDL_free(text);
+    }
+}
+
+/* --------------------------------------------------------- lifetime ---- */
+
+SDLStatic_Gui *SDLStatic_CreateGui(SDL_Renderer *renderer, const void *font_data, size_t font_len,
+                                   float font_size)
+{
+    if (renderer == NULL)
+    {
+        SDL_InvalidParamError("renderer");
+        return NULL;
+    }
+    if (font_size <= 0.0f)
+    {
+        font_size = 13.0f;
+    }
+
+    SDLStatic_Gui *gui = (SDLStatic_Gui *)SDL_calloc(1, sizeof(SDLStatic_Gui));
+    if (gui == NULL)
+    {
+        return NULL;
+    }
+    gui->renderer = renderer;
+
+    if (!nk_init_default(&gui->ctx, NULL))
+    {
+        SDL_free(gui);
+        SDL_SetError("nk_init_default failed");
+        return NULL;
+    }
+    nk_buffer_init_default(&gui->cmds);
+
+    nk_font_atlas_init_default(&gui->atlas);
+    nk_font_atlas_begin(&gui->atlas);
+    struct nk_font *font = NULL;
+    if (font_data != NULL && font_len > 0)
+    {
+        /* Nuklear reads the TTF during baking; keep an owned copy alive. */
+        gui->font_copy = SDL_malloc(font_len);
+        if (gui->font_copy != NULL)
+        {
+            SDL_memcpy(gui->font_copy, font_data, font_len);
+            font = nk_font_atlas_add_from_memory(&gui->atlas, gui->font_copy, (nk_size)font_len,
+                                                 font_size, NULL);
+        }
+    }
+    if (font == NULL)
+    {
+        font = nk_font_atlas_add_default(&gui->atlas, font_size, NULL);
+    }
+
+    int atlas_w = 0;
+    int atlas_h = 0;
+    const void *image = nk_font_atlas_bake(&gui->atlas, &atlas_w, &atlas_h, NK_FONT_ATLAS_RGBA32);
+    if (image == NULL || font == NULL)
+    {
+        SDLStatic_DestroyGui(gui);
+        SDL_SetError("font atlas baking failed");
+        return NULL;
+    }
+    gui->font_texture =
+        SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STATIC, atlas_w,
+                          atlas_h);
+    if (gui->font_texture == NULL ||
+        !SDL_UpdateTexture(gui->font_texture, NULL, image, atlas_w * 4))
+    {
+        SDLStatic_DestroyGui(gui);
+        return NULL;
+    }
+    SDL_SetTextureBlendMode(gui->font_texture, SDL_BLENDMODE_BLEND);
+    nk_font_atlas_end(&gui->atlas, nk_handle_ptr(gui->font_texture), &gui->tex_null);
+    nk_style_set_font(&gui->ctx, &font->handle);
+
+    gui->ctx.clip.copy = ClipboardCopy;
+    gui->ctx.clip.paste = ClipboardPaste;
+    gui->ctx.clip.userdata = nk_handle_ptr(gui);
+    return gui;
+}
+
+void SDLStatic_DestroyGui(SDLStatic_Gui *gui)
+{
+    if (gui == NULL)
+    {
+        return;
+    }
+    nk_font_atlas_clear(&gui->atlas);
+    nk_buffer_free(&gui->cmds);
+    nk_free(&gui->ctx);
+    if (gui->font_texture != NULL)
+    {
+        SDL_DestroyTexture(gui->font_texture);
+    }
+    SDL_free(gui->font_copy);
+    SDL_free(gui);
+}
+
+struct nk_context *SDLStatic_GuiContext(SDLStatic_Gui *gui)
+{
+    return (gui != NULL) ? &gui->ctx : NULL;
+}
+
+/* ----------------------------------------------------------- input ----- */
+
+void SDLStatic_GuiInputBegin(SDLStatic_Gui *gui)
+{
+    if (gui != NULL)
+    {
+        nk_input_begin(&gui->ctx);
+    }
+}
+
+void SDLStatic_GuiInputEnd(SDLStatic_Gui *gui)
+{
+    if (gui != NULL)
+    {
+        nk_input_end(&gui->ctx);
+    }
+}
+
+bool SDLStatic_GuiWantsInput(SDLStatic_Gui *gui)
+{
+    return (gui != NULL) && nk_item_is_any_active(&gui->ctx);
+}
+
+static void HandleKey(struct nk_context *ctx, const SDL_KeyboardEvent *key, bool down)
+{
+    const bool ctrl = (key->mod & SDL_KMOD_CTRL) != 0;
+    switch (key->key)
+    {
+    case SDLK_LSHIFT:
+    case SDLK_RSHIFT:
+        nk_input_key(ctx, NK_KEY_SHIFT, down);
+        break;
+    case SDLK_LCTRL:
+    case SDLK_RCTRL:
+        nk_input_key(ctx, NK_KEY_CTRL, down);
+        break;
+    case SDLK_DELETE:
+        nk_input_key(ctx, NK_KEY_DEL, down);
+        break;
+    case SDLK_RETURN:
+    case SDLK_KP_ENTER:
+        nk_input_key(ctx, NK_KEY_ENTER, down);
+        break;
+    case SDLK_TAB:
+        nk_input_key(ctx, NK_KEY_TAB, down);
+        break;
+    case SDLK_BACKSPACE:
+        nk_input_key(ctx, NK_KEY_BACKSPACE, down);
+        break;
+    case SDLK_HOME:
+        nk_input_key(ctx, NK_KEY_TEXT_START, down);
+        nk_input_key(ctx, NK_KEY_SCROLL_START, down);
+        break;
+    case SDLK_END:
+        nk_input_key(ctx, NK_KEY_TEXT_END, down);
+        nk_input_key(ctx, NK_KEY_SCROLL_END, down);
+        break;
+    case SDLK_PAGEUP:
+        nk_input_key(ctx, NK_KEY_SCROLL_UP, down);
+        break;
+    case SDLK_PAGEDOWN:
+        nk_input_key(ctx, NK_KEY_SCROLL_DOWN, down);
+        break;
+    case SDLK_UP:
+        nk_input_key(ctx, NK_KEY_UP, down);
+        break;
+    case SDLK_DOWN:
+        nk_input_key(ctx, NK_KEY_DOWN, down);
+        break;
+    case SDLK_LEFT:
+        nk_input_key(ctx, ctrl ? NK_KEY_TEXT_WORD_LEFT : NK_KEY_LEFT, down);
+        break;
+    case SDLK_RIGHT:
+        nk_input_key(ctx, ctrl ? NK_KEY_TEXT_WORD_RIGHT : NK_KEY_RIGHT, down);
+        break;
+    case SDLK_C:
+        if (ctrl)
+        {
+            nk_input_key(ctx, NK_KEY_COPY, down);
+        }
+        break;
+    case SDLK_V:
+        if (ctrl)
+        {
+            nk_input_key(ctx, NK_KEY_PASTE, down);
+        }
+        break;
+    case SDLK_X:
+        if (ctrl)
+        {
+            nk_input_key(ctx, NK_KEY_CUT, down);
+        }
+        break;
+    case SDLK_Z:
+        if (ctrl)
+        {
+            nk_input_key(ctx, NK_KEY_TEXT_UNDO, down);
+        }
+        break;
+    case SDLK_Y:
+        if (ctrl)
+        {
+            nk_input_key(ctx, NK_KEY_TEXT_REDO, down);
+        }
+        break;
+    case SDLK_A:
+        if (ctrl)
+        {
+            nk_input_key(ctx, NK_KEY_TEXT_SELECT_ALL, down);
+        }
+        break;
+    default:
+        break;
+    }
+}
+
+bool SDLStatic_GuiProcessEvent(SDLStatic_Gui *gui, const SDL_Event *event)
+{
+    if (gui == NULL || event == NULL)
+    {
+        return false;
+    }
+    struct nk_context *ctx = &gui->ctx;
+    switch (event->type)
+    {
+    case SDL_EVENT_MOUSE_MOTION:
+        nk_input_motion(ctx, (int)event->motion.x, (int)event->motion.y);
+        return true;
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
+    case SDL_EVENT_MOUSE_BUTTON_UP: {
+        const bool down = (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN);
+        const int x = (int)event->button.x;
+        const int y = (int)event->button.y;
+        enum nk_buttons button = NK_BUTTON_LEFT;
+        if (event->button.button == SDL_BUTTON_MIDDLE)
+        {
+            button = NK_BUTTON_MIDDLE;
+        }
+        else if (event->button.button == SDL_BUTTON_RIGHT)
+        {
+            button = NK_BUTTON_RIGHT;
+        }
+        if (button == NK_BUTTON_LEFT && down && event->button.clicks >= 2)
+        {
+            nk_input_button(ctx, NK_BUTTON_DOUBLE, x, y, nk_true);
+        }
+        nk_input_button(ctx, button, x, y, down ? nk_true : nk_false);
+        return true;
+    }
+    case SDL_EVENT_MOUSE_WHEEL:
+        nk_input_scroll(ctx, nk_vec2(event->wheel.x, event->wheel.y));
+        return true;
+    case SDL_EVENT_TEXT_INPUT: {
+        const char *text = event->text.text;
+        const int len = nk_strlen(text);
+        int at = 0;
+        while (at < len)
+        {
+            nk_rune rune = 0;
+            const int consumed = nk_utf_decode(text + at, &rune, len - at);
+            if (consumed <= 0)
+            {
+                break;
+            }
+            nk_input_unicode(ctx, rune);
+            at += consumed;
+        }
+        return true;
+    }
+    case SDL_EVENT_KEY_DOWN:
+    case SDL_EVENT_KEY_UP:
+        HandleKey(ctx, &event->key, event->type == SDL_EVENT_KEY_DOWN);
+        return true;
+    default:
+        return false;
+    }
+}
+
+/* ---------------------------------------------------------- render ----- */
+
+bool SDLStatic_GuiRender(SDLStatic_Gui *gui)
+{
+    if (gui == NULL)
+    {
+        return SDL_InvalidParamError("gui");
+    }
+    static const struct nk_draw_vertex_layout_element vertex_layout[] = {
+        {NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(GuiVertex, pos)},
+        {NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(GuiVertex, uv)},
+        {NK_VERTEX_COLOR, NK_FORMAT_R32G32B32A32_FLOAT, NK_OFFSETOF(GuiVertex, col)},
+        {NK_VERTEX_LAYOUT_END}};
+
+    struct nk_convert_config config;
+    NK_MEMSET(&config, 0, sizeof(config));
+    config.vertex_layout = vertex_layout;
+    config.vertex_size = sizeof(GuiVertex);
+    config.vertex_alignment = NK_ALIGNOF(GuiVertex);
+    config.tex_null = gui->tex_null;
+    config.circle_segment_count = 22;
+    config.curve_segment_count = 22;
+    config.arc_segment_count = 22;
+    config.global_alpha = 1.0f;
+    config.shape_AA = NK_ANTI_ALIASING_ON;
+    config.line_AA = NK_ANTI_ALIASING_ON;
+
+    struct nk_buffer verts;
+    struct nk_buffer idx;
+    nk_buffer_init_default(&verts);
+    nk_buffer_init_default(&idx);
+    const nk_flags rc = nk_convert(&gui->ctx, &gui->cmds, &verts, &idx, &config);
+    bool ok = (rc == NK_CONVERT_SUCCESS);
+    if (ok)
+    {
+        const GuiVertex *vertices = (const GuiVertex *)nk_buffer_memory_const(&verts);
+        const nk_draw_index *indices = (const nk_draw_index *)nk_buffer_memory_const(&idx);
+        const int vertex_count = (int)(verts.needed / sizeof(GuiVertex));
+
+        const struct nk_draw_command *cmd = NULL;
+        nk_size index_offset = 0;
+        nk_draw_foreach(cmd, &gui->ctx, &gui->cmds)
+        {
+            if (cmd->elem_count == 0)
+            {
+                continue;
+            }
+            const SDL_Rect clip = {(int)cmd->clip_rect.x, (int)cmd->clip_rect.y,
+                                   (int)cmd->clip_rect.w, (int)cmd->clip_rect.h};
+            SDL_SetRenderClipRect(gui->renderer, &clip);
+            if (!SDL_RenderGeometryRaw(gui->renderer, (SDL_Texture *)cmd->texture.ptr,
+                                       &vertices->pos[0], (int)sizeof(GuiVertex),
+                                       (const SDL_FColor *)(const void *)&vertices->col[0],
+                                       (int)sizeof(GuiVertex), &vertices->uv[0],
+                                       (int)sizeof(GuiVertex), vertex_count,
+                                       indices + index_offset, (int)cmd->elem_count,
+                                       (int)sizeof(nk_draw_index)))
+            {
+                ok = false;
+                break;
+            }
+            index_offset += cmd->elem_count;
+        }
+        SDL_SetRenderClipRect(gui->renderer, NULL);
+    }
+    else
+    {
+        SDL_SetError("nk_convert failed (0x%x)", (unsigned)rc);
+    }
+
+    nk_buffer_free(&verts);
+    nk_buffer_free(&idx);
+    nk_buffer_clear(&gui->cmds);
+    nk_clear(&gui->ctx);
+    return ok;
+}

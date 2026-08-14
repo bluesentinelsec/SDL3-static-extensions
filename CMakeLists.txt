@@ -116,6 +116,7 @@ option(SDLSTATIC_BUILD_EXTRAS "Build the SDLStatic::Extras modules" ON)
 option(SDLSTATIC_BUILD_FORMATS "Build the SDLStatic::Formats parsers (JSON/TOML/YAML)" ON)
 option(SDLSTATIC_BUILD_VFS "Build the SDLStatic::VFS virtual filesystem (PhysFS)" ON)
 option(SDLSTATIC_BUILD_PHYSICS "Build the SDLStatic::Physics engine (Box2D)" ON)
+option(SDLSTATIC_BUILD_GUI "Build the SDLStatic::GUI toolkit (Nuklear)" ON)
 
 if(ANDROID AND (SDL3_STATIC_EXTENSIONS_BUILD_APP OR SDL3_STATIC_EXTENSIONS_BUILD_TESTS OR SDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS))
   message(FATAL_ERROR
@@ -254,6 +255,10 @@ if(SDLSTATIC_BUILD_PHYSICS)
     message(FATAL_ERROR "SDLSTATIC_BUILD_PHYSICS requires SDLSTATIC_BUILD_GFX (debug draw uses the GPU primitives)")
   endif()
   add_subdirectory(physics)
+endif()
+
+if(SDLSTATIC_BUILD_GUI)
+  add_subdirectory(gui)
 endif()
 
 if(SDL3_STATIC_EXTENSIONS_BUILD_TESTS)
