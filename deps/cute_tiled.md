@@ -57,5 +57,11 @@ in exactly one TU: `tiled/src/sdlstatic_tiled.c`
    it to cute_tiled, so malformed input fails with `SDL_GetError` instead
    of a segfault.
 
+4. **Null-pointer `offsetof` (undefined behavior)** — `cute_tiled_free_map`
+   recovered the internal struct with a hand-rolled
+   `(size_t)(&((cute_tiled_map_internal_t*)0)->map)`, a null-pointer
+   member access UBSan rejects. Replaced with standard
+   `offsetof(cute_tiled_map_internal_t, map)`.
+
 Per project policy these fixes are documented here and kept local; they
 are not upstreamed.
