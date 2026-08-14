@@ -494,8 +494,8 @@ static int LCompress(lua_State *L)
     size_t len = 0;
     const char *data = luaL_checklstring(L, 1, &len);
     int outSize = 0;
-    return PushByteResult(
-        L, SDLStatic_CompressData((const unsigned char *)data, (int)len, &outSize), outSize);
+    unsigned char *out = SDLStatic_CompressData((const unsigned char *)data, (int)len, &outSize);
+    return PushByteResult(L, out, outSize);
 }
 
 static int LDecompress(lua_State *L)
@@ -503,8 +503,8 @@ static int LDecompress(lua_State *L)
     size_t len = 0;
     const char *data = luaL_checklstring(L, 1, &len);
     int outSize = 0;
-    return PushByteResult(
-        L, SDLStatic_DecompressData((const unsigned char *)data, (int)len, &outSize), outSize);
+    unsigned char *out = SDLStatic_DecompressData((const unsigned char *)data, (int)len, &outSize);
+    return PushByteResult(L, out, outSize);
 }
 
 static int LEncrypt(lua_State *L)
@@ -512,10 +512,9 @@ static int LEncrypt(lua_State *L)
     size_t len = 0;
     const char *data = luaL_checklstring(L, 1, &len);
     int outSize = 0;
-    return PushByteResult(L,
-                          SDLStatic_EncryptData((const unsigned char *)data, (int)len,
-                                                luaL_checkstring(L, 2), &outSize),
-                          outSize);
+    unsigned char *out = SDLStatic_EncryptData((const unsigned char *)data, (int)len,
+                                                luaL_checkstring(L, 2), &outSize);
+    return PushByteResult(L, out, outSize);
 }
 
 static int LDecrypt(lua_State *L)
@@ -523,10 +522,9 @@ static int LDecrypt(lua_State *L)
     size_t len = 0;
     const char *data = luaL_checklstring(L, 1, &len);
     int outSize = 0;
-    return PushByteResult(L,
-                          SDLStatic_DecryptData((const unsigned char *)data, (int)len,
-                                                luaL_checkstring(L, 2), &outSize),
-                          outSize);
+    unsigned char *out = SDLStatic_DecryptData((const unsigned char *)data, (int)len,
+                                                luaL_checkstring(L, 2), &outSize);
+    return PushByteResult(L, out, outSize);
 }
 
 static int LB64Encode(lua_State *L)
@@ -547,8 +545,8 @@ static int LB64Encode(lua_State *L)
 static int LB64Decode(lua_State *L)
 {
     int outSize = 0;
-    return PushByteResult(L, SDLStatic_DecodeDataBase64(luaL_checkstring(L, 1), &outSize),
-                          outSize);
+    unsigned char *out = SDLStatic_DecodeDataBase64(luaL_checkstring(L, 1), &outSize);
+    return PushByteResult(L, out, outSize);
 }
 
 /* ------------------------------------------------------------ open ------ */

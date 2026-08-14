@@ -515,10 +515,9 @@ static mrb_value MCompress(mrb_state *mrb, mrb_value self)
     mrb_value data;
     mrb_get_args(mrb, "S", &data);
     int outSize = 0;
-    return ByteResult(mrb,
-                      SDLStatic_CompressData((const unsigned char *)RSTRING_PTR(data),
-                                             (int)RSTRING_LEN(data), &outSize),
-                      outSize);
+    unsigned char *out = SDLStatic_CompressData((const unsigned char *)RSTRING_PTR(data),
+                                             (int)RSTRING_LEN(data), &outSize);
+    return ByteResult(mrb, out, outSize);
 }
 
 static mrb_value MDecompress(mrb_state *mrb, mrb_value self)
@@ -527,10 +526,9 @@ static mrb_value MDecompress(mrb_state *mrb, mrb_value self)
     mrb_value data;
     mrb_get_args(mrb, "S", &data);
     int outSize = 0;
-    return ByteResult(mrb,
-                      SDLStatic_DecompressData((const unsigned char *)RSTRING_PTR(data),
-                                               (int)RSTRING_LEN(data), &outSize),
-                      outSize);
+    unsigned char *out = SDLStatic_DecompressData((const unsigned char *)RSTRING_PTR(data),
+                                               (int)RSTRING_LEN(data), &outSize);
+    return ByteResult(mrb, out, outSize);
 }
 
 static mrb_value MEncrypt(mrb_state *mrb, mrb_value self)
@@ -540,10 +538,9 @@ static mrb_value MEncrypt(mrb_state *mrb, mrb_value self)
     const char *password = NULL;
     mrb_get_args(mrb, "Sz", &data, &password);
     int outSize = 0;
-    return ByteResult(mrb,
-                      SDLStatic_EncryptData((const unsigned char *)RSTRING_PTR(data),
-                                            (int)RSTRING_LEN(data), password, &outSize),
-                      outSize);
+    unsigned char *out = SDLStatic_EncryptData((const unsigned char *)RSTRING_PTR(data),
+                                            (int)RSTRING_LEN(data), password, &outSize);
+    return ByteResult(mrb, out, outSize);
 }
 
 static mrb_value MDecrypt(mrb_state *mrb, mrb_value self)
@@ -553,10 +550,9 @@ static mrb_value MDecrypt(mrb_state *mrb, mrb_value self)
     const char *password = NULL;
     mrb_get_args(mrb, "Sz", &data, &password);
     int outSize = 0;
-    return ByteResult(mrb,
-                      SDLStatic_DecryptData((const unsigned char *)RSTRING_PTR(data),
-                                            (int)RSTRING_LEN(data), password, &outSize),
-                      outSize);
+    unsigned char *out = SDLStatic_DecryptData((const unsigned char *)RSTRING_PTR(data),
+                                            (int)RSTRING_LEN(data), password, &outSize);
+    return ByteResult(mrb, out, outSize);
 }
 
 static mrb_value MB64Encode(mrb_state *mrb, mrb_value self)
@@ -582,7 +578,8 @@ static mrb_value MB64Decode(mrb_state *mrb, mrb_value self)
     const char *text = NULL;
     mrb_get_args(mrb, "z", &text);
     int outSize = 0;
-    return ByteResult(mrb, SDLStatic_DecodeDataBase64(text, &outSize), outSize);
+    unsigned char *out = SDLStatic_DecodeDataBase64(text, &outSize);
+    return ByteResult(mrb, out, outSize);
 }
 
 /* ------------------------------------------------------------ open ------ */
