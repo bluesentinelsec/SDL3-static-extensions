@@ -117,6 +117,8 @@ option(SDLSTATIC_BUILD_FORMATS "Build the SDLStatic::Formats parsers (JSON/TOML/
 option(SDLSTATIC_BUILD_VFS "Build the SDLStatic::VFS virtual filesystem (PhysFS)" ON)
 option(SDLSTATIC_BUILD_PHYSICS "Build the SDLStatic::Physics engine (Box2D)" ON)
 option(SDLSTATIC_BUILD_GUI "Build the SDLStatic::GUI toolkit (Nuklear)" ON)
+option(SDLSTATIC_BUILD_LUA "Build the SDLStatic::Lua interpreter" ON)
+option(SDLSTATIC_BUILD_RUBY "Build the SDLStatic::Ruby interpreter (mruby)" ON)
 
 if(ANDROID AND (SDL3_STATIC_EXTENSIONS_BUILD_APP OR SDL3_STATIC_EXTENSIONS_BUILD_TESTS OR SDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS))
   message(FATAL_ERROR
@@ -259,6 +261,24 @@ endif()
 
 if(SDLSTATIC_BUILD_GUI)
   add_subdirectory(gui)
+endif()
+
+if(SDLSTATIC_BUILD_LUA OR SDLSTATIC_BUILD_RUBY)
+  if(NOT SDLSTATIC_BUILD_VFS)
+    message(FATAL_ERROR "script interpreters require SDLSTATIC_BUILD_VFS (require() loads modules through the VFS)")
+  endif()
+endif()
+if(SDLSTATIC_BUILD_LUA)
+  add_subdirectory(lua)
+endif()
+if(SDLSTATIC_BUILD_RUBY)
+  add_subdirectory(mruby)
+endif()
+if(SDLSTATIC_BUILD_LUA AND SDLSTATIC_BUILD_RUBY)
+  add_subdirectory(bindings)
+  if(SDL3_STATIC_EXTENSIONS_IS_TOP_LEVEL)
+    add_subdirectory(tools/repl)
+  endif()
 endif()
 
 if(SDL3_STATIC_EXTENSIONS_BUILD_TESTS)
