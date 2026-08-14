@@ -155,9 +155,8 @@ endif()
 # audit holds.
 if(SDLSTATIC_BUILD_HTTP)
   FetchContent_Declare(mog
-    URL https://github.com/bluesentinelsec/mog/archive/refs/tags/v0.6.0.tar.gz
-    URL_HASH SHA256=4ea62de056cba566f7676708e346f56e89e30ed0b67b6a3524098e243349ffbf
-    PATCH_COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_LIST_DIR}/patch_mog_includes.cmake
+    URL https://github.com/bluesentinelsec/mog/archive/refs/tags/v0.6.1.tar.gz
+    URL_HASH SHA256=738a342b1a1d907c25784aa80c2544a00f9e3a0d7488916028e990c944be60e6
   )
   FetchContent_MakeAvailable(mog)
 endif()
