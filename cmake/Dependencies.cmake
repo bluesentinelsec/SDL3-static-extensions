@@ -145,3 +145,18 @@ if(SDLSTATIC_BUILD_TTF)
   )
   FetchContent_MakeAvailable(freetype)
 endif()
+
+# --- mog (HTTP/S client + server; the user's own library) -----------------
+# Pulled via FetchContent per decision (not vendored): pinned release
+# tarball with hash. mog embeds cleanly: when not top-level its app/tests/
+# benchmarks/optional deps all default OFF, leaving just the static C++
+# core `mog_lib`. Transports are platform-native (WinHTTP, NSURLSession,
+# libcurl via dlopen on Linux) — nothing shared is linked, so the link
+# audit holds.
+if(SDLSTATIC_BUILD_HTTP)
+  FetchContent_Declare(mog
+    URL https://github.com/bluesentinelsec/mog/archive/refs/tags/v0.6.1.tar.gz
+    URL_HASH SHA256=738a342b1a1d907c25784aa80c2544a00f9e3a0d7488916028e990c944be60e6
+  )
+  FetchContent_MakeAvailable(mog)
+endif()
