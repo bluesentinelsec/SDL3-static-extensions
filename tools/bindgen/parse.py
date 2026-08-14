@@ -44,6 +44,9 @@ _PLATFORM_GATE_RE = re.compile(
     r"|__ANDROID__|ANDROID|__APPLE__|__IPHONEOS__|__TVOS__|TARGET_OS"
     r"|__linux__|__unix__|__EMSCRIPTEN__|EMSCRIPTEN|__GNUC__|_MSC_VER"
     r"|__clang__|VULKAN_H_|__OBJC__|SDL_FUNCTION_POINTER_IS_VOID_POINTER"
+    # Build-config gates: a declaration that only exists in debug (or only
+    # release) builds cannot be referenced by committed generated code.
+    r"|NDEBUG|B2_ENABLE_ASSERT|_DEBUG"
 )
 
 # Macros defined by our single-header configs / build. Conditions that test

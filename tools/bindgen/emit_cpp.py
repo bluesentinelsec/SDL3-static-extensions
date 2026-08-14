@@ -44,9 +44,17 @@ _CPP_KEYWORDS = {
 }
 
 
+# Names libc/compilers commonly define as macros: an alias named `isinf`
+# would be macro-expanded on platforms (Emscripten) where math.h defines it.
+_MACRO_TRAPS = {
+    "isinf", "isnan", "isfinite", "isnormal", "signbit", "fpclassify",
+    "assert", "errno", "alloca", "stdin", "stdout", "stderr", "environ",
+}
+
+
 def stripped(name: str, prefix: str) -> str:
     out = name[len(prefix):] if name.startswith(prefix) else name
-    if out in _CPP_KEYWORDS or not re.match(r"[A-Za-z_]", out):
+    if out in _CPP_KEYWORDS or out in _MACRO_TRAPS or not re.match(r"[A-Za-z_]", out):
         out += "_"
     return out
 

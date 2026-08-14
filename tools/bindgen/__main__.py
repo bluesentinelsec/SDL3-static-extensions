@@ -89,7 +89,10 @@ def main() -> int:
     emit_report(manifest, outcomes, target)
 
     if args.check:
-        import filecmp
+
+        def normalized(path: Path) -> bytes:
+            # CI checkouts on Windows may be CRLF-converted.
+            return path.read_bytes().replace(b"\r\n", b"\n")
 
         stale: list[str] = []
         for rel_dir in ("cpp/include/sdlstatic/gen", "bindings/generated"):
@@ -97,9 +100,7 @@ def main() -> int:
             committed_dir = args.repo / rel_dir
             for fresh in sorted(fresh_dir.iterdir()):
                 committed = committed_dir / fresh.name
-                if not committed.exists() or not filecmp.cmp(
-                    fresh, committed, shallow=False
-                ):
+                if not committed.exists() or normalized(fresh) != normalized(committed):
                     stale.append(str(committed))
         if stale:
             print("bindgen: committed output is stale; regenerate with "

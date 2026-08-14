@@ -18,11 +18,11 @@ types). The full C API additionally stays reachable from C/C++.
 | SDL_ttf | 108 | 93 | 1 | 11 | 106 | 2 |
 | SDL_net | 34 | 15 | 1 | 15 | 27 | 7 |
 | PhysFS | 98 | 0 | 0 | 98 | 82 | 16 |
-| Box2D | 422 | 120 | 0 | 300 | 386 | 36 |
+| Box2D | 421 | 120 | 0 | 299 | 385 | 36 |
 | Nuklear | 534 | 0 | 0 | 534 | 426 | 108 |
 | cJSON | 78 | 57 | 0 | 20 | 68 | 10 |
 | SDLStatic modules | 36 | 12 | 6 | 17 | 29 | 7 |
-| **Total** | 2693 | 948 | 173 | 1532 | 2160 | 533 |
+| **Total** | 2692 | 948 | 173 | 1531 | 2159 | 533 |
 
 ## Script-surface skip reasons
 

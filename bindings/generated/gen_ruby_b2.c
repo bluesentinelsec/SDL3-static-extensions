@@ -3589,21 +3589,6 @@ static mrb_value GenR_b2GetVersion(mrb_state *mrb, mrb_value self)
     }
 }
 
-static mrb_value GenR_b2InternalAssertFcn(mrb_state *mrb, mrb_value self)
-{
-    const mrb_value *argv = NULL;
-    mrb_int argc = 0;
-    (void)self;
-    mrb_get_args(mrb, "*", &argv, &argc);
-    {
-    const char *a0 = SDLStaticGen_RubyToStr(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
-    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
-    int a2 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
-    int rv = b2InternalAssertFcn(a0, a1, a2);
-    return mrb_int_value(mrb, (mrb_int)rv);
-    }
-}
-
 static mrb_value GenR_b2IsValidAABB(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -7125,7 +7110,6 @@ void SDLStaticGen_OpenRuby_b2(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GetSweepTransform", GenR_b2GetSweepTransform, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetTicks", GenR_b2GetTicks, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GetVersion", GenR_b2GetVersion, MRB_ARGS_ANY());
-    mrb_define_module_function(mrb, mod, "InternalAssertFcn", GenR_b2InternalAssertFcn, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "IsValidAABB", GenR_b2IsValidAABB, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "IsValidFloat", GenR_b2IsValidFloat, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "IsValidPlane", GenR_b2IsValidPlane, MRB_ARGS_ANY());

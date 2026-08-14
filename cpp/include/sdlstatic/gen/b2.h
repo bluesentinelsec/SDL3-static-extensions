@@ -477,7 +477,6 @@ inline constexpr auto& GetSweepTransform = ::b2GetSweepTransform;
 inline constexpr auto& GetTicks = ::b2GetTicks;
 inline constexpr auto& GetVersion = ::b2GetVersion;
 inline constexpr auto& Hash = ::b2Hash;
-inline constexpr auto& InternalAssertFcn = ::b2InternalAssertFcn;
 inline constexpr auto& IsValidAABB = ::b2IsValidAABB;
 inline constexpr auto& IsValidFloat = ::b2IsValidFloat;
 inline constexpr auto& IsValidPlane = ::b2IsValidPlane;

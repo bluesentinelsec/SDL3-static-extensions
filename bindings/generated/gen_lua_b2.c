@@ -3095,17 +3095,6 @@ static int GenL_b2GetVersion(lua_State *L)
     return 1;
 }
 
-static int GenL_b2InternalAssertFcn(lua_State *L)
-{
-    (void)L;
-    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checkstring(L, 1);
-    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
-    int a2 = (int)luaL_checkinteger(L, 3);
-    int rv = b2InternalAssertFcn(a0, a1, a2);
-    lua_pushinteger(L, (lua_Integer)rv);
-    return 1;
-}
-
 static int GenL_b2IsValidAABB(lua_State *L)
 {
     (void)L;
@@ -5505,7 +5494,7 @@ static int GenL_b2Yield(lua_State *L)
 int SDLStaticGen_OpenLua_b2(lua_State *L);
 int SDLStaticGen_OpenLua_b2(lua_State *L)
 {
-    lua_createtable(L, 0, 386);
+    lua_createtable(L, 0, 385);
     lua_pushcfunction(L, GenL_b2Atan2);
     lua_setfield(L, -2, "Atan2");
     lua_pushcfunction(L, GenL_b2Body_ApplyAngularImpulse);
@@ -5844,8 +5833,6 @@ int SDLStaticGen_OpenLua_b2(lua_State *L)
     lua_setfield(L, -2, "GetTicks");
     lua_pushcfunction(L, GenL_b2GetVersion);
     lua_setfield(L, -2, "GetVersion");
-    lua_pushcfunction(L, GenL_b2InternalAssertFcn);
-    lua_setfield(L, -2, "InternalAssertFcn");
     lua_pushcfunction(L, GenL_b2IsValidAABB);
     lua_setfield(L, -2, "IsValidAABB");
     lua_pushcfunction(L, GenL_b2IsValidFloat);
