@@ -429,7 +429,7 @@ def emit_lua(manifest: Manifest, repo: Path) -> dict[str, dict[str, ScriptPlan]]
         em.w(f"    lua_setglobal(L, \"{lib.script_module}\");")
         em.w("    return 0;")
         em.w("}")
-        (outdir / f"gen_lua_{lib.key}.c").write_text("\n".join(em.out) + "\n")
+        (outdir / f"gen_lua_{lib.key}.c").write_text("\n".join(em.out, encoding="utf-8") + "\n")
         opens.append(f"SDLStaticGen_OpenLua_{lib.key}")
 
     reg = [
@@ -456,5 +456,5 @@ def emit_lua(manifest: Manifest, repo: Path) -> dict[str, dict[str, ScriptPlan]]
     reg.append("    return 0;")
     reg.append("}")
     reg.append("")
-    (outdir / "gen_lua_register.c").write_text("\n".join(reg))
+    (outdir / "gen_lua_register.c").write_text("\n".join(reg, encoding="utf-8"))
     return outcomes

@@ -66,7 +66,9 @@ def emit_report(manifest: Manifest, outcomes: dict, repo: Path) -> None:
         w("")
         w("</details>")
         w("")
-    (repo / "bindings" / "generated" / "COVERAGE.md").write_text("\n".join(lines) + "\n")
+    (repo / "bindings" / "generated" / "COVERAGE.md").write_text(
+        "\n".join(lines) + "\n", encoding="utf-8"
+    )
 
 
 def _bucket_reason(reason: str) -> str:

@@ -103,10 +103,24 @@ def main() -> int:
                 if not committed.exists() or normalized(fresh) != normalized(committed):
                     stale.append(str(committed))
         if stale:
+            import difflib
+
             print("bindgen: committed output is stale; regenerate with "
                   "`python3 -m tools.bindgen`:", file=sys.stderr)
             for s in stale:
                 print(f"  {s}", file=sys.stderr)
+            # First few diff lines of the first stale file, for CI logs.
+            first = Path(stale[0])
+            fresh_first = target / first.relative_to(args.repo)
+            diff = difflib.unified_diff(
+                normalized(first).decode("utf-8", "replace").splitlines(),
+                normalized(fresh_first).decode("utf-8", "replace").splitlines(),
+                lineterm="", n=1,
+            )
+            for i, line in enumerate(diff):
+                if i > 20:
+                    break
+                print(f"  | {line}", file=sys.stderr)
             return 1
         print("bindgen: committed output is up to date")
     return 0

@@ -75,7 +75,7 @@ _KNOWN_FALSE = {
 
 def check_nk_config(wrapper_header: Path) -> None:
     """Assert _KNOWN_TRUE matches the NK_INCLUDE_* set in the wrapper."""
-    defined = set(re.findall(r"^#define\s+(NK_[A-Z_]+)", wrapper_header.read_text(), re.M))
+    defined = set(re.findall(r"^#define\s+(NK_[A-Z_]+)", wrapper_header.read_text(encoding="utf-8", errors="replace"), re.M))
     include_true = {n for n in _KNOWN_TRUE if n.startswith("NK_INCLUDE_")}
     include_defined = {n for n in defined if n.startswith("NK_INCLUDE_")}
     if include_true != include_defined:
@@ -372,7 +372,7 @@ _FIELD_RE = re.compile(
 
 
 def parse_header(lib: Library, path: Path, macro_style: str) -> None:
-    text = strip_line_continuations(strip_comments(path.read_text(errors="replace")))
+    text = strip_line_continuations(strip_comments(path.read_text(encoding="utf-8", errors="replace")))
     pattern = _FUNC_PATTERNS[macro_style]
     dead = excluded_spans(text)
 

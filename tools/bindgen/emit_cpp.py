@@ -288,7 +288,7 @@ def emit_cpp(manifest: Manifest, repo: Path) -> dict[str, dict[str, CppPlan]]:
         w(f"#endif  // {guard}")
         w("// clang-format on")
         w("")
-        (outdir / f"{lib.key}.h").write_text("\n".join(lines))
+        (outdir / f"{lib.key}.h").write_text("\n".join(lines, encoding="utf-8"))
         umbrella_includes.append(f'#include "sdlstatic/gen/{lib.key}.h"')
 
     guarded = []
@@ -312,7 +312,7 @@ def emit_cpp(manifest: Manifest, repo: Path) -> dict[str, dict[str, CppPlan]]:
         "#endif  // SDLSTATIC_CPP_GEN_GEN_H_",
         "",
     ]
-    (outdir / "gen.h").write_text("\n".join(umbrella))
+    (outdir / "gen.h").write_text("\n".join(umbrella, encoding="utf-8"))
     return outcomes
 
 
