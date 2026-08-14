@@ -286,7 +286,11 @@ TEST_F(GuiHarness, EditFieldReceivesTypedText)
 
 TEST_F(GuiHarness, GridWidthsFollowWeightsAndSpans)
 {
-    struct nk_rect c1, c2, c3, span_cell, next_row;
+    struct nk_rect c1 = nk_rect(0, 0, 0, 0);
+    struct nk_rect c2 = nk_rect(0, 0, 0, 0);
+    struct nk_rect c3 = nk_rect(0, 0, 0, 0);
+    struct nk_rect span_cell = nk_rect(0, 0, 0, 0);
+    struct nk_rect next_row = nk_rect(0, 0, 0, 0);
     struct nk_context *ctx = SDLStatic_GuiContext(gui_);
     static const float weights[3] = {1.0f, 2.0f, 1.0f};
 
@@ -322,6 +326,7 @@ TEST_F(GuiHarness, GridWidthsFollowWeightsAndSpans)
     }
     nk_end(ctx);
     ASSERT_TRUE(SDLStatic_GuiRender(gui_));
+    ASSERT_GT(c1.w, 0.0f) << "grid window must have been built";
 
     // Weight 1:2:1 must show up as proportional widths (padding tolerance).
     EXPECT_NEAR(c2.w / c1.w, 2.0f, 0.35f) << "middle column has weight 2";
