@@ -673,6 +673,8 @@ static mrb_value MB64Decode(mrb_state *mrb, mrb_value self)
 
 /* ------------------------------------------------------------ open ------ */
 
+extern void SDLStatic_OpenGeneratedRubyBindings(mrb_state *mrb);
+
 bool SDLStatic_OpenRubyBindings(mrb_state *mrb)
 {
     if (mrb == NULL)
@@ -750,5 +752,8 @@ bool SDLStatic_OpenRubyBindings(mrb_state *mrb)
     mrb_define_module_function(mrb, module, "decrypt", MDecrypt, MRB_ARGS_REQ(2));
     mrb_define_module_function(mrb, module, "b64encode", MB64Encode, MRB_ARGS_REQ(1));
     mrb_define_module_function(mrb, module, "b64decode", MB64Decode, MRB_ARGS_REQ(1));
+    /* Generated flat mirror of the full C API; see
+     * bindings/generated/COVERAGE.md. */
+    SDLStatic_OpenGeneratedRubyBindings(mrb);
     return true;
 }

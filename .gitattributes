@@ -5,3 +5,7 @@
 *.gif binary
 *.ico binary
 *.pdf binary
+# Generated binding files are always LF so the freshness check compares
+# byte-identical content on every platform.
+bindings/generated/* text eol=lf
+cpp/include/sdlstatic/gen/* text eol=lf

@@ -28,5 +28,10 @@ target_include_directories(SDLStatic_Cpp
 target_link_libraries(SDLStatic_Cpp PUBLIC
   SDLStatic::VFS SDLStatic::Extras SDLStatic::Mixer SDLStatic::Physics
   SDLStatic::Image SDLStatic::GUI SDLStatic::Lua SDLStatic::Ruby SDLStatic::Tiled
+    SDLStatic::TTF SDLStatic::Formats SDLStatic::Gfx
   SDL3::SDL3
 )
+
+if(SDLSTATIC_BUILD_NET)
+  target_link_libraries(SDLStatic_Cpp INTERFACE SDLStatic::Net)
+endif()
