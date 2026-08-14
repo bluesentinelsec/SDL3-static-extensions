@@ -56,7 +56,7 @@ static int GenL_mog_post(lua_State *L)
     (void)L;
     const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checkstring(L, 1);
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     mog_response * rv = mog_post(a0, (const void *)a1, (size_t)len1);
     SDLStaticGen_LuaPushOwned(L, (void *)rv, "mog_response", GenDtor_mog_response_free);
     return 1;
@@ -122,7 +122,7 @@ static int GenL_mog_request_set_body(lua_State *L)
     (void)L;
     mog_request *a0 = (mog_request *)SDLStaticGen_LuaCheckHandle(L, 1, "mog_request");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     mog_request_set_body(a0, (const void *)a1, (size_t)len1);
     return 0;
 }
@@ -531,7 +531,7 @@ static int GenL_mog_server_response_set_body(lua_State *L)
     (void)L;
     mog_server_response *a0 = (mog_server_response *)SDLStaticGen_LuaCheckHandle(L, 1, "mog_server_response");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     mog_server_response_set_body(a0, (const void *)a1, (size_t)len1);
     return 0;
 }

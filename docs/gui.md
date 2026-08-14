@@ -43,7 +43,46 @@ SDL_RenderPresent(renderer);
 ```
 
 `SDLStatic_GuiWantsInput(gui)` tells the game when the UI owns the
-pointer. The full Nuklear widget set is available through the context:
+pointer. If you don't need the raw events yourself, the whole input
+block collapses to one call:
+
+```c
+while (SDLStatic_GuiPumpEvents(gui)) {   /* false when the user quits */
+    /* ...build the UI, draw, present... */
+}
+```
+
+## From Lua and Ruby
+
+The GUI is fully drivable from both script languages through the
+generated bindings — `SDLStaticC.CreateGui`, `SDLStaticC.GuiContext`,
+`SDLStaticC.GuiPumpEvents`, and the whole `NK.*` widget surface:
+
+```lua
+local gui = SDLStaticC.CreateGui(renderer, nil, 0, 0)
+local ctx = SDLStaticC.GuiContext(gui)
+while SDLStaticC.GuiPumpEvents(gui) do
+  if NK.begin(ctx, "Tools", NK.rect(10, 10, 200, 300),
+              NK.NK_WINDOW_BORDER + NK.NK_WINDOW_TITLE) then
+    NK.layout_row_dynamic(ctx, 0, 1)
+    if NK.button_label(ctx, "Bake") then bake() end
+    local changed, value = NK.slider_float(ctx, 0, value, 1, 0.01)
+  end
+  NK.end_(ctx)
+  SDLStaticC.GuiRender(gui)
+  SDL.RenderPresent(renderer)
+end
+```
+
+`GuiPumpEvents` exists because `SDL_Event` is a union and cannot cross a
+script boundary — it is the supported way to feed input to the GUI from
+Lua and Ruby. Three idioms to know: `nk_bool` crosses as a real boolean
+(use truthiness, not `~= 0` — `0` is truthy in both languages),
+out-parameters come back as extra return values, and enum constants are
+registered by name (`NK.NK_WINDOW_TITLE`). The weighted grid helper
+below stays C/C++-only: it takes a `const float *` weights array and a
+caller-owned struct, so scripts use Nuklear's native
+`layout_row_begin`/`push`/`end` instead. The full Nuklear widget set is available through the context:
 buttons, check/radio, sliders, progress, spinboxes, single/multi-line
 edit with clipboard, combos, lists, trees, menus, popups, tooltips,
 charts, color picker. Always include `<SDLStatic/nuklear.h>` (never the

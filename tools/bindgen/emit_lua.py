@@ -231,7 +231,8 @@ class _LibEmitter:
             spell = self._param_spell(pp, params[i])
             if pp.mode == "blob_in":
                 self.w(f"    size_t len{i} = 0;")
-                self.w(f"    const char *{v} = luaL_checklstring(L, {arg_n}, &len{i});")
+                self.w(f"    const char *{v} = lua_isnoneornil(L, {arg_n}) ? NULL"
+                       f" : luaL_checklstring(L, {arg_n}, &len{i});")
                 call_args[i] = f"(const void *){v}"
                 nxt = params[i + 1]
                 nxt_spell = nxt.type.spelling()

@@ -412,4 +412,49 @@ TEST_F(GuiHarness, IgnoresUnrelatedEvents)
     SDLStatic_GuiInputEnd(gui_);
 }
 
+
+// SDLStatic_GuiPumpEvents: the one-call input pump. Also the entry point
+// that makes the GUI drivable from Lua and Ruby, where SDL_Event (a union)
+// cannot cross the script boundary.
+TEST_F(GuiHarness, PumpEventsDrainsQueueAndReportsQuit)
+{
+    // The pump reads the SDL event queue, which needs the events subsystem
+    // (the rest of this harness runs with SDL_Init(0)).
+    ASSERT_TRUE(SDL_InitSubSystem(SDL_INIT_EVENTS)) << SDL_GetError();
+
+    // A pushed quit request must be reported (and consumed).
+    SDL_Event quit;
+    SDL_zero(quit);
+    quit.type = SDL_EVENT_QUIT;
+    ASSERT_TRUE(SDL_PushEvent(&quit));
+    EXPECT_FALSE(SDLStatic_GuiPumpEvents(gui_)) << "quit must stop the loop";
+
+    // With an empty queue it keeps running and leaves the GUI usable.
+    EXPECT_TRUE(SDLStatic_GuiPumpEvents(gui_));
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+    ASSERT_NE(ctx, nullptr);
+    if (nk_begin(ctx, "pump", nk_rect(0, 0, 100, 60), NK_WINDOW_BORDER))
+    {
+        nk_layout_row_dynamic(ctx, 0, 1);
+        nk_label(ctx, "ok", NK_TEXT_LEFT);
+    }
+    nk_end(ctx);
+    EXPECT_TRUE(SDLStatic_GuiRender(gui_));
+
+    // Mouse motion routed through the pump reaches Nuklear's input state.
+    SDL_Event motion;
+    SDL_zero(motion);
+    motion.type = SDL_EVENT_MOUSE_MOTION;
+    motion.motion.x = 42.0f;
+    motion.motion.y = 24.0f;
+    ASSERT_TRUE(SDL_PushEvent(&motion));
+    EXPECT_TRUE(SDLStatic_GuiPumpEvents(gui_));
+    EXPECT_EQ(ctx->input.mouse.pos.x, 42.0f);
+    EXPECT_EQ(ctx->input.mouse.pos.y, 24.0f);
+
+    EXPECT_FALSE(SDLStatic_GuiPumpEvents(nullptr)) << "null gui fails cleanly";
+
+    SDL_QuitSubSystem(SDL_INIT_EVENTS);
+}
+
 } // namespace

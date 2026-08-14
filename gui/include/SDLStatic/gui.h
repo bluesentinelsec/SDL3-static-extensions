@@ -75,6 +75,17 @@ extern void SDLStatic_GuiInputEnd(SDLStatic_Gui *gui);
  */
 extern bool SDLStatic_GuiWantsInput(SDLStatic_Gui *gui);
 
+/** Pump this frame's SDL events into the GUI in one call: wraps
+ *  InputBegin / SDL_PollEvent loop / ProcessEvent / InputEnd.
+ *  \returns false when the application should quit (SDL_EVENT_QUIT or a
+ *  window-close request), true to keep running.
+ *
+ *  Games that need the raw events themselves should keep using the
+ *  InputBegin/ProcessEvent/InputEnd trio instead. This entry point is what
+ *  makes the GUI drivable from Lua and Ruby, where SDL_Event (a union)
+ *  cannot cross the script boundary. */
+extern bool SDLStatic_GuiPumpEvents(SDLStatic_Gui *gui);
+
 /**
  * Convert this frame's draw list and render it through the bound renderer,
  * then clear Nuklear state for the next frame.

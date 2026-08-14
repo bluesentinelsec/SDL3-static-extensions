@@ -179,6 +179,30 @@ bool SDLStatic_GuiWantsInput(SDLStatic_Gui *gui)
     return (gui != NULL) && nk_item_is_any_active(&gui->ctx);
 }
 
+bool SDLStatic_GuiPumpEvents(SDLStatic_Gui *gui)
+{
+    bool keep_running = true;
+    SDL_Event event;
+
+    if (gui == NULL)
+    {
+        SDL_InvalidParamError("gui");
+        return false;
+    }
+    SDLStatic_GuiInputBegin(gui);
+    while (SDL_PollEvent(&event))
+    {
+        if (event.type == SDL_EVENT_QUIT ||
+            event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED)
+        {
+            keep_running = false;
+        }
+        SDLStatic_GuiProcessEvent(gui, &event);
+    }
+    SDLStatic_GuiInputEnd(gui);
+    return keep_running;
+}
+
 static void HandleKey(struct nk_context *ctx, const SDL_KeyboardEvent *key, bool down)
 {
     const bool ctrl = (key->mod & SDL_KMOD_CTRL) != 0;

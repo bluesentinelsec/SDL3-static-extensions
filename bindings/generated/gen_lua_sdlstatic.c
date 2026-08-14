@@ -104,7 +104,7 @@ static int GenL_SDLStatic_CreateGui(lua_State *L)
     (void)L;
     SDL_Renderer *a0 = (SDL_Renderer *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Renderer");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     float a3 = (float)luaL_checknumber(L, 3);
     SDLStatic_Gui * rv = SDLStatic_CreateGui(a0, (const void *)a1, (size_t)len1, a3);
     SDLStaticGen_LuaPushOwned(L, (void *)rv, "SDLStatic_Gui", GenDtor_SDLStatic_DestroyGui);
@@ -157,7 +157,7 @@ static int GenL_SDLStatic_EncodeDataBase64(lua_State *L)
 {
     (void)L;
     size_t len0 = 0;
-    const char *a0 = luaL_checklstring(L, 1, &len0);
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checklstring(L, 1, &len0);
     int io2 = (int)luaL_optinteger(L, 2, 0);
     char * rv = SDLStatic_EncodeDataBase64((const void *)a0, (int)len0, &io2);
     if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
@@ -242,6 +242,15 @@ static int GenL_SDLStatic_GuiProcessEvent(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_GuiPumpEvents(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    bool rv = SDLStatic_GuiPumpEvents(a0);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_GuiRender(lua_State *L)
 {
     (void)L;
@@ -264,9 +273,9 @@ static int GenL_SDLStatic_HMACSHA256(lua_State *L)
 {
     (void)L;
     size_t len0 = 0;
-    const char *a0 = luaL_checklstring(L, 1, &len0);
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checklstring(L, 1, &len0);
     size_t len2 = 0;
-    const char *a2 = luaL_checklstring(L, 2, &len2);
+    const char *a2 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len2);
     Uint8 io4 = (Uint8)luaL_optinteger(L, 3, 0);
     bool rv = SDLStatic_HMACSHA256((const void *)a0, (size_t)len0, (const void *)a2, (size_t)len2, &io4);
     lua_pushboolean(L, (int)rv);
@@ -287,7 +296,7 @@ static int GenL_SDLStatic_MountEncryptedArchive(lua_State *L)
 {
     (void)L;
     size_t len0 = 0;
-    const char *a0 = luaL_checklstring(L, 1, &len0);
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checklstring(L, 1, &len0);
     const char *a2 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
     const char *a3 = lua_isnoneornil(L, 3) ? NULL : luaL_checkstring(L, 3);
     bool rv = SDLStatic_MountEncryptedArchive((const void *)a0, (int)len0, a2, a3);
@@ -338,7 +347,7 @@ static int GenL_SDLStatic_SHA256(lua_State *L)
 {
     (void)L;
     size_t len0 = 0;
-    const char *a0 = luaL_checklstring(L, 1, &len0);
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checklstring(L, 1, &len0);
     Uint8 io2 = (Uint8)luaL_optinteger(L, 2, 0);
     bool rv = SDLStatic_SHA256((const void *)a0, (size_t)len0, &io2);
     lua_pushboolean(L, (int)rv);
@@ -465,7 +474,7 @@ static int GenL_SDLStatic_TiledTileWidth(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 43);
+    lua_createtable(L, 0, 44);
     lua_pushcfunction(L, GenL_SDLStatic_BidiBaseIsRTL);
     lua_setfield(L, -2, "BidiBaseIsRTL");
     lua_pushcfunction(L, GenL_SDLStatic_CountSignalConnections);
@@ -508,6 +517,8 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "GuiInputEnd");
     lua_pushcfunction(L, GenL_SDLStatic_GuiProcessEvent);
     lua_setfield(L, -2, "GuiProcessEvent");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiPumpEvents);
+    lua_setfield(L, -2, "GuiPumpEvents");
     lua_pushcfunction(L, GenL_SDLStatic_GuiRender);
     lua_setfield(L, -2, "GuiRender");
     lua_pushcfunction(L, GenL_SDLStatic_GuiWantsInput);

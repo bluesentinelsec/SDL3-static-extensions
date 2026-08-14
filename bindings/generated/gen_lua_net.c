@@ -184,7 +184,7 @@ static int GenL_NET_SendDatagram(lua_State *L)
     NET_Address *a1 = (NET_Address *)SDLStaticGen_LuaCheckHandle(L, 2, "NET_Address");
     Uint16 a2 = (Uint16)luaL_checkinteger(L, 3);
     size_t len3 = 0;
-    const char *a3 = luaL_checklstring(L, 4, &len3);
+    const char *a3 = lua_isnoneornil(L, 4) ? NULL : luaL_checklstring(L, 4, &len3);
     bool rv = NET_SendDatagram(a0, a1, a2, (const void *)a3, (int)len3);
     lua_pushboolean(L, (int)rv);
     return 1;
@@ -267,7 +267,7 @@ static int GenL_NET_WriteToStreamSocket(lua_State *L)
     (void)L;
     NET_StreamSocket *a0 = (NET_StreamSocket *)SDLStaticGen_LuaCheckHandle(L, 1, "NET_StreamSocket");
     size_t len1 = 0;
-    const char *a1 = luaL_checklstring(L, 2, &len1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
     bool rv = NET_WriteToStreamSocket(a0, (const void *)a1, (int)len1);
     lua_pushboolean(L, (int)rv);
     return 1;

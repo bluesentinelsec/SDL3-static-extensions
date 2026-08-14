@@ -160,6 +160,9 @@ class GuiHandle {
   Status GuiWantsInput() {
     return ::SDLStatic_GuiWantsInput(value_) ? Status() : Status::FromSdl();
   }
+  Status GuiPumpEvents() {
+    return ::SDLStatic_GuiPumpEvents(value_) ? Status() : Status::FromSdl();
+  }
   Status GuiRender() {
     return ::SDLStatic_GuiRender(value_) ? Status() : Status::FromSdl();
   }
