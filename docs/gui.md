@@ -91,6 +91,29 @@ nk_layout_row_dynamic(ctx, 46.0f * s, 2);         /* 46pt row */
 Windowless (software) renderers stay at 1.0, so headless tests and
 non-Retina displays are unaffected.
 
+### Images
+
+`SDLStatic_GuiImage(gui, texture, mode)` shows an `SDL_Texture` in the next
+widget slot. Nuklear's own `nk_image` takes a struct whose handle is a
+union — unreachable from a script — and only ever stretches; this takes the
+texture directly and applies a sizing mode:
+
+| Mode | Behaviour |
+|---|---|
+| `SDLSTATIC_GUI_IMAGE_STRETCH` | fills the slot, ignoring aspect ratio |
+| `SDLSTATIC_GUI_IMAGE_ZOOM` | largest fit inside, aspect preserved |
+| `SDLSTATIC_GUI_IMAGE_FILL` | covers the slot, aspect preserved, cropped |
+| `SDLSTATIC_GUI_IMAGE_CENTER` | native size, centred |
+
+```c
+nk_layout_row_dynamic(ctx, 380.0f * scale, 1);
+SDLStatic_GuiImage(gui, texture, SDLSTATIC_GUI_IMAGE_ZOOM);
+```
+
+Load textures with [SDLStatic::Image](image.html) (`IMG_LoadTexture`), or
+from a mounted [VFS](vfs.html) archive. Modes that can overflow the slot are
+scissored to it, so an image never spills onto neighbouring widgets.
+
 ### Keyboard and theming from scripts
 
 `SDLStatic_GuiKeyPressed(gui, SDL_SCANCODE_ESCAPE)` reports keys seen

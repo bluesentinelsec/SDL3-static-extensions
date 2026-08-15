@@ -235,6 +235,17 @@ static int GenL_SDLStatic_GuiGridNextRow(lua_State *L)
     return 0;
 }
 
+static int GenL_SDLStatic_GuiImage(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDL_Texture *a1 = (SDL_Texture *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_Texture");
+    SDLStatic_GuiImageMode a2 = (SDLStatic_GuiImageMode)luaL_checkinteger(L, 3);
+    bool rv = SDLStatic_GuiImage(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_GuiInputBegin(lua_State *L)
 {
     (void)L;
@@ -562,7 +573,7 @@ static int GenL_SDLStatic_TiledTileWidth(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 52);
+    lua_createtable(L, 0, 53);
     lua_pushcfunction(L, GenL_SDLStatic_BidiBaseIsRTL);
     lua_setfield(L, -2, "BidiBaseIsRTL");
     lua_pushcfunction(L, GenL_SDLStatic_CountSignalConnections);
@@ -601,6 +612,8 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "GuiGridEnd");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridNextRow);
     lua_setfield(L, -2, "GuiGridNextRow");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiImage);
+    lua_setfield(L, -2, "GuiImage");
     lua_pushcfunction(L, GenL_SDLStatic_GuiInputBegin);
     lua_setfield(L, -2, "GuiInputBegin");
     lua_pushcfunction(L, GenL_SDLStatic_GuiInputEnd);
@@ -701,6 +714,14 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "SDLSTATIC_GUI_FONT_NORMAL");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_FONT_LARGE);
     lua_setfield(L, -2, "SDLSTATIC_GUI_FONT_LARGE");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_IMAGE_STRETCH);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_IMAGE_STRETCH");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_IMAGE_ZOOM);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_IMAGE_ZOOM");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_IMAGE_CENTER);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_IMAGE_CENTER");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_IMAGE_FILL);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_IMAGE_FILL");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND);
     lua_setfield(L, -2, "SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_COLOR_TEXT);

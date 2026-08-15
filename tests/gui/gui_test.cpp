@@ -608,6 +608,69 @@ TEST_F(GuiHarness, LabelfFormatsFloatsCorrectly)
     EXPECT_GT(render_text(true, 1.5, nullptr), 0);
 }
 
+// Image widget: Nuklear's nk_image takes a union-handle struct that cannot
+// cross a script boundary, so the library takes an SDL_Texture directly and
+// applies the PictureBox-style sizing modes itself.
+TEST_F(GuiHarness, ImageWidgetHonoursSizingModes)
+{
+    // A 40x20 texture (2:1) drawn into a square slot: Stretch fills it,
+    // Zoom leaves letterbox bars, Fill covers it.
+    SDL_Surface *pixels = SDL_CreateSurface(40, 20, SDL_PIXELFORMAT_RGBA32);
+    ASSERT_NE(pixels, nullptr);
+    SDL_FillSurfaceRect(pixels, nullptr, SDL_MapSurfaceRGBA(pixels, 255, 0, 0, 255));
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer_, pixels);
+    ASSERT_NE(texture, nullptr) << SDL_GetError();
+    SDL_DestroySurface(pixels);
+
+    auto painted = [&](SDLStatic_GuiImageMode mode) {
+        SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
+        SDL_RenderClear(renderer_);
+        SDLStatic_GuiInputBegin(gui_);
+        SDLStatic_GuiInputEnd(gui_);
+        struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+        if (nk_begin(ctx, "img", nk_rect(0, 0, kScreen, kScreen), 0))
+        {
+            nk_layout_row_static(ctx, 100, 100, 1);  // square 100x100 slot
+            EXPECT_TRUE(SDLStatic_GuiImage(gui_, texture, mode));
+        }
+        nk_end(ctx);
+        SDLStatic_GuiRender(gui_);
+        SDL_FlushRenderer(renderer_);
+        int red = 0;
+        for (int y = 0; y < kScreen; y++)
+        {
+            for (int x = 0; x < kScreen; x++)
+            {
+                Uint8 r = 0, g = 0, b = 0, a = 0;
+                SDL_ReadSurfacePixel(surface_, x, y, &r, &g, &b, &a);
+                if (r > 150 && g < 100)
+                {
+                    red++;
+                }
+            }
+        }
+        return red;
+    };
+
+    const int stretch = painted(SDLSTATIC_GUI_IMAGE_STRETCH);
+    const int zoom = painted(SDLSTATIC_GUI_IMAGE_ZOOM);
+    const int fill = painted(SDLSTATIC_GUI_IMAGE_FILL);
+    const int center = painted(SDLSTATIC_GUI_IMAGE_CENTER);
+
+    EXPECT_GT(stretch, 0) << "stretch must paint the whole slot";
+    // 2:1 source zoomed into a square slot covers about half of it.
+    EXPECT_LT(zoom, stretch);
+    EXPECT_NEAR(static_cast<double>(zoom) / stretch, 0.5, 0.15);
+    // Fill covers the slot but is clipped to it, so it matches stretch's area.
+    EXPECT_NEAR(static_cast<double>(fill) / stretch, 1.0, 0.15);
+    // Native 40x20 centred is much smaller than the 100x100 slot.
+    EXPECT_LT(center, zoom);
+
+    EXPECT_FALSE(SDLStatic_GuiImage(nullptr, texture, SDLSTATIC_GUI_IMAGE_ZOOM));
+    EXPECT_FALSE(SDLStatic_GuiImage(gui_, nullptr, SDLSTATIC_GUI_IMAGE_ZOOM));
+    SDL_DestroyTexture(texture);
+}
+
 // A windowless (software) renderer stays at 1.0 so headless tests and
 // non-Retina displays are unaffected by the high-DPI path.
 TEST_F(GuiHarness, ScaleDefaultsToOneWithoutAWindow)

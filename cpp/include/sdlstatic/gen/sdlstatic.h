@@ -166,6 +166,9 @@ class GuiHandle {
   Status GuiKeyPressed(int scancode) {
     return ::SDLStatic_GuiKeyPressed(value_, scancode) ? Status() : Status::FromSdl();
   }
+  Status GuiImage(SDL_Texture *texture, SDLStatic_GuiImageMode mode) {
+    return ::SDLStatic_GuiImage(value_, texture, mode) ? Status() : Status::FromSdl();
+  }
   Status GuiSetFont(SDLStatic_GuiFontSize which) {
     return ::SDLStatic_GuiSetFont(value_, which) ? Status() : Status::FromSdl();
   }

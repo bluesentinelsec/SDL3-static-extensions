@@ -2406,6 +2406,7 @@ returns as an array.
 | `SDLStaticC.GuiGridCellSpan(grid: SDLStatic_GuiGrid, span: integer)` | nil |
 | `SDLStaticC.GuiGridEnd(grid: SDLStatic_GuiGrid)` | nil |
 | `SDLStaticC.GuiGridNextRow(grid: SDLStatic_GuiGrid)` | nil |
+| `SDLStaticC.GuiImage(gui: SDLStatic_Gui, texture: SDL_Texture, mode: integer)` | boolean |
 | `SDLStaticC.GuiInputBegin(gui: SDLStatic_Gui)` | nil |
 | `SDLStaticC.GuiInputEnd(gui: SDLStatic_Gui)` | nil |
 | `SDLStaticC.GuiKeyPressed(gui: SDLStatic_Gui, scancode: integer)` | boolean |

@@ -234,6 +234,71 @@ bool SDLStatic_GuiWantsInput(SDLStatic_Gui *gui)
     return (gui != NULL) && nk_item_is_any_active(&gui->ctx);
 }
 
+bool SDLStatic_GuiImage(SDLStatic_Gui *gui, SDL_Texture *texture,
+                        SDLStatic_GuiImageMode mode)
+{
+    if (gui == NULL || texture == NULL)
+    {
+        SDL_InvalidParamError("gui/texture");
+        return false;
+    }
+    struct nk_context *ctx = &gui->ctx;
+    struct nk_rect slot;
+    if (nk_widget(&slot, ctx) == NK_WIDGET_INVALID)
+    {
+        return false; /* scrolled out of view */
+    }
+
+    float tex_w = 0.0f;
+    float tex_h = 0.0f;
+    if (!SDL_GetTextureSize(texture, &tex_w, &tex_h) || tex_w <= 0.0f || tex_h <= 0.0f)
+    {
+        return false;
+    }
+
+    struct nk_rect dst = slot;
+    if (mode != SDLSTATIC_GUI_IMAGE_STRETCH)
+    {
+        float w = tex_w;
+        float h = tex_h;
+        if (mode == SDLSTATIC_GUI_IMAGE_ZOOM || mode == SDLSTATIC_GUI_IMAGE_FILL)
+        {
+            const float sx = slot.w / tex_w;
+            const float sy = slot.h / tex_h;
+            /* Zoom fits inside (min), Fill covers (max). */
+            const float scale = (mode == SDLSTATIC_GUI_IMAGE_ZOOM) ? SDL_min(sx, sy)
+                                                                   : SDL_max(sx, sy);
+            w = tex_w * scale;
+            h = tex_h * scale;
+        }
+        dst.x = slot.x + (slot.w - w) * 0.5f;
+        dst.y = slot.y + (slot.h - h) * 0.5f;
+        dst.w = w;
+        dst.h = h;
+    }
+
+    struct nk_command_buffer *canvas = nk_window_get_canvas(ctx);
+    if (canvas == NULL)
+    {
+        return false;
+    }
+    /* Fill and Center can exceed the slot; clip so the image never spills
+     * over neighbouring widgets. */
+    const bool needs_clip = (mode == SDLSTATIC_GUI_IMAGE_FILL ||
+                             mode == SDLSTATIC_GUI_IMAGE_CENTER);
+    if (needs_clip)
+    {
+        nk_push_scissor(canvas, slot);
+    }
+    struct nk_image img = nk_image_ptr(texture);
+    nk_draw_image(canvas, dst, &img, nk_rgb(255, 255, 255));
+    if (needs_clip)
+    {
+        nk_push_scissor(canvas, nk_null_rect);
+    }
+    return true;
+}
+
 static struct nk_font *FontFor(SDLStatic_Gui *gui, SDLStatic_GuiFontSize which)
 {
     if (gui == NULL || which < SDLSTATIC_GUI_FONT_SMALL || which > SDLSTATIC_GUI_FONT_LARGE)

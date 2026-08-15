@@ -321,6 +321,21 @@ static mrb_value GenR_SDLStatic_GuiGridNextRow(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_GuiImage(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    SDL_Texture *a1 = (SDL_Texture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_Texture");
+    SDLStatic_GuiImageMode a2 = (SDLStatic_GuiImageMode)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    bool rv = SDLStatic_GuiImage(a0, a1, a2);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
 static mrb_value GenR_SDLStatic_GuiInputBegin(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -812,6 +827,7 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GuiGridCellSpan", GenR_SDLStatic_GuiGridCellSpan, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridEnd", GenR_SDLStatic_GuiGridEnd, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridNextRow", GenR_SDLStatic_GuiGridNextRow, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiImage", GenR_SDLStatic_GuiImage, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiInputBegin", GenR_SDLStatic_GuiInputBegin, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiInputEnd", GenR_SDLStatic_GuiInputEnd, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiKeyPressed", GenR_SDLStatic_GuiKeyPressed, MRB_ARGS_ANY());
@@ -862,6 +878,10 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_FONT_SMALL", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_FONT_SMALL));
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_FONT_NORMAL", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_FONT_NORMAL));
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_FONT_LARGE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_FONT_LARGE));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_IMAGE_STRETCH", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_IMAGE_STRETCH));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_IMAGE_ZOOM", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_IMAGE_ZOOM));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_IMAGE_CENTER", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_IMAGE_CENTER));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_IMAGE_FILL", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_IMAGE_FILL));
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND));
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_COLOR_TEXT", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_COLOR_TEXT));
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_COLOR_BUTTON", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_COLOR_BUTTON));

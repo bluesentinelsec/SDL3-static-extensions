@@ -92,6 +92,26 @@ extern bool SDLStatic_GuiPumpEvents(SDLStatic_Gui *gui);
  *  quitting on Escape. */
 extern bool SDLStatic_GuiKeyPressed(SDLStatic_Gui *gui, int scancode);
 
+/** How SDLStatic_GuiImage fits a texture into its widget slot, mirroring
+ *  the PictureBox sizing modes desktop toolkits offer. */
+typedef enum SDLStatic_GuiImageMode
+{
+    SDLSTATIC_GUI_IMAGE_STRETCH = 0, /**< fill the slot, ignoring aspect ratio */
+    SDLSTATIC_GUI_IMAGE_ZOOM,        /**< largest fit inside, aspect preserved */
+    SDLSTATIC_GUI_IMAGE_CENTER,      /**< native pixel size, centred */
+    SDLSTATIC_GUI_IMAGE_FILL         /**< cover the slot, aspect preserved, cropped */
+} SDLStatic_GuiImageMode;
+
+/** Draw an SDL texture in the next widget slot.
+ *
+ *  Nuklear's own nk_image takes a struct whose handle is a union, so it
+ *  cannot cross a script boundary; this takes the SDL_Texture directly and
+ *  works from C, C++, Lua and Ruby alike. Advances the layout exactly like
+ *  any other widget. Returns false when the slot is clipped away or the
+ *  arguments are invalid. */
+extern bool SDLStatic_GuiImage(SDLStatic_Gui *gui, SDL_Texture *texture,
+                               SDLStatic_GuiImageMode mode);
+
 /** Font sizes baked at creation. Nuklear bakes glyphs into one atlas up
  *  front, so every size a program needs must exist before the first frame;
  *  these three are always available and are crisp (not resampled). Sizes
