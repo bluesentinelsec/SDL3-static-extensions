@@ -45,6 +45,7 @@ and browser WebAssembly, and CI proves all of it on every push.
 | Immediate-mode GUI | `SDLStatic::GUI` | Nuklear + SDL3 backend + weighted grid layout |
 | Tiled map parsing (.tmj) | `SDLStatic::Tiled` | cute_tiled, VFS-aware |
 | Regular expressions | `SDLStatic::Regex` | Oniguruma (Ruby syntax) in C, C++, Lua and Ruby |
+| Dynamic 2D lighting | `SDLStatic::Light` | GPU shader (embedded GLSL), day/night, shadows, CPU fallback |
 | Virtual filesystem, encrypted archives | `SDLStatic::VFS` | PhysFS (zip-only) + SSE1 crypto container |
 | Crypto, DEFLATE, base64, signals | `SDLStatic::Extras` | original code + sdefl/sinfl |
 | JSON / TOML / YAML | `SDLStatic::Formats` | cJSON, tomlc99, libyaml |
@@ -118,7 +119,7 @@ archive — ChaCha20 + PBKDF2 encrypted, authenticated before mounting.
 - **Delete, don't stub.** Features that would require shared libraries
   are removed from the headers — misuse fails at compile time, never at
   runtime.
-- **Tested where it runs.** 285 tests on six CI platforms (Linux, macOS,
+- **Tested where it runs.** 304 tests on six CI platforms (Linux, macOS,
   Windows, ASan+UBSan, Android emulator, browser WebAssembly) plus an
   iOS XCFramework batch job, with a link audit proving every test binary
   depends only on OS-built-in shared libraries.

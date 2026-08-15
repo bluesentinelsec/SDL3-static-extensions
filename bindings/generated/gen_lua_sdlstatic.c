@@ -13,6 +13,7 @@
 #include <SDLStatic/gpu_primitives.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
+#include <SDLStatic/light.h>
 #include <SDLStatic/regex.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/textfile.h>
@@ -33,6 +34,47 @@ static void GenRead_SDLStatic_ChipToneDesc(lua_State *L, int idx, SDLStatic_Chip
     out->release_ms = (Uint32)SDLStaticGen_LuaFieldInt(L, idx, "release_ms");
     out->vibrato_hz = (float)SDLStaticGen_LuaFieldNum(L, idx, "vibrato_hz");
     out->vibrato_semitones = (float)SDLStaticGen_LuaFieldNum(L, idx, "vibrato_semitones");
+}
+
+static void GenRead_SDL_FColor(lua_State *L, int idx, SDL_FColor *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    out->r = (float)SDLStaticGen_LuaFieldNum(L, idx, "r");
+    out->g = (float)SDLStaticGen_LuaFieldNum(L, idx, "g");
+    out->b = (float)SDLStaticGen_LuaFieldNum(L, idx, "b");
+    out->a = (float)SDLStaticGen_LuaFieldNum(L, idx, "a");
+}
+
+static void GenPush_SDL_FColor(lua_State *L, const SDL_FColor *in)
+{
+    lua_createtable(L, 0, 4);
+    lua_pushnumber(L, (lua_Number)in->r);
+    lua_setfield(L, -2, "r");
+    lua_pushnumber(L, (lua_Number)in->g);
+    lua_setfield(L, -2, "g");
+    lua_pushnumber(L, (lua_Number)in->b);
+    lua_setfield(L, -2, "b");
+    lua_pushnumber(L, (lua_Number)in->a);
+    lua_setfield(L, -2, "a");
+}
+
+static void GenRead_SDLStatic_Light(lua_State *L, int idx, SDLStatic_Light *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    out->x = (float)SDLStaticGen_LuaFieldNum(L, idx, "x");
+    out->y = (float)SDLStaticGen_LuaFieldNum(L, idx, "y");
+    out->radius = (float)SDLStaticGen_LuaFieldNum(L, idx, "radius");
+    lua_getfield(L, idx, "color");
+    GenRead_SDL_FColor(L, lua_gettop(L), &out->color);
+    lua_pop(L, 1);
+    out->falloff = (float)SDLStaticGen_LuaFieldNum(L, idx, "falloff");
+    out->angle = (float)SDLStaticGen_LuaFieldNum(L, idx, "angle");
+    out->spread = (float)SDLStaticGen_LuaFieldNum(L, idx, "spread");
+    out->flicker = (float)SDLStaticGen_LuaFieldNum(L, idx, "flicker");
+    out->seed = (Uint32)SDLStaticGen_LuaFieldInt(L, idx, "seed");
+    out->no_shadows = (bool)SDLStaticGen_LuaFieldBool(L, idx, "no_shadows");
 }
 
 static void GenRead_SDL_Color(lua_State *L, int idx, SDL_Color *out)
@@ -71,6 +113,64 @@ static void GenDtor_SDLStatic_DestroyRegex(void *p)
 {
     SDLStatic_Regex *typed = (SDLStatic_Regex *)p;
     SDLStatic_DestroyRegex(typed);
+}
+
+static void GenDtor_SDLStatic_DestroyLightScene(void *p)
+{
+    SDLStatic_LightScene *typed = (SDLStatic_LightScene *)p;
+    SDLStatic_DestroyLightScene(typed);
+}
+
+static int GenL_SDLStatic_AddDarkZone(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    SDL_FRect a1;
+    GenRead_SDL_FRect(L, 2, &a1);
+    SDL_FColor a2;
+    GenRead_SDL_FColor(L, 3, &a2);
+    bool rv = SDLStatic_AddDarkZone(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_AddLight(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    SDLStatic_Light tmp1;
+    const SDLStatic_Light *a1 = NULL;
+    if (!lua_isnoneornil(L, 2)) {
+        GenRead_SDLStatic_Light(L, 2, &tmp1);
+        a1 = &tmp1;
+    }
+    bool rv = SDLStatic_AddLight(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_AddOccluderRect(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    SDL_FRect a1;
+    GenRead_SDL_FRect(L, 2, &a1);
+    bool rv = SDLStatic_AddOccluderRect(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_AddOccluderSegment(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    float a4 = (float)luaL_checknumber(L, 5);
+    bool rv = SDLStatic_AddOccluderSegment(a0, a1, a2, a3, a4);
+    lua_pushboolean(L, (int)rv);
+    return 1;
 }
 
 static int GenL_SDLStatic_BidiBaseIsRTL(lua_State *L)
@@ -163,6 +263,15 @@ static int GenL_SDLStatic_CreateGuiWithGlyphs(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_CreateLightScene(lua_State *L)
+{
+    (void)L;
+    SDL_Renderer *a0 = (SDL_Renderer *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Renderer");
+    SDLStatic_LightScene * rv = SDLStatic_CreateLightScene(a0);
+    SDLStaticGen_LuaPushOwned(L, (void *)rv, "SDLStatic_LightScene", GenDtor_SDLStatic_DestroyLightScene);
+    return 1;
+}
+
 static int GenL_SDLStatic_CreateSignalEmitter(lua_State *L)
 {
     (void)L;
@@ -179,11 +288,37 @@ static int GenL_SDLStatic_CryptoSelfTest(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_DayNightAmbient(lua_State *L)
+{
+    (void)L;
+    float a0 = (float)luaL_checknumber(L, 1);
+    SDL_FColor rv = SDLStatic_DayNightAmbient(a0);
+    GenPush_SDL_FColor(L, &rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_DayNightSunlight(lua_State *L)
+{
+    (void)L;
+    float a0 = (float)luaL_checknumber(L, 1);
+    float rv = SDLStatic_DayNightSunlight(a0);
+    lua_pushnumber(L, (lua_Number)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_DestroyGui(lua_State *L)
 {
     (void)L;
     SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaTakeHandle(L, 1, "SDLStatic_Gui");
     SDLStatic_DestroyGui(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_DestroyLightScene(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaTakeHandle(L, 1, "SDLStatic_LightScene");
+    SDLStatic_DestroyLightScene(a0);
     return 0;
 }
 
@@ -625,6 +760,38 @@ static int GenL_SDLStatic_HMACSHA256(lua_State *L)
     return 2;
 }
 
+static int GenL_SDLStatic_LightBeginFrame(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    SDLStatic_LightBeginFrame(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_LightLineOfSight(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    float a4 = (float)luaL_checknumber(L, 5);
+    bool rv = SDLStatic_LightLineOfSight(a0, a1, a2, a3, a4);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_LightUsesShaders(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    bool rv = SDLStatic_LightUsesShaders(a0);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_LoadTextFile(lua_State *L)
 {
     (void)L;
@@ -825,6 +992,15 @@ static int GenL_SDLStatic_RenderDebugText(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_RenderLighting(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    bool rv = SDLStatic_RenderLighting(a0);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_SHA256(lua_State *L)
 {
     (void)L;
@@ -837,11 +1013,86 @@ static int GenL_SDLStatic_SHA256(lua_State *L)
     return 2;
 }
 
+static int GenL_SDLStatic_SampleLight(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float rv = SDLStatic_SampleLight(a0, a1, a2);
+    lua_pushnumber(L, (lua_Number)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_SetDebugTextSize(lua_State *L)
 {
     (void)L;
     float a0 = (float)luaL_checknumber(L, 1);
     SDLStatic_SetDebugTextSize(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_SetLightAmbient(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    SDL_FColor a1;
+    GenRead_SDL_FColor(L, 2, &a1);
+    SDLStatic_SetLightAmbient(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_SetLightDebugDraw(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_SetLightDebugDraw(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_SetLightMapScale(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    float a1 = (float)luaL_checknumber(L, 2);
+    SDLStatic_SetLightMapScale(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_SetLightRayCount(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    SDLStatic_SetLightRayCount(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_SetLightRings(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    SDLStatic_SetLightRings(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_SetLightShadowSoftness(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    float a1 = (float)luaL_checknumber(L, 2);
+    SDLStatic_SetLightShadowSoftness(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_SetLightUseShaders(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_LightScene");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_SetLightUseShaders(a0, a1);
     return 0;
 }
 
@@ -980,7 +1231,15 @@ static int GenL_SDLStatic_TiledTileWidth(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 92);
+    lua_createtable(L, 0, 112);
+    lua_pushcfunction(L, GenL_SDLStatic_AddDarkZone);
+    lua_setfield(L, -2, "AddDarkZone");
+    lua_pushcfunction(L, GenL_SDLStatic_AddLight);
+    lua_setfield(L, -2, "AddLight");
+    lua_pushcfunction(L, GenL_SDLStatic_AddOccluderRect);
+    lua_setfield(L, -2, "AddOccluderRect");
+    lua_pushcfunction(L, GenL_SDLStatic_AddOccluderSegment);
+    lua_setfield(L, -2, "AddOccluderSegment");
     lua_pushcfunction(L, GenL_SDLStatic_BidiBaseIsRTL);
     lua_setfield(L, -2, "BidiBaseIsRTL");
     lua_pushcfunction(L, GenL_SDLStatic_CompileRegex);
@@ -997,12 +1256,20 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "CreateGui");
     lua_pushcfunction(L, GenL_SDLStatic_CreateGuiWithGlyphs);
     lua_setfield(L, -2, "CreateGuiWithGlyphs");
+    lua_pushcfunction(L, GenL_SDLStatic_CreateLightScene);
+    lua_setfield(L, -2, "CreateLightScene");
     lua_pushcfunction(L, GenL_SDLStatic_CreateSignalEmitter);
     lua_setfield(L, -2, "CreateSignalEmitter");
     lua_pushcfunction(L, GenL_SDLStatic_CryptoSelfTest);
     lua_setfield(L, -2, "CryptoSelfTest");
+    lua_pushcfunction(L, GenL_SDLStatic_DayNightAmbient);
+    lua_setfield(L, -2, "DayNightAmbient");
+    lua_pushcfunction(L, GenL_SDLStatic_DayNightSunlight);
+    lua_setfield(L, -2, "DayNightSunlight");
     lua_pushcfunction(L, GenL_SDLStatic_DestroyGui);
     lua_setfield(L, -2, "DestroyGui");
+    lua_pushcfunction(L, GenL_SDLStatic_DestroyLightScene);
+    lua_setfield(L, -2, "DestroyLightScene");
     lua_pushcfunction(L, GenL_SDLStatic_DestroyRegex);
     lua_setfield(L, -2, "DestroyRegex");
     lua_pushcfunction(L, GenL_SDLStatic_DestroySignalEmitter);
@@ -1095,6 +1362,12 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "GuiWantsInput");
     lua_pushcfunction(L, GenL_SDLStatic_HMACSHA256);
     lua_setfield(L, -2, "HMACSHA256");
+    lua_pushcfunction(L, GenL_SDLStatic_LightBeginFrame);
+    lua_setfield(L, -2, "LightBeginFrame");
+    lua_pushcfunction(L, GenL_SDLStatic_LightLineOfSight);
+    lua_setfield(L, -2, "LightLineOfSight");
+    lua_pushcfunction(L, GenL_SDLStatic_LightUsesShaders);
+    lua_setfield(L, -2, "LightUsesShaders");
     lua_pushcfunction(L, GenL_SDLStatic_LoadTextFile);
     lua_setfield(L, -2, "LoadTextFile");
     lua_pushcfunction(L, GenL_SDLStatic_LoadTiledMap);
@@ -1135,10 +1408,28 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "RegexSearch");
     lua_pushcfunction(L, GenL_SDLStatic_RenderDebugText);
     lua_setfield(L, -2, "RenderDebugText");
+    lua_pushcfunction(L, GenL_SDLStatic_RenderLighting);
+    lua_setfield(L, -2, "RenderLighting");
     lua_pushcfunction(L, GenL_SDLStatic_SHA256);
     lua_setfield(L, -2, "SHA256");
+    lua_pushcfunction(L, GenL_SDLStatic_SampleLight);
+    lua_setfield(L, -2, "SampleLight");
     lua_pushcfunction(L, GenL_SDLStatic_SetDebugTextSize);
     lua_setfield(L, -2, "SetDebugTextSize");
+    lua_pushcfunction(L, GenL_SDLStatic_SetLightAmbient);
+    lua_setfield(L, -2, "SetLightAmbient");
+    lua_pushcfunction(L, GenL_SDLStatic_SetLightDebugDraw);
+    lua_setfield(L, -2, "SetLightDebugDraw");
+    lua_pushcfunction(L, GenL_SDLStatic_SetLightMapScale);
+    lua_setfield(L, -2, "SetLightMapScale");
+    lua_pushcfunction(L, GenL_SDLStatic_SetLightRayCount);
+    lua_setfield(L, -2, "SetLightRayCount");
+    lua_pushcfunction(L, GenL_SDLStatic_SetLightRings);
+    lua_setfield(L, -2, "SetLightRings");
+    lua_pushcfunction(L, GenL_SDLStatic_SetLightShadowSoftness);
+    lua_setfield(L, -2, "SetLightShadowSoftness");
+    lua_pushcfunction(L, GenL_SDLStatic_SetLightUseShaders);
+    lua_setfield(L, -2, "SetLightUseShaders");
     lua_pushcfunction(L, GenL_SDLStatic_ShowOpenFileDialog);
     lua_setfield(L, -2, "ShowOpenFileDialog");
     lua_pushcfunction(L, GenL_SDLStatic_ShowSaveFileDialog);

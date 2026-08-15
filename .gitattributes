@@ -9,3 +9,6 @@
 # byte-identical content on every platform.
 bindings/generated/* text eol=lf
 cpp/include/sdlstatic/gen/* text eol=lf
+# Same for the embedded shaders and the header generated from them.
+light/shaders/* text eol=lf
+light/src/light_shaders.h text eol=lf
