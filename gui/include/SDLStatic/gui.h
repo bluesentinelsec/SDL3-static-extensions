@@ -92,6 +92,34 @@ extern bool SDLStatic_GuiPumpEvents(SDLStatic_Gui *gui);
  *  quitting on Escape. */
 extern bool SDLStatic_GuiKeyPressed(SDLStatic_Gui *gui, int scancode);
 
+/* --- grid layout for scripts -------------------------------------------
+ * <SDLStatic/gui_grid.h> is the full helper, but it takes a caller-owned
+ * SDLStatic_GuiGrid and a float array of column weights — neither of which
+ * can cross a script boundary. These wrap one grid owned by the Gui object:
+ * set the weights (optional; equal columns otherwise), begin, place cells,
+ * end. C and C++ can use either API.
+ */
+
+/** Set the weight of one column for the next SDLStatic_GuiGridBeginOwned.
+ *  Columns default to weight 1 (equal widths). */
+extern bool SDLStatic_GuiGridWeight(SDLStatic_Gui *gui, int column, float weight);
+
+/** Begin a grid of `columns` columns. row_height <= 0 auto-sizes to the
+ *  font. Weights set by SDLStatic_GuiGridWeight apply, then reset. */
+extern bool SDLStatic_GuiGridBeginOwned(SDLStatic_Gui *gui, int columns, float row_height);
+
+/** Advance to the next cell (call before each widget). */
+extern void SDLStatic_GuiGridCellOwned(SDLStatic_Gui *gui);
+
+/** Advance to the next cell, spanning `span` columns. */
+extern void SDLStatic_GuiGridCellSpanOwned(SDLStatic_Gui *gui, int span);
+
+/** Finish the current row early. */
+extern void SDLStatic_GuiGridNextRowOwned(SDLStatic_Gui *gui);
+
+/** Finish the grid. */
+extern void SDLStatic_GuiGridEndOwned(SDLStatic_Gui *gui);
+
 /** How SDLStatic_GuiImage fits a texture into its widget slot, mirroring
  *  the PictureBox sizing modes desktop toolkits offer. */
 typedef enum SDLStatic_GuiImageMode

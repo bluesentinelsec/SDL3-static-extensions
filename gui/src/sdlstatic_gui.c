@@ -28,6 +28,7 @@ char *SDLStatic_NuklearDtoa(char *buffer, double value)
 #include <SDLStatic/nuklear.h>
 
 #include <SDLStatic/gui.h>
+#include <SDLStatic/gui_grid.h>
 
 typedef struct GuiVertex
 {
@@ -50,6 +51,9 @@ struct SDLStatic_Gui
     int style_depth;
     struct nk_font *fonts[3]; /* small / normal / large, baked together */
     int font_depth;           /* nk_style_push_font nesting */
+    SDLStatic_GuiGrid grid;   /* the script-reachable grid */
+    float grid_weights[SDLSTATIC_GUI_GRID_MAX_COLS];
+    bool grid_active;
     Uint8 pressed[(SDL_SCANCODE_COUNT + 7) / 8]; /* keys down this frame */
 };
 
@@ -232,6 +236,72 @@ void SDLStatic_GuiInputEnd(SDLStatic_Gui *gui)
 bool SDLStatic_GuiWantsInput(SDLStatic_Gui *gui)
 {
     return (gui != NULL) && nk_item_is_any_active(&gui->ctx);
+}
+
+bool SDLStatic_GuiGridWeight(SDLStatic_Gui *gui, int column, float weight)
+{
+    if (gui == NULL || column < 0 || column >= SDLSTATIC_GUI_GRID_MAX_COLS ||
+        weight <= 0.0f)
+    {
+        SDL_InvalidParamError("column/weight");
+        return false;
+    }
+    gui->grid_weights[column] = weight;
+    return true;
+}
+
+bool SDLStatic_GuiGridBeginOwned(SDLStatic_Gui *gui, int columns, float row_height)
+{
+    if (gui == NULL)
+    {
+        SDL_InvalidParamError("gui");
+        return false;
+    }
+    for (int i = 0; i < SDLSTATIC_GUI_GRID_MAX_COLS; i++)
+    {
+        if (gui->grid_weights[i] <= 0.0f)
+        {
+            gui->grid_weights[i] = 1.0f; /* default: equal columns */
+        }
+    }
+    gui->grid_active =
+        SDLStatic_GuiGridBegin(&gui->ctx, &gui->grid, columns, gui->grid_weights, row_height);
+    /* Weights are per-grid: reset so the next grid starts equal again. */
+    SDL_memset(gui->grid_weights, 0, sizeof(gui->grid_weights));
+    return gui->grid_active;
+}
+
+void SDLStatic_GuiGridCellOwned(SDLStatic_Gui *gui)
+{
+    if (gui != NULL && gui->grid_active)
+    {
+        SDLStatic_GuiGridCell(&gui->grid);
+    }
+}
+
+void SDLStatic_GuiGridCellSpanOwned(SDLStatic_Gui *gui, int span)
+{
+    if (gui != NULL && gui->grid_active)
+    {
+        SDLStatic_GuiGridCellSpan(&gui->grid, span);
+    }
+}
+
+void SDLStatic_GuiGridNextRowOwned(SDLStatic_Gui *gui)
+{
+    if (gui != NULL && gui->grid_active)
+    {
+        SDLStatic_GuiGridNextRow(&gui->grid);
+    }
+}
+
+void SDLStatic_GuiGridEndOwned(SDLStatic_Gui *gui)
+{
+    if (gui != NULL && gui->grid_active)
+    {
+        SDLStatic_GuiGridEnd(&gui->grid);
+        gui->grid_active = false;
+    }
 }
 
 bool SDLStatic_GuiImage(SDLStatic_Gui *gui, SDL_Texture *texture,

@@ -268,6 +268,21 @@ static mrb_value GenR_SDLStatic_GuiFontHeight(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_GuiGridBeginOwned(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    bool rv = SDLStatic_GuiGridBeginOwned(a0, a1, a2);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
 static mrb_value GenR_SDLStatic_GuiGridCell(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -277,6 +292,19 @@ static mrb_value GenR_SDLStatic_GuiGridCell(mrb_state *mrb, mrb_value self)
     {
     SDLStatic_GuiGrid *a0 = (SDLStatic_GuiGrid *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_GuiGrid");
     SDLStatic_GuiGridCell(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiGridCellOwned(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    SDLStatic_GuiGridCellOwned(a0);
     return mrb_nil_value();
     }
 }
@@ -295,6 +323,20 @@ static mrb_value GenR_SDLStatic_GuiGridCellSpan(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_GuiGridCellSpanOwned(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_GuiGridCellSpanOwned(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
 static mrb_value GenR_SDLStatic_GuiGridEnd(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -304,6 +346,19 @@ static mrb_value GenR_SDLStatic_GuiGridEnd(mrb_state *mrb, mrb_value self)
     {
     SDLStatic_GuiGrid *a0 = (SDLStatic_GuiGrid *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_GuiGrid");
     SDLStatic_GuiGridEnd(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiGridEndOwned(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    SDLStatic_GuiGridEndOwned(a0);
     return mrb_nil_value();
     }
 }
@@ -318,6 +373,34 @@ static mrb_value GenR_SDLStatic_GuiGridNextRow(mrb_state *mrb, mrb_value self)
     SDLStatic_GuiGrid *a0 = (SDLStatic_GuiGrid *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_GuiGrid");
     SDLStatic_GuiGridNextRow(a0);
     return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiGridNextRowOwned(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    SDLStatic_GuiGridNextRowOwned(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiGridWeight(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    bool rv = SDLStatic_GuiGridWeight(a0, a1, a2);
+    return mrb_bool_value((mrb_bool)(rv != 0));
     }
 }
 
@@ -823,10 +906,16 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "FreeTiledMap", GenR_SDLStatic_FreeTiledMap, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiContext", GenR_SDLStatic_GuiContext, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiFontHeight", GenR_SDLStatic_GuiFontHeight, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiGridBeginOwned", GenR_SDLStatic_GuiGridBeginOwned, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridCell", GenR_SDLStatic_GuiGridCell, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiGridCellOwned", GenR_SDLStatic_GuiGridCellOwned, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridCellSpan", GenR_SDLStatic_GuiGridCellSpan, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiGridCellSpanOwned", GenR_SDLStatic_GuiGridCellSpanOwned, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridEnd", GenR_SDLStatic_GuiGridEnd, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiGridEndOwned", GenR_SDLStatic_GuiGridEndOwned, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridNextRow", GenR_SDLStatic_GuiGridNextRow, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiGridNextRowOwned", GenR_SDLStatic_GuiGridNextRowOwned, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiGridWeight", GenR_SDLStatic_GuiGridWeight, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiImage", GenR_SDLStatic_GuiImage, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiInputBegin", GenR_SDLStatic_GuiInputBegin, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiInputEnd", GenR_SDLStatic_GuiInputEnd, MRB_ARGS_ANY());

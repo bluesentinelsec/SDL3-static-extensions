@@ -91,6 +91,23 @@ nk_layout_row_dynamic(ctx, 46.0f * s, 2);         /* 46pt row */
 Windowless (software) renderers stay at 1.0, so headless tests and
 non-Retina displays are unaffected.
 
+### Grid layout from scripts
+
+The full grid helper in `<SDLStatic/gui_grid.h>` takes a caller-owned
+struct and a `const float *` of column weights, neither of which can cross
+a script boundary. A gui-owned mirror does the same job for every language:
+
+```lua
+SDLStaticC.GuiGridWeight(gui, 0, 1.0)   -- label column
+SDLStaticC.GuiGridWeight(gui, 1, 2.0)   -- field column, twice as wide
+SDLStaticC.GuiGridBeginOwned(gui, 2, 46 * scale)
+SDLStaticC.GuiGridCellOwned(gui); NK.label(ctx, "Name:", NK.NK_TEXT_LEFT)
+SDLStaticC.GuiGridCellOwned(gui); NK.button_label(ctx, "Browse")
+SDLStaticC.GuiGridEndOwned(gui)
+```
+
+Weights default to 1 (equal columns) and reset after each grid.
+
 ### Images
 
 `SDLStatic_GuiImage(gui, texture, mode)` shows an `SDL_Texture` in the next

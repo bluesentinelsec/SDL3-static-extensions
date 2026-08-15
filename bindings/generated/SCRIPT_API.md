@@ -2402,10 +2402,16 @@ returns as an array.
 | `SDLStaticC.FreeTiledMap(map: SDLStatic_TiledMap)` | nil |
 | `SDLStaticC.GuiContext(gui: SDLStatic_Gui)` | nk_context|nil |
 | `SDLStaticC.GuiFontHeight(gui: SDLStatic_Gui)` | number |
+| `SDLStaticC.GuiGridBeginOwned(gui: SDLStatic_Gui, columns: integer, row_height: number)` | boolean |
 | `SDLStaticC.GuiGridCell(grid: SDLStatic_GuiGrid)` | nil |
+| `SDLStaticC.GuiGridCellOwned(gui: SDLStatic_Gui)` | nil |
 | `SDLStaticC.GuiGridCellSpan(grid: SDLStatic_GuiGrid, span: integer)` | nil |
+| `SDLStaticC.GuiGridCellSpanOwned(gui: SDLStatic_Gui, span: integer)` | nil |
 | `SDLStaticC.GuiGridEnd(grid: SDLStatic_GuiGrid)` | nil |
+| `SDLStaticC.GuiGridEndOwned(gui: SDLStatic_Gui)` | nil |
 | `SDLStaticC.GuiGridNextRow(grid: SDLStatic_GuiGrid)` | nil |
+| `SDLStaticC.GuiGridNextRowOwned(gui: SDLStatic_Gui)` | nil |
+| `SDLStaticC.GuiGridWeight(gui: SDLStatic_Gui, column: integer, weight: number)` | boolean |
 | `SDLStaticC.GuiImage(gui: SDLStatic_Gui, texture: SDL_Texture, mode: integer)` | boolean |
 | `SDLStaticC.GuiInputBegin(gui: SDLStatic_Gui)` | nil |
 | `SDLStaticC.GuiInputEnd(gui: SDLStatic_Gui)` | nil |

@@ -671,6 +671,96 @@ TEST_F(GuiHarness, ImageWidgetHonoursSizingModes)
     SDL_DestroyTexture(texture);
 }
 
+// The gui-owned grid: same layout as the caller-owned helper, but reachable
+// from scripts (which cannot hold a struct or pass a float array).
+TEST_F(GuiHarness, OwnedGridMatchesCallerOwnedGrid)
+{
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+
+    auto widths = [&](bool owned) {
+        std::vector<float> out;
+        SDLStatic_GuiInputBegin(gui_);
+        SDLStatic_GuiInputEnd(gui_);
+        if (nk_begin(ctx, "grid", nk_rect(0, 0, 300, 200), 0))
+        {
+            static const float weights[] = {1.0f, 2.0f, 1.0f};
+            SDLStatic_GuiGrid caller_grid;
+            if (owned)
+            {
+                SDLStatic_GuiGridWeight(gui_, 0, 1.0f);
+                SDLStatic_GuiGridWeight(gui_, 1, 2.0f);
+                SDLStatic_GuiGridWeight(gui_, 2, 1.0f);
+                SDLStatic_GuiGridBeginOwned(gui_, 3, 24.0f);
+            }
+            else
+            {
+                SDLStatic_GuiGridBegin(ctx, &caller_grid, 3, weights, 24.0f);
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                if (owned)
+                {
+                    SDLStatic_GuiGridCellOwned(gui_);
+                }
+                else
+                {
+                    SDLStatic_GuiGridCell(&caller_grid);
+                }
+                struct nk_rect bounds = nk_widget_bounds(ctx);
+                out.push_back(bounds.w);
+                nk_label(ctx, "x", NK_TEXT_LEFT);
+            }
+            if (owned)
+            {
+                SDLStatic_GuiGridEndOwned(gui_);
+            }
+            else
+            {
+                SDLStatic_GuiGridEnd(&caller_grid);
+            }
+        }
+        nk_end(ctx);
+        SDLStatic_GuiRender(gui_);  // ends the frame (nk_clear)
+        return out;
+    };
+
+    const std::vector<float> caller = widths(false);
+    const std::vector<float> owned = widths(true);
+    ASSERT_EQ(caller.size(), 3u);
+    ASSERT_EQ(owned.size(), 3u);
+    for (size_t i = 0; i < caller.size(); i++)
+    {
+        EXPECT_NEAR(owned[i], caller[i], 0.5f) << "column " << i;
+    }
+    // The middle column carries weight 2, so it is about twice as wide.
+    EXPECT_NEAR(owned[1] / owned[0], 2.0, 0.15);
+
+    // Weights reset between grids: the next one is equal-width.
+    SDLStatic_GuiInputBegin(gui_);
+    SDLStatic_GuiInputEnd(gui_);
+    std::vector<float> equal;
+    if (nk_begin(ctx, "grid2", nk_rect(0, 0, 300, 200), 0))
+    {
+        SDLStatic_GuiGridBeginOwned(gui_, 3, 24.0f);
+        for (int i = 0; i < 3; i++)
+        {
+            SDLStatic_GuiGridCellOwned(gui_);
+            equal.push_back(nk_widget_bounds(ctx).w);
+            nk_label(ctx, "x", NK_TEXT_LEFT);
+        }
+        SDLStatic_GuiGridEndOwned(gui_);
+    }
+    nk_end(ctx);
+    SDLStatic_GuiRender(gui_);
+    ASSERT_EQ(equal.size(), 3u);
+    EXPECT_NEAR(equal[1] / equal[0], 1.0, 0.05);
+
+    EXPECT_FALSE(SDLStatic_GuiGridWeight(nullptr, 0, 1.0f));
+    EXPECT_FALSE(SDLStatic_GuiGridWeight(gui_, -1, 1.0f));
+    EXPECT_FALSE(SDLStatic_GuiGridBeginOwned(nullptr, 2, 20.0f));
+    SDLStatic_GuiGridEndOwned(nullptr);  // safe no-op
+}
+
 // A windowless (software) renderer stays at 1.0 so headless tests and
 // non-Retina displays are unaffected by the high-DPI path.
 TEST_F(GuiHarness, ScaleDefaultsToOneWithoutAWindow)

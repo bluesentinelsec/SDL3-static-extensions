@@ -166,6 +166,16 @@ class GuiHandle {
   Status GuiKeyPressed(int scancode) {
     return ::SDLStatic_GuiKeyPressed(value_, scancode) ? Status() : Status::FromSdl();
   }
+  Status GuiGridWeight(int column, float weight) {
+    return ::SDLStatic_GuiGridWeight(value_, column, weight) ? Status() : Status::FromSdl();
+  }
+  Status GuiGridBeginOwned(int columns, float row_height) {
+    return ::SDLStatic_GuiGridBeginOwned(value_, columns, row_height) ? Status() : Status::FromSdl();
+  }
+  void GuiGridCellOwned() { ::SDLStatic_GuiGridCellOwned(value_); }
+  void GuiGridCellSpanOwned(int span) { ::SDLStatic_GuiGridCellSpanOwned(value_, span); }
+  void GuiGridNextRowOwned() { ::SDLStatic_GuiGridNextRowOwned(value_); }
+  void GuiGridEndOwned() { ::SDLStatic_GuiGridEndOwned(value_); }
   Status GuiImage(SDL_Texture *texture, SDLStatic_GuiImageMode mode) {
     return ::SDLStatic_GuiImage(value_, texture, mode) ? Status() : Status::FromSdl();
   }

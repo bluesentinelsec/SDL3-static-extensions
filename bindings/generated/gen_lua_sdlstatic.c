@@ -202,11 +202,30 @@ static int GenL_SDLStatic_GuiFontHeight(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_GuiGridBeginOwned(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    bool rv = SDLStatic_GuiGridBeginOwned(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_GuiGridCell(lua_State *L)
 {
     (void)L;
     SDLStatic_GuiGrid *a0 = (SDLStatic_GuiGrid *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_GuiGrid");
     SDLStatic_GuiGridCell(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GuiGridCellOwned(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDLStatic_GuiGridCellOwned(a0);
     return 0;
 }
 
@@ -219,11 +238,28 @@ static int GenL_SDLStatic_GuiGridCellSpan(lua_State *L)
     return 0;
 }
 
+static int GenL_SDLStatic_GuiGridCellSpanOwned(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    SDLStatic_GuiGridCellSpanOwned(a0, a1);
+    return 0;
+}
+
 static int GenL_SDLStatic_GuiGridEnd(lua_State *L)
 {
     (void)L;
     SDLStatic_GuiGrid *a0 = (SDLStatic_GuiGrid *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_GuiGrid");
     SDLStatic_GuiGridEnd(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GuiGridEndOwned(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDLStatic_GuiGridEndOwned(a0);
     return 0;
 }
 
@@ -233,6 +269,25 @@ static int GenL_SDLStatic_GuiGridNextRow(lua_State *L)
     SDLStatic_GuiGrid *a0 = (SDLStatic_GuiGrid *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_GuiGrid");
     SDLStatic_GuiGridNextRow(a0);
     return 0;
+}
+
+static int GenL_SDLStatic_GuiGridNextRowOwned(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDLStatic_GuiGridNextRowOwned(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GuiGridWeight(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    bool rv = SDLStatic_GuiGridWeight(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
 }
 
 static int GenL_SDLStatic_GuiImage(lua_State *L)
@@ -573,7 +628,7 @@ static int GenL_SDLStatic_TiledTileWidth(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 53);
+    lua_createtable(L, 0, 59);
     lua_pushcfunction(L, GenL_SDLStatic_BidiBaseIsRTL);
     lua_setfield(L, -2, "BidiBaseIsRTL");
     lua_pushcfunction(L, GenL_SDLStatic_CountSignalConnections);
@@ -604,14 +659,26 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "GuiContext");
     lua_pushcfunction(L, GenL_SDLStatic_GuiFontHeight);
     lua_setfield(L, -2, "GuiFontHeight");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiGridBeginOwned);
+    lua_setfield(L, -2, "GuiGridBeginOwned");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridCell);
     lua_setfield(L, -2, "GuiGridCell");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiGridCellOwned);
+    lua_setfield(L, -2, "GuiGridCellOwned");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridCellSpan);
     lua_setfield(L, -2, "GuiGridCellSpan");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiGridCellSpanOwned);
+    lua_setfield(L, -2, "GuiGridCellSpanOwned");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridEnd);
     lua_setfield(L, -2, "GuiGridEnd");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiGridEndOwned);
+    lua_setfield(L, -2, "GuiGridEndOwned");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridNextRow);
     lua_setfield(L, -2, "GuiGridNextRow");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiGridNextRowOwned);
+    lua_setfield(L, -2, "GuiGridNextRowOwned");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiGridWeight);
+    lua_setfield(L, -2, "GuiGridWeight");
     lua_pushcfunction(L, GenL_SDLStatic_GuiImage);
     lua_setfield(L, -2, "GuiImage");
     lua_pushcfunction(L, GenL_SDLStatic_GuiInputBegin);
