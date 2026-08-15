@@ -2434,6 +2434,7 @@ returns as an array.
 | `SDLStaticC.GuiTooltipDelay(gui: SDLStatic_Gui)` | integer |
 | `SDLStaticC.GuiWantsInput(gui: SDLStatic_Gui)` | boolean |
 | `SDLStaticC.HMACSHA256(key: string|nil, data: string|nil, digest: integer)` | boolean, digest: integer |
+| `SDLStaticC.LoadTextFile(path: string|nil)` | string|nil |
 | `SDLStaticC.LoadTiledMap(path: string|nil)` | SDLStatic_TiledMap|nil |
 | `SDLStaticC.MountEncryptedArchive(data: string|nil, password: string|nil, mountPoint: string|nil)` | boolean |
 | `SDLStaticC.MountEncryptedArchiveFile(path: string|nil, password: string|nil, mountPoint: string|nil)` | boolean |

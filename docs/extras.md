@@ -54,6 +54,20 @@ unsigned char *data2 = SDLStatic_DecodeDataBase64(text, &outSize);
 
 RFC 4648, strict decoding (whitespace skipped, anything else rejected).
 
+## Reading text files — `<SDLStatic/textfile.h>`
+
+`SDL_LoadFile` returns a `void*` plus a size through an out-parameter — a
+pair that cannot cross a Lua or Ruby binding boundary, so scripts had no
+way to read a file at all. `SDLStatic_LoadTextFile(path)` returns one
+NUL-terminated string instead: scripts receive an ordinary string (freed
+for them automatically), and C callers own the allocation and release it
+with `SDL_free`.
+
+```lua
+local text = SDLStaticC.LoadTextFile(path)
+if text then parse(text) end
+```
+
 ## File dialogs — `<SDLStatic/dialog.h>`
 
 Native open/save dialogs, polled rather than called back. SDL delivers the

@@ -14,6 +14,7 @@
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/signals.h>
+#include <SDLStatic/textfile.h>
 #include <SDLStatic/tiled.h>
 #include <SDLStatic/vfs.h>
 #include <string.h>
@@ -498,6 +499,16 @@ static int GenL_SDLStatic_HMACSHA256(lua_State *L)
     return 2;
 }
 
+static int GenL_SDLStatic_LoadTextFile(lua_State *L)
+{
+    (void)L;
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checkstring(L, 1);
+    char * rv = SDLStatic_LoadTextFile(a0);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    if (rv != NULL) { SDL_free(rv); }
+    return 1;
+}
+
 static int GenL_SDLStatic_LoadTiledMap(lua_State *L)
 {
     (void)L;
@@ -713,7 +724,7 @@ static int GenL_SDLStatic_TiledTileWidth(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 68);
+    lua_createtable(L, 0, 69);
     lua_pushcfunction(L, GenL_SDLStatic_BidiBaseIsRTL);
     lua_setfield(L, -2, "BidiBaseIsRTL");
     lua_pushcfunction(L, GenL_SDLStatic_CountSignalConnections);
@@ -808,6 +819,8 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "GuiWantsInput");
     lua_pushcfunction(L, GenL_SDLStatic_HMACSHA256);
     lua_setfield(L, -2, "HMACSHA256");
+    lua_pushcfunction(L, GenL_SDLStatic_LoadTextFile);
+    lua_setfield(L, -2, "LoadTextFile");
     lua_pushcfunction(L, GenL_SDLStatic_LoadTiledMap);
     lua_setfield(L, -2, "LoadTiledMap");
     lua_pushcfunction(L, GenL_SDLStatic_MountEncryptedArchive);

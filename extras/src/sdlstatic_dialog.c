@@ -89,7 +89,10 @@ static void WebBeginOpen(const char *filter_pattern)
             Module.__sdlstatic_dialog = ({state : 'pending'});
             var input = document.createElement('input');
             input.type = 'file';
-            input.style.display = 'none';
+            /* Off-screen rather than display:none — a hidden input is
+               ignored by some browsers when opening the picker. */
+            input.style.position = 'fixed';
+            input.style.left = '-10000px';
             if ($0)
             {
                 /* SDL filter syntax is "txt" or "png;jpg"; the DOM wants
@@ -102,12 +105,23 @@ static void WebBeginOpen(const char *filter_pattern)
                                        .join(',');
                 }
             }
-            input.onchange = function(event)
+            /* The element must stay in the DOM until the user is finished:
+               removing it right after click() aborts the picker. */
+            var cleanup = function()
+            {
+                if (input.parentNode)
+                {
+                    input.parentNode.removeChild(input);
+                }
+                Module.__sdlstatic_dialog_input = null;
+            };
+            input.addEventListener('change', function(event)
             {
                 var file = event.target.files && event.target.files[0];
                 if (!file)
                 {
                     Module.__sdlstatic_dialog = ({state : 'cancelled'});
+                    cleanup();
                     return;
                 }
                 var reader = new FileReader();
@@ -123,18 +137,25 @@ static void WebBeginOpen(const char *filter_pattern)
                     var path = '/dialog/' + file.name;
                     FS.writeFile(path, new Uint8Array(reader.result));
                     Module.__sdlstatic_dialog = ({state : 'accepted', path : path});
+                    cleanup();
                 };
                 reader.onerror = function()
                 {
                     Module.__sdlstatic_dialog = ({state : 'error'});
+                    cleanup();
                 };
                 reader.readAsArrayBuffer(file);
-            };
-            /* Browsers only report a chosen file, never a dismissal, so a
-               cancelled picker simply leaves the dialog pending. */
+            });
+            /* Current browsers fire 'cancel' when the picker is dismissed,
+               so a cancelled dialog is reported rather than left pending. */
+            input.addEventListener('cancel', function()
+            {
+                Module.__sdlstatic_dialog = ({state : 'cancelled'});
+                cleanup();
+            });
             document.body.appendChild(input);
+            Module.__sdlstatic_dialog_input = input; /* keep it alive */
             input.click();
-            document.body.removeChild(input);
         },
         filter_pattern);
 }

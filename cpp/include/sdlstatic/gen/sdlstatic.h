@@ -15,6 +15,7 @@
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/signals.h>
+#include <SDLStatic/textfile.h>
 #include <SDLStatic/tiled.h>
 #include <SDLStatic/vfs.h>
 
@@ -274,6 +275,7 @@ inline constexpr auto& GuiGridCell = ::SDLStatic_GuiGridCell;
 inline constexpr auto& GuiGridCellSpan = ::SDLStatic_GuiGridCellSpan;
 inline constexpr auto& GuiGridEnd = ::SDLStatic_GuiGridEnd;
 inline constexpr auto& GuiGridNextRow = ::SDLStatic_GuiGridNextRow;
+inline constexpr auto& LoadTextFile = ::SDLStatic_LoadTextFile;
 inline constexpr auto& LoadVFSFile = ::SDLStatic_LoadVFSFile;
 inline constexpr auto& OpenVFSRead = ::SDLStatic_OpenVFSRead;
 inline constexpr auto& QuitDebugText = ::SDLStatic_QuitDebugText;

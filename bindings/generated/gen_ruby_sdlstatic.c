@@ -14,6 +14,7 @@
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/signals.h>
+#include <SDLStatic/textfile.h>
 #include <SDLStatic/tiled.h>
 #include <SDLStatic/vfs.h>
 #include <string.h>
@@ -708,6 +709,21 @@ static mrb_value GenR_SDLStatic_HMACSHA256(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_LoadTextFile(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    const char *a0 = SDLStaticGen_RubyToStr(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    char * rv = SDLStatic_LoadTextFile(a0);
+    mrb_value rstr = rv == NULL ? mrb_nil_value() : mrb_str_new_cstr(mrb, rv);
+    if (rv != NULL) { SDL_free(rv); }
+    return rstr;
+    }
+}
+
 static mrb_value GenR_SDLStatic_LoadTiledMap(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -1061,6 +1077,7 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GuiTooltipDelay", GenR_SDLStatic_GuiTooltipDelay, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiWantsInput", GenR_SDLStatic_GuiWantsInput, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "HMACSHA256", GenR_SDLStatic_HMACSHA256, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "LoadTextFile", GenR_SDLStatic_LoadTextFile, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "LoadTiledMap", GenR_SDLStatic_LoadTiledMap, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "MountEncryptedArchive", GenR_SDLStatic_MountEncryptedArchive, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "MountEncryptedArchiveFile", GenR_SDLStatic_MountEncryptedArchiveFile, MRB_ARGS_ANY());

@@ -14,6 +14,7 @@
 #include <SDLStatic/crypto.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/dialog.h>
+#include <SDLStatic/textfile.h>
 #include <gtest/gtest.h>
 
 #include <cstring>
@@ -508,6 +509,26 @@ TEST(Extras, CompressEncryptBase64Pipeline)
 // test drives only what can run unattended: the state machine, the path
 // lifetime, and the guard against opening two at once. Opening a real
 // dialog here would block CI on a picker nobody can dismiss.
+// SDL_LoadFile hands back a void* plus an out-size, which cannot cross a
+// script boundary — this is the readable-from-anywhere version.
+TEST(TextFileTest, ReadsWholeFileAndReportsMissingOnes)
+{
+    const std::string path = std::string(SDL_GetBasePath() ? SDL_GetBasePath() : "./") +
+                             "sdlstatic_textfile_test.txt";
+    const std::string body = "alpha=1\nbeta=2\n";
+    ASSERT_TRUE(SDL_SaveFile(path.c_str(), body.data(), body.size())) << SDL_GetError();
+
+    char *text = SDLStatic_LoadTextFile(path.c_str());
+    ASSERT_NE(text, nullptr) << SDL_GetError();
+    EXPECT_STREQ(text, body.c_str());
+    EXPECT_EQ(SDL_strlen(text), body.size()) << "NUL-terminated at the right length";
+    SDL_free(text);
+
+    EXPECT_EQ(SDLStatic_LoadTextFile("no-such-file-here.txt"), nullptr);
+    EXPECT_EQ(SDLStatic_LoadTextFile(nullptr), nullptr);
+    SDL_RemovePath(path.c_str());
+}
+
 TEST(DialogTest, StateMachineStartsIdleAndResets)
 {
     SDLStatic_DialogReset();
