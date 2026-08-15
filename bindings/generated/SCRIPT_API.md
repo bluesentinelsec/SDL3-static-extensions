@@ -2387,6 +2387,10 @@ returns as an array.
 
 | Script call | Returns |
 |---|---|
+| `SDLStaticC.AddDarkZone(scene: SDLStatic_LightScene, rect: SDL_FRect table, ambient: SDL_FColor table)` | boolean |
+| `SDLStaticC.AddLight(scene: SDLStatic_LightScene, light: SDLStatic_Light table)` | boolean |
+| `SDLStaticC.AddOccluderRect(scene: SDLStatic_LightScene, rect: SDL_FRect table)` | boolean |
+| `SDLStaticC.AddOccluderSegment(scene: SDLStatic_LightScene, x1: number, y1: number, x2: number, y2: number)` | boolean |
 | `SDLStaticC.BidiBaseIsRTL(utf8: string|nil, length: integer)` | boolean |
 | `SDLStaticC.CompileRegex(pattern: string|nil, flags: string|nil)` | SDLStatic_Regex|nil |
 | `SDLStaticC.CountSignalConnections(emitter: SDLStatic_SignalEmitter, signal: string|nil)` | integer |
@@ -2395,9 +2399,13 @@ returns as an array.
 | `SDLStaticC.CreateChipTune(mixer: MIX_Mixer, mml: string|nil)` | MIX_Audio|nil |
 | `SDLStaticC.CreateGui(renderer: SDL_Renderer, font_data: string|nil, font_size: number)` | SDLStatic_Gui|nil |
 | `SDLStaticC.CreateGuiWithGlyphs(renderer: SDL_Renderer, font_data: string|nil, font_size: number, range: integer)` | SDLStatic_Gui|nil |
+| `SDLStaticC.CreateLightScene(renderer: SDL_Renderer)` | SDLStatic_LightScene|nil |
 | `SDLStaticC.CreateSignalEmitter()` | SDLStatic_SignalEmitter|nil |
 | `SDLStaticC.CryptoSelfTest()` | boolean |
+| `SDLStaticC.DayNightAmbient(hours: number)` | SDL_FColor table |
+| `SDLStaticC.DayNightSunlight(hours: number)` | number |
 | `SDLStaticC.DestroyGui(gui: SDLStatic_Gui)` | nil |
+| `SDLStaticC.DestroyLightScene(scene: SDLStatic_LightScene)` | nil |
 | `SDLStaticC.DestroyRegex(regex: SDLStatic_Regex)` | nil |
 | `SDLStaticC.DestroySignalEmitter(emitter: SDLStatic_SignalEmitter)` | nil |
 | `SDLStaticC.DialogDeliverSave(path: string|nil)` | boolean |
@@ -2444,6 +2452,9 @@ returns as an array.
 | `SDLStaticC.GuiTooltipDelay(gui: SDLStatic_Gui)` | integer |
 | `SDLStaticC.GuiWantsInput(gui: SDLStatic_Gui)` | boolean |
 | `SDLStaticC.HMACSHA256(key: string|nil, data: string|nil, digest: integer)` | boolean, digest: integer |
+| `SDLStaticC.LightBeginFrame(scene: SDLStatic_LightScene, camera_x: number, camera_y: number)` | nil |
+| `SDLStaticC.LightLineOfSight(scene: SDLStatic_LightScene, x1: number, y1: number, x2: number, y2: number)` | boolean |
+| `SDLStaticC.LightUsesShaders(scene: SDLStatic_LightScene)` | boolean |
 | `SDLStaticC.LoadTextFile(path: string|nil)` | string|nil |
 | `SDLStaticC.LoadTiledMap(path: string|nil)` | SDLStatic_TiledMap|nil |
 | `SDLStaticC.MountEncryptedArchive(data: string|nil, password: string|nil, mountPoint: string|nil)` | boolean |
@@ -2464,8 +2475,17 @@ returns as an array.
 | `SDLStaticC.RegexReplace(regex: SDLStatic_Regex, text: string|nil, replacement: string|nil, all: boolean)` | string|nil |
 | `SDLStaticC.RegexSearch(regex: SDLStatic_Regex, text: string|nil, start: integer)` | boolean |
 | `SDLStaticC.RenderDebugText(renderer: SDL_Renderer, x: number, y: number, text: string|nil)` | boolean |
+| `SDLStaticC.RenderLighting(scene: SDLStatic_LightScene)` | boolean |
 | `SDLStaticC.SHA256(data: string|nil, digest: integer)` | boolean, digest: integer |
+| `SDLStaticC.SampleLight(scene: SDLStatic_LightScene, x: number, y: number)` | number |
 | `SDLStaticC.SetDebugTextSize(ptsize: number)` | nil |
+| `SDLStaticC.SetLightAmbient(scene: SDLStatic_LightScene, ambient: SDL_FColor table)` | nil |
+| `SDLStaticC.SetLightDebugDraw(scene: SDLStatic_LightScene, enabled: boolean)` | nil |
+| `SDLStaticC.SetLightMapScale(scene: SDLStatic_LightScene, scale: number)` | nil |
+| `SDLStaticC.SetLightRayCount(scene: SDLStatic_LightScene, rays: integer)` | nil |
+| `SDLStaticC.SetLightRings(scene: SDLStatic_LightScene, rings: integer)` | nil |
+| `SDLStaticC.SetLightShadowSoftness(scene: SDLStatic_LightScene, softness: number)` | nil |
+| `SDLStaticC.SetLightUseShaders(scene: SDLStatic_LightScene, enabled: boolean)` | nil |
 | `SDLStaticC.ShowOpenFileDialog(window: SDL_Window, filter_name: string|nil, filter_pattern: string|nil, default_location: string|nil)` | boolean |
 | `SDLStaticC.ShowSaveFileDialog(window: SDL_Window, filter_name: string|nil, filter_pattern: string|nil, default_location: string|nil)` | boolean |
 | `SDLStaticC.TiledLayerCount(map: SDLStatic_TiledMap)` | integer |

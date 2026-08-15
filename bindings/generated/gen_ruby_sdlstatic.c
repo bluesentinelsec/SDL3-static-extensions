@@ -13,6 +13,7 @@
 #include <SDLStatic/gpu_primitives.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
+#include <SDLStatic/light.h>
 #include <SDLStatic/regex.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/textfile.h>
@@ -33,6 +34,42 @@ static void GenRead_SDLStatic_ChipToneDesc(mrb_state *mrb, mrb_value h, SDLStati
     out->release_ms = (Uint32)SDLStaticGen_RubyFieldInt(mrb, h, "release_ms");
     out->vibrato_hz = (float)SDLStaticGen_RubyFieldNum(mrb, h, "vibrato_hz");
     out->vibrato_semitones = (float)SDLStaticGen_RubyFieldNum(mrb, h, "vibrato_semitones");
+}
+
+static void GenRead_SDL_FColor(mrb_state *mrb, mrb_value h, SDL_FColor *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!mrb_hash_p(h)) { return; }
+    out->r = (float)SDLStaticGen_RubyFieldNum(mrb, h, "r");
+    out->g = (float)SDLStaticGen_RubyFieldNum(mrb, h, "g");
+    out->b = (float)SDLStaticGen_RubyFieldNum(mrb, h, "b");
+    out->a = (float)SDLStaticGen_RubyFieldNum(mrb, h, "a");
+}
+
+static mrb_value GenPush_SDL_FColor(mrb_state *mrb, const SDL_FColor *in)
+{
+    mrb_value h = mrb_hash_new(mrb);
+    SDLStaticGen_RubyHashSet(mrb, h, "r", mrb_float_value(mrb, (mrb_float)in->r));
+    SDLStaticGen_RubyHashSet(mrb, h, "g", mrb_float_value(mrb, (mrb_float)in->g));
+    SDLStaticGen_RubyHashSet(mrb, h, "b", mrb_float_value(mrb, (mrb_float)in->b));
+    SDLStaticGen_RubyHashSet(mrb, h, "a", mrb_float_value(mrb, (mrb_float)in->a));
+    return h;
+}
+
+static void GenRead_SDLStatic_Light(mrb_state *mrb, mrb_value h, SDLStatic_Light *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!mrb_hash_p(h)) { return; }
+    out->x = (float)SDLStaticGen_RubyFieldNum(mrb, h, "x");
+    out->y = (float)SDLStaticGen_RubyFieldNum(mrb, h, "y");
+    out->radius = (float)SDLStaticGen_RubyFieldNum(mrb, h, "radius");
+    GenRead_SDL_FColor(mrb, SDLStaticGen_RubyFieldGet(mrb, h, "color"), &out->color);
+    out->falloff = (float)SDLStaticGen_RubyFieldNum(mrb, h, "falloff");
+    out->angle = (float)SDLStaticGen_RubyFieldNum(mrb, h, "angle");
+    out->spread = (float)SDLStaticGen_RubyFieldNum(mrb, h, "spread");
+    out->flicker = (float)SDLStaticGen_RubyFieldNum(mrb, h, "flicker");
+    out->seed = (Uint32)SDLStaticGen_RubyFieldInt(mrb, h, "seed");
+    out->no_shadows = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "no_shadows");
 }
 
 static void GenRead_SDL_Color(mrb_state *mrb, mrb_value h, SDL_Color *out)
@@ -71,6 +108,80 @@ static void GenDtor_SDLStatic_DestroyRegex(void *p)
 {
     SDLStatic_Regex *typed = (SDLStatic_Regex *)p;
     SDLStatic_DestroyRegex(typed);
+}
+
+static void GenDtor_SDLStatic_DestroyLightScene(void *p)
+{
+    SDLStatic_LightScene *typed = (SDLStatic_LightScene *)p;
+    SDLStatic_DestroyLightScene(typed);
+}
+
+static mrb_value GenR_SDLStatic_AddDarkZone(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    SDL_FRect a1;
+    GenRead_SDL_FRect(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &a1);
+    SDL_FColor a2;
+    GenRead_SDL_FColor(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), &a2);
+    bool rv = SDLStatic_AddDarkZone(a0, a1, a2);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_AddLight(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    SDLStatic_Light tmp1;
+    const SDLStatic_Light *a1 = NULL;
+    if (argc > 1 && mrb_hash_p(argv[1])) {
+        GenRead_SDLStatic_Light(mrb, argv[1], &tmp1);
+        a1 = &tmp1;
+    }
+    bool rv = SDLStatic_AddLight(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_AddOccluderRect(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    SDL_FRect a1;
+    GenRead_SDL_FRect(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &a1);
+    bool rv = SDLStatic_AddOccluderRect(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_AddOccluderSegment(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    float a4 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    bool rv = SDLStatic_AddOccluderSegment(a0, a1, a2, a3, a4);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
 }
 
 static mrb_value GenR_SDLStatic_BidiBaseIsRTL(mrb_state *mrb, mrb_value self)
@@ -195,6 +306,19 @@ static mrb_value GenR_SDLStatic_CreateGuiWithGlyphs(mrb_state *mrb, mrb_value se
     }
 }
 
+static mrb_value GenR_SDLStatic_CreateLightScene(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Renderer *a0 = (SDL_Renderer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Renderer");
+    SDLStatic_LightScene * rv = SDLStatic_CreateLightScene(a0);
+    return SDLStaticGen_RubyPushOwned(mrb, (void *)rv, "SDLStatic_LightScene", GenDtor_SDLStatic_DestroyLightScene);
+    }
+}
+
 static mrb_value GenR_SDLStatic_CreateSignalEmitter(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -219,6 +343,32 @@ static mrb_value GenR_SDLStatic_CryptoSelfTest(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_DayNightAmbient(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    float a0 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    SDL_FColor rv = SDLStatic_DayNightAmbient(a0);
+    return GenPush_SDL_FColor(mrb, &rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_DayNightSunlight(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    float a0 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    float rv = SDLStatic_DayNightSunlight(a0);
+    return mrb_float_value(mrb, (mrb_float)rv);
+    }
+}
+
 static mrb_value GenR_SDLStatic_DestroyGui(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -228,6 +378,19 @@ static mrb_value GenR_SDLStatic_DestroyGui(mrb_state *mrb, mrb_value self)
     {
     SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyTakeHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
     SDLStatic_DestroyGui(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_DestroyLightScene(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyTakeHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    SDLStatic_DestroyLightScene(a0);
     return mrb_nil_value();
     }
 }
@@ -876,6 +1039,51 @@ static mrb_value GenR_SDLStatic_HMACSHA256(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_LightBeginFrame(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_LightBeginFrame(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_LightLineOfSight(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    float a4 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    bool rv = SDLStatic_LightLineOfSight(a0, a1, a2, a3, a4);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_LightUsesShaders(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    bool rv = SDLStatic_LightUsesShaders(a0);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
 static mrb_value GenR_SDLStatic_LoadTextFile(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -1159,6 +1367,19 @@ static mrb_value GenR_SDLStatic_RenderDebugText(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_RenderLighting(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    bool rv = SDLStatic_RenderLighting(a0);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
 static mrb_value GenR_SDLStatic_SHA256(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -1177,6 +1398,21 @@ static mrb_value GenR_SDLStatic_SHA256(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_SampleLight(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float rv = SDLStatic_SampleLight(a0, a1, a2);
+    return mrb_float_value(mrb, (mrb_float)rv);
+    }
+}
+
 static mrb_value GenR_SDLStatic_SetDebugTextSize(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -1186,6 +1422,105 @@ static mrb_value GenR_SDLStatic_SetDebugTextSize(mrb_state *mrb, mrb_value self)
     {
     float a0 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
     SDLStatic_SetDebugTextSize(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SetLightAmbient(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    SDL_FColor a1;
+    GenRead_SDL_FColor(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &a1);
+    SDLStatic_SetLightAmbient(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SetLightDebugDraw(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_SetLightDebugDraw(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SetLightMapScale(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_SetLightMapScale(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SetLightRayCount(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_SetLightRayCount(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SetLightRings(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_SetLightRings(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SetLightShadowSoftness(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_SetLightShadowSoftness(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SetLightUseShaders(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightScene *a0 = (SDLStatic_LightScene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_LightScene");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_SetLightUseShaders(a0, a1);
     return mrb_nil_value();
     }
 }
@@ -1380,6 +1715,10 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     struct RClass *mod;
     SDLStaticGen_RubyEnsureHandleClass(mrb);
     mod = mrb_define_module(mrb, "SDLStaticC");
+    mrb_define_module_function(mrb, mod, "AddDarkZone", GenR_SDLStatic_AddDarkZone, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "AddLight", GenR_SDLStatic_AddLight, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "AddOccluderRect", GenR_SDLStatic_AddOccluderRect, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "AddOccluderSegment", GenR_SDLStatic_AddOccluderSegment, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "BidiBaseIsRTL", GenR_SDLStatic_BidiBaseIsRTL, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CompileRegex", GenR_SDLStatic_CompileRegex, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CountSignalConnections", GenR_SDLStatic_CountSignalConnections, MRB_ARGS_ANY());
@@ -1388,9 +1727,13 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "CreateChipTune", GenR_SDLStatic_CreateChipTune, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateGui", GenR_SDLStatic_CreateGui, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateGuiWithGlyphs", GenR_SDLStatic_CreateGuiWithGlyphs, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "CreateLightScene", GenR_SDLStatic_CreateLightScene, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateSignalEmitter", GenR_SDLStatic_CreateSignalEmitter, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CryptoSelfTest", GenR_SDLStatic_CryptoSelfTest, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DayNightAmbient", GenR_SDLStatic_DayNightAmbient, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DayNightSunlight", GenR_SDLStatic_DayNightSunlight, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DestroyGui", GenR_SDLStatic_DestroyGui, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DestroyLightScene", GenR_SDLStatic_DestroyLightScene, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DestroyRegex", GenR_SDLStatic_DestroyRegex, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DestroySignalEmitter", GenR_SDLStatic_DestroySignalEmitter, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DialogDeliverSave", GenR_SDLStatic_DialogDeliverSave, MRB_ARGS_ANY());
@@ -1437,6 +1780,9 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GuiTooltipDelay", GenR_SDLStatic_GuiTooltipDelay, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiWantsInput", GenR_SDLStatic_GuiWantsInput, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "HMACSHA256", GenR_SDLStatic_HMACSHA256, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "LightBeginFrame", GenR_SDLStatic_LightBeginFrame, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "LightLineOfSight", GenR_SDLStatic_LightLineOfSight, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "LightUsesShaders", GenR_SDLStatic_LightUsesShaders, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "LoadTextFile", GenR_SDLStatic_LoadTextFile, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "LoadTiledMap", GenR_SDLStatic_LoadTiledMap, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "MountEncryptedArchive", GenR_SDLStatic_MountEncryptedArchive, MRB_ARGS_ANY());
@@ -1457,8 +1803,17 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "RegexReplace", GenR_SDLStatic_RegexReplace, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "RegexSearch", GenR_SDLStatic_RegexSearch, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "RenderDebugText", GenR_SDLStatic_RenderDebugText, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RenderLighting", GenR_SDLStatic_RenderLighting, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SHA256", GenR_SDLStatic_SHA256, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SampleLight", GenR_SDLStatic_SampleLight, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetDebugTextSize", GenR_SDLStatic_SetDebugTextSize, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SetLightAmbient", GenR_SDLStatic_SetLightAmbient, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SetLightDebugDraw", GenR_SDLStatic_SetLightDebugDraw, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SetLightMapScale", GenR_SDLStatic_SetLightMapScale, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SetLightRayCount", GenR_SDLStatic_SetLightRayCount, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SetLightRings", GenR_SDLStatic_SetLightRings, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SetLightShadowSoftness", GenR_SDLStatic_SetLightShadowSoftness, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SetLightUseShaders", GenR_SDLStatic_SetLightUseShaders, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ShowOpenFileDialog", GenR_SDLStatic_ShowOpenFileDialog, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ShowSaveFileDialog", GenR_SDLStatic_ShowSaveFileDialog, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "TiledLayerCount", GenR_SDLStatic_TiledLayerCount, MRB_ARGS_ANY());

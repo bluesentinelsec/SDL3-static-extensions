@@ -14,6 +14,7 @@
 #include <SDLStatic/dialog.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
+#include <SDLStatic/light.h>
 #include <SDLStatic/regex.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/textfile.h>
@@ -322,6 +323,88 @@ class RegexHandle {
   bool engaged_ = false;
 };
 
+// RAII owner for SDLStatic_LightScene (destroyed with SDLStatic_DestroyLightScene).
+class LightSceneHandle {
+ public:
+  static Result<LightSceneHandle> CreateLightScene(SDL_Renderer *renderer) {
+    SDLStatic_LightScene* created_ = ::SDLStatic_CreateLightScene(renderer);
+    if (created_ == nullptr) {
+      return Status::FromSdl();
+    }
+    return LightSceneHandle(created_);
+  }
+
+  LightSceneHandle() = default;
+  ~LightSceneHandle() { reset(); }
+  LightSceneHandle(LightSceneHandle&& other) noexcept
+      : value_(other.value_), engaged_(other.engaged_) {
+    other.value_ = nullptr;
+    other.engaged_ = false;
+  }
+  LightSceneHandle& operator=(LightSceneHandle&& other) noexcept {
+    if (this != &other) {
+      reset();
+      value_ = other.value_;
+      engaged_ = other.engaged_;
+      other.value_ = nullptr;
+      other.engaged_ = false;
+    }
+    return *this;
+  }
+  LightSceneHandle(const LightSceneHandle&) = delete;
+  LightSceneHandle& operator=(const LightSceneHandle&) = delete;
+
+  SDLStatic_LightScene* get() const { return value_; }
+  SDLStatic_LightScene* release() {
+    SDLStatic_LightScene* out = value_;
+    value_ = nullptr;
+    engaged_ = false;
+    return out;
+  }
+  void reset() {
+    if (value_ != nullptr) ::SDLStatic_DestroyLightScene(value_);
+    value_ = nullptr;
+    engaged_ = false;
+  }
+
+  void LightBeginFrame(float camera_x, float camera_y) { ::SDLStatic_LightBeginFrame(value_, camera_x, camera_y); }
+  void SetLightAmbient(SDL_FColor ambient) { ::SDLStatic_SetLightAmbient(value_, ambient); }
+  Status AddLight(const SDLStatic_Light *light) {
+    return ::SDLStatic_AddLight(value_, light) ? Status() : Status::FromSdl();
+  }
+  Status AddDarkZone(SDL_FRect rect, SDL_FColor ambient) {
+    return ::SDLStatic_AddDarkZone(value_, rect, ambient) ? Status() : Status::FromSdl();
+  }
+  Status AddOccluderRect(SDL_FRect rect) {
+    return ::SDLStatic_AddOccluderRect(value_, rect) ? Status() : Status::FromSdl();
+  }
+  Status AddOccluderSegment(float x1, float y1, float x2, float y2) {
+    return ::SDLStatic_AddOccluderSegment(value_, x1, y1, x2, y2) ? Status() : Status::FromSdl();
+  }
+  Status RenderLighting() {
+    return ::SDLStatic_RenderLighting(value_) ? Status() : Status::FromSdl();
+  }
+  float SampleLight(float x, float y) {
+    return ::SDLStatic_SampleLight(value_, x, y);
+  }
+  Status LightLineOfSight(float x1, float y1, float x2, float y2) {
+    return ::SDLStatic_LightLineOfSight(value_, x1, y1, x2, y2) ? Status() : Status::FromSdl();
+  }
+  Status LightUsesShaders() {
+    return ::SDLStatic_LightUsesShaders(value_) ? Status() : Status::FromSdl();
+  }
+  void SetLightUseShaders(bool enabled) { ::SDLStatic_SetLightUseShaders(value_, enabled); }
+  void SetLightMapScale(float scale) { ::SDLStatic_SetLightMapScale(value_, scale); }
+  void SetLightShadowSoftness(float softness) { ::SDLStatic_SetLightShadowSoftness(value_, softness); }
+  void SetLightRayCount(int rays) { ::SDLStatic_SetLightRayCount(value_, rays); }
+  void SetLightRings(int rings) { ::SDLStatic_SetLightRings(value_, rings); }
+  void SetLightDebugDraw(bool enabled) { ::SDLStatic_SetLightDebugDraw(value_, enabled); }
+ private:
+  explicit LightSceneHandle(SDLStatic_LightScene* value) : value_(value), engaged_(true) {}
+  SDLStatic_LightScene* value_{};
+  bool engaged_ = false;
+};
+
 // bool-returning C functions surfaced as Status.
 inline Status BidiBaseIsRTL(const char *utf8, int length) {
   return ::SDLStatic_BidiBaseIsRTL(utf8, length) ? Status() : Status::FromSdl();
@@ -370,6 +453,8 @@ inline constexpr auto& CreateChipTone = ::SDLStatic_CreateChipTone;
 inline constexpr auto& CreateChipTune = ::SDLStatic_CreateChipTune;
 inline constexpr auto& CreateGuiWithGlyphs = ::SDLStatic_CreateGuiWithGlyphs;
 inline constexpr auto& CreateSignalEmitter = ::SDLStatic_CreateSignalEmitter;
+inline constexpr auto& DayNightAmbient = ::SDLStatic_DayNightAmbient;
+inline constexpr auto& DayNightSunlight = ::SDLStatic_DayNightSunlight;
 inline constexpr auto& DecodeDataBase64 = ::SDLStatic_DecodeDataBase64;
 inline constexpr auto& DecompressData = ::SDLStatic_DecompressData;
 inline constexpr auto& DecryptData = ::SDLStatic_DecryptData;
