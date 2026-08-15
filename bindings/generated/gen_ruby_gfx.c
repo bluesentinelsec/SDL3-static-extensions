@@ -1273,4 +1273,28 @@ void SDLStaticGen_OpenRuby_gfx(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "vlineRGBA", GenR_vlineRGBA, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "zoomSurface", GenR_zoomSurface, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "zoomSurfaceSize", GenR_zoomSurfaceSize, MRB_ARGS_ANY());
+#ifdef FPS_UPPER_LIMIT
+    mrb_define_const(mrb, mod, "FPS_UPPER_LIMIT", mrb_int_value(mrb, (mrb_int)(FPS_UPPER_LIMIT)));
+#endif
+#ifdef FPS_LOWER_LIMIT
+    mrb_define_const(mrb, mod, "FPS_LOWER_LIMIT", mrb_int_value(mrb, (mrb_int)(FPS_LOWER_LIMIT)));
+#endif
+#ifdef FPS_DEFAULT
+    mrb_define_const(mrb, mod, "FPS_DEFAULT", mrb_int_value(mrb, (mrb_int)(FPS_DEFAULT)));
+#endif
+#ifdef SDL3_GFXPRIMITIVES_MAJOR
+    mrb_define_const(mrb, mod, "SDL3_GFXPRIMITIVES_MAJOR", mrb_int_value(mrb, (mrb_int)(SDL3_GFXPRIMITIVES_MAJOR)));
+#endif
+#ifdef SDL3_GFXPRIMITIVES_MINOR
+    mrb_define_const(mrb, mod, "SDL3_GFXPRIMITIVES_MINOR", mrb_int_value(mrb, (mrb_int)(SDL3_GFXPRIMITIVES_MINOR)));
+#endif
+#ifdef SDL3_GFXPRIMITIVES_MICRO
+    mrb_define_const(mrb, mod, "SDL3_GFXPRIMITIVES_MICRO", mrb_int_value(mrb, (mrb_int)(SDL3_GFXPRIMITIVES_MICRO)));
+#endif
+#ifdef SMOOTHING_OFF
+    mrb_define_const(mrb, mod, "SMOOTHING_OFF", mrb_int_value(mrb, (mrb_int)(SMOOTHING_OFF)));
+#endif
+#ifdef SMOOTHING_ON
+    mrb_define_const(mrb, mod, "SMOOTHING_ON", mrb_int_value(mrb, (mrb_int)(SMOOTHING_ON)));
+#endif
 }

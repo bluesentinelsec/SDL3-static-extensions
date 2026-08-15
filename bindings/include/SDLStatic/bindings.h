@@ -28,8 +28,24 @@ extern "C" {
 /** Install the `SDLStatic` global table into a Lua state. */
 extern bool SDLStatic_OpenLuaBindings(lua_State *L);
 
+/** Install the `Regex` module — compiled patterns as objects with
+ *  match/gmatch/gsub/split — into a Lua state. Lua has patterns rather
+ *  than regular expressions, so this is an addition, not a replacement:
+ *  string.find and friends are untouched. Called for you by
+ *  SDLStatic_OpenLuaBindings. */
+extern bool SDLStatic_OpenLuaRegex(lua_State *L);
+
 /** Install the `SDLStatic` module into an mruby state. */
 extern bool SDLStatic_OpenRubyBindings(mrb_state *mrb);
+
+/** Install `Regexp` and `MatchData`, plus the String methods that take a
+ *  pattern, over SDLStatic::Regex.
+ *
+ *  mruby has no regex engine of its own, but its compiler does know the
+ *  syntax: defining this class is what makes `/re/` literals, `=~`, `$~`
+ *  and `$1` work. SDLStatic_OpenRubyBindings calls this for you; it is
+ *  exposed for hosts that install a narrower surface. */
+extern bool SDLStatic_OpenRubyRegexp(mrb_state *mrb);
 
 #ifdef __cplusplus
 }

@@ -32,6 +32,9 @@ target_link_libraries(SDLStatic_Cpp PUBLIC
   SDL3::SDL3
 )
 
+if(SDLSTATIC_BUILD_REGEX)
+  target_link_libraries(SDLStatic_Cpp PUBLIC SDLStatic::Regex)
+endif()
 if(SDLSTATIC_BUILD_NET)
   target_link_libraries(SDLStatic_Cpp INTERFACE SDLStatic::Net)
 endif()

@@ -431,6 +431,20 @@ def emit_ruby(manifest: Manifest, repo: Path) -> dict[str, dict[str, ScriptPlan]
                     continue
                 seen_const.add(cname)
                 em.w(f"    mrb_define_const(mrb, mod, \"{cname}\", mrb_int_value(mrb, (mrb_int){value}));")
+        for macro in library.macro_constants:
+            if lib.prefix and not macro.startswith(lib.prefix):
+                continue  # internal helper macros are not API
+            cname = macro[len(lib.prefix):] if macro.startswith(lib.prefix) else macro
+            if not cname or not cname[0].isalpha():
+                continue
+            cname = cname if cname[0].isupper() else cname.upper()
+            if cname in seen_const:
+                continue
+            seen_const.add(cname)
+            em.w(f"#ifdef {macro}")
+            em.w(f"    mrb_define_const(mrb, mod, \"{cname}\", "
+                 f"mrb_int_value(mrb, (mrb_int)({macro})));")
+            em.w("#endif")
         em.w("}")
         (outdir / f"gen_ruby_{lib.key}.c").write_text("\n".join(em.out) + "\n", encoding="utf-8")
         opens.append(f"SDLStaticGen_OpenRuby_{lib.key}")

@@ -31,6 +31,22 @@ executable picks up a non-OS shared dependency.
   (upstream SDL3_net only offers a stub there, and this project does not
   ship stubs). Use [mog](http.html) for browser-side HTTP via Fetch.
   Box2D builds with SIMD (`-msimd128`).
+- **Web canvas sizing:** SDL3's Emscripten backend decides the window size
+  by probing the canvas element's CSS box. A canvas with no explicit CSS
+  size measures as just its borders, and SDL creates a 2–3 pixel window —
+  the app renders correctly but is invisible. Give the canvas a real CSS
+  size in your shell HTML, or size it from the app after window creation:
+
+  ```c
+  const int w = EM_ASM_INT({ return window.innerWidth; });
+  const int h = EM_ASM_INT({ return window.innerHeight; });
+  emscripten_set_element_css_size("#canvas", w, h);
+  SDL_SetWindowSize(window, w, h);
+  ```
+- **File dialogs on web:** SDL has no Emscripten dialog backend;
+  [`SDLStatic::Extras`](extras.html) supplies one over browser APIs. Opening
+  works through a file input; saving downloads the file, since a page cannot
+  write to disk.
 - **Android:** consumed as a Prefab AAR; the emulator CI job runs the
   test suite on-device.
 - **iOS:** ships as a static XCFramework (device arm64 + Simulator

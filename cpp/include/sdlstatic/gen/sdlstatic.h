@@ -11,9 +11,12 @@
 #include <SDLStatic/compress.h>
 #include <SDLStatic/crypto.h>
 #include <SDLStatic/debug_text.h>
+#include <SDLStatic/dialog.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
+#include <SDLStatic/regex.h>
 #include <SDLStatic/signals.h>
+#include <SDLStatic/textfile.h>
 #include <SDLStatic/tiled.h>
 #include <SDLStatic/vfs.h>
 
@@ -163,6 +166,55 @@ class GuiHandle {
   Status GuiPumpEvents() {
     return ::SDLStatic_GuiPumpEvents(value_) ? Status() : Status::FromSdl();
   }
+  Status GuiKeyPressed(int scancode) {
+    return ::SDLStatic_GuiKeyPressed(value_, scancode) ? Status() : Status::FromSdl();
+  }
+  Status GuiOpenFileButton(const char *label, const char *filter_name, const char *filter_pattern) {
+    return ::SDLStatic_GuiOpenFileButton(value_, label, filter_name, filter_pattern) ? Status() : Status::FromSdl();
+  }
+  Status GuiSaveFileButton(const char *label, const char *filename, const void *data, size_t len) {
+    return ::SDLStatic_GuiSaveFileButton(value_, label, filename, data, len) ? Status() : Status::FromSdl();
+  }
+  const char* GuiSavedPath() {
+    return ::SDLStatic_GuiSavedPath(value_);
+  }
+  Status GuiTooltip(const char *text) {
+    return ::SDLStatic_GuiTooltip(value_, text) ? Status() : Status::FromSdl();
+  }
+  void GuiSetTooltipDelay(int delay_ms) { ::SDLStatic_GuiSetTooltipDelay(value_, delay_ms); }
+  int GuiTooltipDelay() {
+    return ::SDLStatic_GuiTooltipDelay(value_);
+  }
+  Status GuiGridWeight(int column, float weight) {
+    return ::SDLStatic_GuiGridWeight(value_, column, weight) ? Status() : Status::FromSdl();
+  }
+  Status GuiGridBeginOwned(int columns, float row_height) {
+    return ::SDLStatic_GuiGridBeginOwned(value_, columns, row_height) ? Status() : Status::FromSdl();
+  }
+  void GuiGridCellOwned() { ::SDLStatic_GuiGridCellOwned(value_); }
+  void GuiGridCellSpanOwned(int span) { ::SDLStatic_GuiGridCellSpanOwned(value_, span); }
+  void GuiGridNextRowOwned() { ::SDLStatic_GuiGridNextRowOwned(value_); }
+  void GuiGridEndOwned() { ::SDLStatic_GuiGridEndOwned(value_); }
+  Status GuiImage(SDL_Texture *texture, SDLStatic_GuiImageMode mode) {
+    return ::SDLStatic_GuiImage(value_, texture, mode) ? Status() : Status::FromSdl();
+  }
+  Status GuiSetFont(SDLStatic_GuiFontSize which) {
+    return ::SDLStatic_GuiSetFont(value_, which) ? Status() : Status::FromSdl();
+  }
+  Status GuiPushFont(SDLStatic_GuiFontSize which) {
+    return ::SDLStatic_GuiPushFont(value_, which) ? Status() : Status::FromSdl();
+  }
+  void GuiPopFont(int count) { ::SDLStatic_GuiPopFont(value_, count); }
+  float GuiFontHeight() {
+    return ::SDLStatic_GuiFontHeight(value_);
+  }
+  Status GuiPushStyleColor(SDLStatic_GuiStyleColor which, SDL_Color color) {
+    return ::SDLStatic_GuiPushStyleColor(value_, which, color) ? Status() : Status::FromSdl();
+  }
+  void GuiPopStyleColor(int count) { ::SDLStatic_GuiPopStyleColor(value_, count); }
+  float GuiScale() {
+    return ::SDLStatic_GuiScale(value_);
+  }
   Status GuiRender() {
     return ::SDLStatic_GuiRender(value_) ? Status() : Status::FromSdl();
   }
@@ -172,12 +224,101 @@ class GuiHandle {
   bool engaged_ = false;
 };
 
+// RAII owner for SDLStatic_Regex (destroyed with SDLStatic_DestroyRegex).
+class RegexHandle {
+ public:
+  static Result<RegexHandle> CompileRegex(const char *pattern, const char *flags) {
+    SDLStatic_Regex* created_ = ::SDLStatic_CompileRegex(pattern, flags);
+    if (created_ == nullptr) {
+      return Status::FromSdl();
+    }
+    return RegexHandle(created_);
+  }
+
+  RegexHandle() = default;
+  ~RegexHandle() { reset(); }
+  RegexHandle(RegexHandle&& other) noexcept
+      : value_(other.value_), engaged_(other.engaged_) {
+    other.value_ = nullptr;
+    other.engaged_ = false;
+  }
+  RegexHandle& operator=(RegexHandle&& other) noexcept {
+    if (this != &other) {
+      reset();
+      value_ = other.value_;
+      engaged_ = other.engaged_;
+      other.value_ = nullptr;
+      other.engaged_ = false;
+    }
+    return *this;
+  }
+  RegexHandle(const RegexHandle&) = delete;
+  RegexHandle& operator=(const RegexHandle&) = delete;
+
+  SDLStatic_Regex* get() const { return value_; }
+  SDLStatic_Regex* release() {
+    SDLStatic_Regex* out = value_;
+    value_ = nullptr;
+    engaged_ = false;
+    return out;
+  }
+  void reset() {
+    if (value_ != nullptr) ::SDLStatic_DestroyRegex(value_);
+    value_ = nullptr;
+    engaged_ = false;
+  }
+
+  Status RegexSearch(const char *text, int start) {
+    return ::SDLStatic_RegexSearch(value_, text, start) ? Status() : Status::FromSdl();
+  }
+  Status RegexMatchAt(const char *text, int start) {
+    return ::SDLStatic_RegexMatchAt(value_, text, start) ? Status() : Status::FromSdl();
+  }
+  int RegexGroupCount() {
+    return ::SDLStatic_RegexGroupCount(value_);
+  }
+  const char* RegexGroup(int group) {
+    return ::SDLStatic_RegexGroup(value_, group);
+  }
+  int RegexGroupBegin(int group) {
+    return ::SDLStatic_RegexGroupBegin(value_, group);
+  }
+  int RegexGroupEnd(int group) {
+    return ::SDLStatic_RegexGroupEnd(value_, group);
+  }
+  int RegexNamedGroup(const char *name) {
+    return ::SDLStatic_RegexNamedGroup(value_, name);
+  }
+  int RegexNamedGroupCount() {
+    return ::SDLStatic_RegexNamedGroupCount(value_);
+  }
+  const char* RegexNamedGroupName(int index) {
+    return ::SDLStatic_RegexNamedGroupName(value_, index);
+  }
+  const char* RegexPattern() {
+    return ::SDLStatic_RegexPattern(value_);
+  }
+  const char* RegexFlags() {
+    return ::SDLStatic_RegexFlags(value_);
+  }
+  const char* RegexReplace(const char *text, const char *replacement, bool all) {
+    return ::SDLStatic_RegexReplace(value_, text, replacement, all);
+  }
+ private:
+  explicit RegexHandle(SDLStatic_Regex* value) : value_(value), engaged_(true) {}
+  SDLStatic_Regex* value_{};
+  bool engaged_ = false;
+};
+
 // bool-returning C functions surfaced as Status.
 inline Status BidiBaseIsRTL(const char *utf8, int length) {
   return ::SDLStatic_BidiBaseIsRTL(utf8, length) ? Status() : Status::FromSdl();
 }
 inline Status CryptoSelfTest() {
   return ::SDLStatic_CryptoSelfTest() ? Status() : Status::FromSdl();
+}
+inline Status DialogDeliverSave(const char *path) {
+  return ::SDLStatic_DialogDeliverSave(path) ? Status() : Status::FromSdl();
 }
 inline Status DisconnectSignal(SDLStatic_SignalEmitter *emitter, Uint64 connection) {
   return ::SDLStatic_DisconnectSignal(emitter, connection) ? Status() : Status::FromSdl();
@@ -200,6 +341,12 @@ inline Status RenderDebugText(SDL_Renderer *renderer, float x, float y, const ch
 inline Status SHA256(const void *data, size_t dataSize, Uint8 digest[32]) {
   return ::SDLStatic_SHA256(data, dataSize, digest) ? Status() : Status::FromSdl();
 }
+inline Status ShowOpenFileDialog(SDL_Window *window, const char *filter_name, const char *filter_pattern, const char *default_location) {
+  return ::SDLStatic_ShowOpenFileDialog(window, filter_name, filter_pattern, default_location) ? Status() : Status::FromSdl();
+}
+inline Status ShowSaveFileDialog(SDL_Window *window, const char *filter_name, const char *filter_pattern, const char *default_location) {
+  return ::SDLStatic_ShowSaveFileDialog(window, filter_name, filter_pattern, default_location) ? Status() : Status::FromSdl();
+}
 
 // Everything else, aliased into the namespace unchanged.
 inline constexpr auto& BidiItemize = ::SDLStatic_BidiItemize;
@@ -214,6 +361,9 @@ inline constexpr auto& DecodeDataBase64 = ::SDLStatic_DecodeDataBase64;
 inline constexpr auto& DecompressData = ::SDLStatic_DecompressData;
 inline constexpr auto& DecryptData = ::SDLStatic_DecryptData;
 inline constexpr auto& DestroySignalEmitter = ::SDLStatic_DestroySignalEmitter;
+inline constexpr auto& DialogPath = ::SDLStatic_DialogPath;
+inline constexpr auto& DialogReset = ::SDLStatic_DialogReset;
+inline constexpr auto& DialogStatus = ::SDLStatic_DialogStatus;
 inline constexpr auto& EmitSignal = ::SDLStatic_EmitSignal;
 inline constexpr auto& EncodeDataBase64 = ::SDLStatic_EncodeDataBase64;
 inline constexpr auto& EncryptData = ::SDLStatic_EncryptData;
@@ -221,9 +371,11 @@ inline constexpr auto& GuiGridCell = ::SDLStatic_GuiGridCell;
 inline constexpr auto& GuiGridCellSpan = ::SDLStatic_GuiGridCellSpan;
 inline constexpr auto& GuiGridEnd = ::SDLStatic_GuiGridEnd;
 inline constexpr auto& GuiGridNextRow = ::SDLStatic_GuiGridNextRow;
+inline constexpr auto& LoadTextFile = ::SDLStatic_LoadTextFile;
 inline constexpr auto& LoadVFSFile = ::SDLStatic_LoadVFSFile;
 inline constexpr auto& OpenVFSRead = ::SDLStatic_OpenVFSRead;
 inline constexpr auto& QuitDebugText = ::SDLStatic_QuitDebugText;
+inline constexpr auto& RegexEscape = ::SDLStatic_RegexEscape;
 inline constexpr auto& SetDebugTextSize = ::SDLStatic_SetDebugTextSize;
 
 }  // namespace ext

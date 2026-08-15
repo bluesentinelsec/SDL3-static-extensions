@@ -1323,4 +1323,13 @@ void SDLStaticGen_OpenRuby_physfs(mrb_state *mrb)
     mrb_define_const(mrb, mod, "FILETYPE_DIRECTORY", mrb_int_value(mrb, (mrb_int)PHYSFS_FILETYPE_DIRECTORY));
     mrb_define_const(mrb, mod, "FILETYPE_SYMLINK", mrb_int_value(mrb, (mrb_int)PHYSFS_FILETYPE_SYMLINK));
     mrb_define_const(mrb, mod, "FILETYPE_OTHER", mrb_int_value(mrb, (mrb_int)PHYSFS_FILETYPE_OTHER));
+#ifdef PHYSFS_VER_MAJOR
+    mrb_define_const(mrb, mod, "VER_MAJOR", mrb_int_value(mrb, (mrb_int)(PHYSFS_VER_MAJOR)));
+#endif
+#ifdef PHYSFS_VER_MINOR
+    mrb_define_const(mrb, mod, "VER_MINOR", mrb_int_value(mrb, (mrb_int)(PHYSFS_VER_MINOR)));
+#endif
+#ifdef PHYSFS_VER_PATCH
+    mrb_define_const(mrb, mod, "VER_PATCH", mrb_int_value(mrb, (mrb_int)(PHYSFS_VER_PATCH)));
+#endif
 }

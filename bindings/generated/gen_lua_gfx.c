@@ -1074,6 +1074,38 @@ int SDLStaticGen_OpenLua_gfx(lua_State *L)
     lua_setfield(L, -2, "zoomSurface");
     lua_pushcfunction(L, GenL_zoomSurfaceSize);
     lua_setfield(L, -2, "zoomSurfaceSize");
+#ifdef FPS_UPPER_LIMIT
+    lua_pushinteger(L, (lua_Integer)(FPS_UPPER_LIMIT));
+    lua_setfield(L, -2, "FPS_UPPER_LIMIT");
+#endif
+#ifdef FPS_LOWER_LIMIT
+    lua_pushinteger(L, (lua_Integer)(FPS_LOWER_LIMIT));
+    lua_setfield(L, -2, "FPS_LOWER_LIMIT");
+#endif
+#ifdef FPS_DEFAULT
+    lua_pushinteger(L, (lua_Integer)(FPS_DEFAULT));
+    lua_setfield(L, -2, "FPS_DEFAULT");
+#endif
+#ifdef SDL3_GFXPRIMITIVES_MAJOR
+    lua_pushinteger(L, (lua_Integer)(SDL3_GFXPRIMITIVES_MAJOR));
+    lua_setfield(L, -2, "SDL3_GFXPRIMITIVES_MAJOR");
+#endif
+#ifdef SDL3_GFXPRIMITIVES_MINOR
+    lua_pushinteger(L, (lua_Integer)(SDL3_GFXPRIMITIVES_MINOR));
+    lua_setfield(L, -2, "SDL3_GFXPRIMITIVES_MINOR");
+#endif
+#ifdef SDL3_GFXPRIMITIVES_MICRO
+    lua_pushinteger(L, (lua_Integer)(SDL3_GFXPRIMITIVES_MICRO));
+    lua_setfield(L, -2, "SDL3_GFXPRIMITIVES_MICRO");
+#endif
+#ifdef SMOOTHING_OFF
+    lua_pushinteger(L, (lua_Integer)(SMOOTHING_OFF));
+    lua_setfield(L, -2, "SMOOTHING_OFF");
+#endif
+#ifdef SMOOTHING_ON
+    lua_pushinteger(L, (lua_Integer)(SMOOTHING_ON));
+    lua_setfield(L, -2, "SMOOTHING_ON");
+#endif
     lua_setglobal(L, "GFX");
     return 0;
 }

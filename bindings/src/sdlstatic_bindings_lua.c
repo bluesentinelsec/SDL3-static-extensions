@@ -721,5 +721,10 @@ bool SDLStatic_OpenLuaBindings(lua_State *L)
      * PHYSFS, B2, NK, JSON, SDLStaticC tables); see
      * bindings/generated/COVERAGE.md. */
     SDLStatic_OpenGeneratedLuaBindings(L);
+    /* Real regular expressions, which Lua patterns are not. */
+    if (!SDLStatic_OpenLuaRegex(L))
+    {
+        return false;
+    }
     return true;
 }

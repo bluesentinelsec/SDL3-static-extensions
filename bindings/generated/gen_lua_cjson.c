@@ -835,6 +835,50 @@ int SDLStaticGen_OpenLua_cjson(lua_State *L)
     lua_setfield(L, -2, "SetValuestring");
     lua_pushcfunction(L, GenL_cJSON_Version);
     lua_setfield(L, -2, "Version");
+#ifdef cJSON_Invalid
+    lua_pushinteger(L, (lua_Integer)(cJSON_Invalid));
+    lua_setfield(L, -2, "Invalid");
+#endif
+#ifdef cJSON_False
+    lua_pushinteger(L, (lua_Integer)(cJSON_False));
+    lua_setfield(L, -2, "False");
+#endif
+#ifdef cJSON_True
+    lua_pushinteger(L, (lua_Integer)(cJSON_True));
+    lua_setfield(L, -2, "True");
+#endif
+#ifdef cJSON_NULL
+    lua_pushinteger(L, (lua_Integer)(cJSON_NULL));
+    lua_setfield(L, -2, "NULL");
+#endif
+#ifdef cJSON_Number
+    lua_pushinteger(L, (lua_Integer)(cJSON_Number));
+    lua_setfield(L, -2, "Number");
+#endif
+#ifdef cJSON_String
+    lua_pushinteger(L, (lua_Integer)(cJSON_String));
+    lua_setfield(L, -2, "String");
+#endif
+#ifdef cJSON_Array
+    lua_pushinteger(L, (lua_Integer)(cJSON_Array));
+    lua_setfield(L, -2, "Array");
+#endif
+#ifdef cJSON_Object
+    lua_pushinteger(L, (lua_Integer)(cJSON_Object));
+    lua_setfield(L, -2, "Object");
+#endif
+#ifdef cJSON_Raw
+    lua_pushinteger(L, (lua_Integer)(cJSON_Raw));
+    lua_setfield(L, -2, "Raw");
+#endif
+#ifdef cJSON_IsReference
+    lua_pushinteger(L, (lua_Integer)(cJSON_IsReference));
+    lua_setfield(L, -2, "IsReference");
+#endif
+#ifdef cJSON_StringIsConst
+    lua_pushinteger(L, (lua_Integer)(cJSON_StringIsConst));
+    lua_setfield(L, -2, "StringIsConst");
+#endif
     lua_setglobal(L, "JSON");
     return 0;
 }

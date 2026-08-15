@@ -391,6 +391,23 @@ _TYPEDEF_ALIAS_RE = re.compile(
     r"([A-Za-z_][A-Za-z0-9_]*)\s*;"
 )
 
+# Integer-valued object-like macros (SDL_INIT_VIDEO, SDL_WINDOW_FULLSCREEN,
+# SDL_BUTTON_LMASK, ...). Scripts would otherwise have to hardcode these
+# numbers. Only shapes that are certainly integer constant expressions are
+# accepted; the value itself is never evaluated here — the generated C
+# references the macro by name and lets the C preprocessor do the work.
+_INT_LIT = r"(?:0[xX][0-9a-fA-F]+|\d+)[uUlL]*"
+_MACRO_VALUE = (
+    r"(?:" + _INT_LIT + r"|SDL_UINT64_C\(\s*" + _INT_LIT + r"\s*\)"
+    r"|SDL_SINT64_C\(\s*" + _INT_LIT + r"\s*\))"
+)
+_MACRO_EXPR_RE = re.compile(
+    r"^\(?\s*" + _MACRO_VALUE + r"(?:\s*(?:\||<<|\+|-)\s*" + _MACRO_VALUE + r")*\s*\)?$"
+)
+_MACRO_DEF_RE = re.compile(
+    r"^[ \t]*#[ \t]*define[ \t]+([A-Za-z_][A-Za-z0-9_]*)[ \t]+([^\n]+)$", re.M
+)
+
 _FIELD_RE = re.compile(
     r"^\s*((?:const\s+|unsigned\s+|signed\s+|struct\s+|enum\s+)*[A-Za-z_][A-Za-z0-9_]*"
     r"(?:\s*\*+\s*|\s+))"
@@ -462,6 +479,16 @@ def parse_header(lib: Library, path: Path, macro_style: str) -> None:
             lib.structs[name] = Struct(name=name, fields=[], is_union=False, complete=False)
         else:
             lib.structs[name] = _parse_struct_body(name, body, False)
+
+    for m in _MACRO_DEF_RE.finditer(text):
+        if _in_spans(m.start(), dead):
+            continue
+        name, value = m.group(1), m.group(2)
+        value = re.sub(r"/\*.*", "", value).strip()  # trailing comment
+        if not value or name.endswith("_") or "deprecated" in name:
+            continue
+        if _MACRO_EXPR_RE.match(value):
+            lib.macro_constants.append(name)
 
     # Plain (non-typedef) enums: "enum nk_buttons { ... };"
     for m in re.finditer(

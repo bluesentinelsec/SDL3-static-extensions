@@ -32,7 +32,8 @@ target_include_directories(SDLStatic_GUI SYSTEM
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
-target_link_libraries(SDLStatic_GUI PUBLIC SDL3::SDL3)
+# SDLStatic_GuiOpenFileButton drives the file dialogs in SDLStatic::Extras.
+target_link_libraries(SDLStatic_GUI PUBLIC SDL3::SDL3 SDLStatic::Extras)
 if(UNIX AND NOT APPLE)
   target_link_libraries(SDLStatic_GUI PRIVATE m)
 endif()

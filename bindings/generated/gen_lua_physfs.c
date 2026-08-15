@@ -1085,6 +1085,18 @@ int SDLStaticGen_OpenLua_physfs(lua_State *L)
     lua_setfield(L, -2, "FILETYPE_SYMLINK");
     lua_pushinteger(L, (lua_Integer)PHYSFS_FILETYPE_OTHER);
     lua_setfield(L, -2, "FILETYPE_OTHER");
+#ifdef PHYSFS_VER_MAJOR
+    lua_pushinteger(L, (lua_Integer)(PHYSFS_VER_MAJOR));
+    lua_setfield(L, -2, "VER_MAJOR");
+#endif
+#ifdef PHYSFS_VER_MINOR
+    lua_pushinteger(L, (lua_Integer)(PHYSFS_VER_MINOR));
+    lua_setfield(L, -2, "VER_MINOR");
+#endif
+#ifdef PHYSFS_VER_PATCH
+    lua_pushinteger(L, (lua_Integer)(PHYSFS_VER_PATCH));
+    lua_setfield(L, -2, "VER_PATCH");
+#endif
     lua_setglobal(L, "PHYSFS");
     return 0;
 }

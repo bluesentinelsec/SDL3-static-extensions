@@ -18,3 +18,12 @@ guard, .rb (runtime compile) + .mrb (bytecode) resolution, VFS-first file
 access; Kernel#puts/print/p without the IO gem. No modifications to
 vendored/generated code. Gotcha: PhysFS rejects "./"-prefixed paths — a "."
 load path resolves to bare names.
+
+No regex engine: mruby has none, and none of its core gems provides one, so
+`Regexp` does not exist in a stock build. Rather than adopt a gem — which
+would force a re-harvest through rake — the class is supplied by
+`bindings/src/sdlstatic_regexp_ruby.c` over `SDLStatic::Regex`
+(Oniguruma, see `oniguruma.md`). mruby's compiler already emits
+`Regexp.compile` for `/re/` literals and global reads for `$1`/`$~`, so
+defining the class is enough; nothing vendored here is patched.
+

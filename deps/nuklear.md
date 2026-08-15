@@ -38,6 +38,28 @@ clicks working if an event loop delivers press+release in one frame.
 
 ## Local modifications to vendored code
 
+**`%.0f` printed only the first digit (found 2026-08-14).** With
+`NK_INCLUDE_STANDARD_IO` off — our configuration — Nuklear formats text
+with its own `nk_vsnprintf`. Its `%f` branch tested
+`frac_len >= cur_precision` before any fraction digit had been consumed,
+which is immediately true when the precision is `0`, so it broke out of
+the copy loop after one character: `nk_labelf("%.0f", 40.0)` rendered
+`4`. Any HUD printing an FPS, coordinate or percentage was silently
+wrong. Fixed locally by copying the whole integer part and then at most
+`cur_precision` fraction digits, and by rounding to the requested
+precision before conversion so `%.0f` of `2.7` is `3` like printf rather
+than `2`. Regression test: `GuiHarness.LabelfFormatsFloatsCorrectly`
+renders the formatted text and the literal it must equal and compares
+the painted pixels.
+
+**`NK_DTOA` routed through SDL.** Upstream documents its built-in
+double-to-string conversion as "imprecise and possibly unsafe (does not
+handle nan or infinity!)". `SDLStatic/nuklear.h` points `NK_DTOA` at
+`SDLStatic_NuklearDtoa`, which uses `SDL_snprintf` and clamps
+non-finite/huge magnitudes, so conversion is accurate and never emits
+exponent form (which the `%f` branch cannot parse).
+
+
 None. Clean under ASan+UBSan.
 
 ## Platform note

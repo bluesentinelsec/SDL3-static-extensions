@@ -81,9 +81,70 @@ calling the explicit destroy function first is also safe (never a
 double-free). Out-parameters become extra return values; structs marshal
 as tables/hashes.
 
+### Constants, not magic numbers
+
+Enum values *and* integer `#define` constants are registered by name with
+the library prefix stripped, so scripts never hardcode numbers:
+
+```lua
+SDL.Init(SDL.INIT_VIDEO)
+SDL.CreateWindow("game", 1280, 720, SDL.WINDOW_FULLSCREEN | SDL.WINDOW_HIGH_PIXEL_DENSITY)
+if SDLStaticC.GuiKeyPressed(gui, SDL.SCANCODE_ESCAPE) then quit() end
+```
+
+```ruby
+SDL.Init(SDL::INIT_VIDEO)
+SDL.CreateWindow('game', 1280, 720, SDL::WINDOW_FULLSCREEN | SDL::WINDOW_HIGH_PIXEL_DENSITY)
+```
+
+Nuklear's constants keep their `NK_` spelling (`NK.NK_WINDOW_TITLE`)
+because its prefix is lowercase `nk_`. Each constant is emitted behind an
+`#ifdef`, so anything a platform doesn't define simply isn't registered.
+
+### The script signature is not always the C signature
+
+Check
+[`SCRIPT_API.md`](https://github.com/bluesentinelsec/SDL3-static-extensions/blob/main/bindings/generated/SCRIPT_API.md)
+— it lists every bound function with the signature the *script* sees.
+Three rules make it differ from C:
+
+- A `(const void *data, size_t len)` pair collapses into **one** string
+  argument, so everything after it shifts left:
+  `SDLStatic_CreateGui(renderer, data, len, font_size)` is
+  `SDLStaticC.CreateGui(renderer, data, font_size)`. Passing a spurious
+  length lands in `font_size` — the call still succeeds, just with the
+  wrong value.
+- Pure out-parameters are not arguments; they come back as extra returns.
+- In/out parameters are passed *and* returned.
+
 Functions that cannot cross a script boundary (callbacks, varargs,
 threading) are skipped **with the reason recorded** in
 [`COVERAGE.md`](https://github.com/bluesentinelsec/SDL3-static-extensions/blob/main/bindings/generated/COVERAGE.md).
+
+## Regular expressions
+
+Neither language brings usable regular expressions of its own: mruby ships
+no engine at all, so `Regexp` simply does not exist in stock mruby, and
+Lua has patterns, which have no alternation, quantified groups or
+lookaround. [`SDLStatic::Regex`](regex.html) supplies one engine for both.
+
+In Ruby it arrives as the real class, so literals, `$1` and `$~` work —
+mruby's compiler already emits code for them, it was only the class that
+was missing:
+
+```ruby
+"on 2026-08-14".match(/(?<year>\d{4})/)["year"]   # => "2026"
+"a1b2".gsub(/\d/) { |d| d.to_i * 2 }              # => "a2b4"
+```
+
+In Lua it is an added `Regex` module; Lua's own patterns are untouched:
+
+```lua
+for m in Regex.new("\\d+"):gmatch("a1b22") do print(m[0]) end
+```
+
+Both are linked in by `SDLStatic::Bindings`, so nothing extra is needed.
+See [Regex](regex.html) for the full surface and its limits.
 
 ## The REPL
 

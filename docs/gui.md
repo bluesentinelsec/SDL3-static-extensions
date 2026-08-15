@@ -74,6 +74,132 @@ while SDLStaticC.GuiPumpEvents(gui) do
 end
 ```
 
+### High-DPI
+
+Create the window with `SDL_WINDOW_HIGH_PIXEL_DENSITY` and the GUI adapts
+automatically: the font is baked at the window's pixel density (so text
+is crisp on Retina rather than half-size) and mouse input is scaled to
+match, so hit-testing lines up. The GUI then lays out in **pixels**;
+`SDLStatic_GuiScale(gui)` returns that density, so multiply your own
+point-based sizes by it to stay density-independent:
+
+```c
+const float s = SDLStatic_GuiScale(gui);          /* 2.0 on Retina */
+nk_layout_row_dynamic(ctx, 46.0f * s, 2);         /* 46pt row */
+```
+
+Windowless (software) renderers stay at 1.0, so headless tests and
+non-Retina displays are unaffected.
+
+### Grid layout from scripts
+
+The full grid helper in `<SDLStatic/gui_grid.h>` takes a caller-owned
+struct and a `const float *` of column weights, neither of which can cross
+a script boundary. A gui-owned mirror does the same job for every language:
+
+```lua
+SDLStaticC.GuiGridWeight(gui, 0, 1.0)   -- label column
+SDLStaticC.GuiGridWeight(gui, 1, 2.0)   -- field column, twice as wide
+SDLStaticC.GuiGridBeginOwned(gui, 2, 46 * scale)
+SDLStaticC.GuiGridCellOwned(gui); NK.label(ctx, "Name:", NK.NK_TEXT_LEFT)
+SDLStaticC.GuiGridCellOwned(gui); NK.button_label(ctx, "Browse")
+SDLStaticC.GuiGridEndOwned(gui)
+```
+
+Weights default to 1 (equal columns) and reset after each grid.
+
+### Images
+
+`SDLStatic_GuiImage(gui, texture, mode)` shows an `SDL_Texture` in the next
+widget slot. Nuklear's own `nk_image` takes a struct whose handle is a
+union — unreachable from a script — and only ever stretches; this takes the
+texture directly and applies a sizing mode:
+
+| Mode | Behaviour |
+|---|---|
+| `SDLSTATIC_GUI_IMAGE_STRETCH` | fills the slot, ignoring aspect ratio |
+| `SDLSTATIC_GUI_IMAGE_ZOOM` | largest fit inside, aspect preserved |
+| `SDLSTATIC_GUI_IMAGE_FILL` | covers the slot, aspect preserved, cropped |
+| `SDLSTATIC_GUI_IMAGE_CENTER` | native size, centred |
+
+```c
+nk_layout_row_dynamic(ctx, 380.0f * scale, 1);
+SDLStatic_GuiImage(gui, texture, SDLSTATIC_GUI_IMAGE_ZOOM);
+```
+
+Load textures with [SDLStatic::Image](image.html) (`IMG_LoadTexture`), or
+from a mounted [VFS](vfs.html) archive. Modes that can overflow the slot are
+scissored to it, so an image never spills onto neighbouring widgets.
+
+### Tooltips
+
+`SDLStatic_GuiTooltip(gui, text)` shows hover text for the **next** widget
+with desktop timing: it appears only after the pointer has rested on that
+widget, and hides again the moment the pointer moves. Nuklear's own
+`nk_tooltip` draws immediately and stays up for as long as the pointer is
+inside the widget, which is not how tooltips behave.
+
+```c
+SDLStatic_GuiTooltip(gui, "Create a new document");
+nk_button_label(ctx, "New");
+```
+
+The dwell defaults to 1000 ms; `SDLStatic_GuiSetTooltipDelay(gui, ms)`
+changes it (0 shows immediately) and `SDLStatic_GuiTooltipDelay` reads it
+back. The call returns true on frames where the tooltip is displayed.
+
+### File buttons that work in every browser
+
+`SDLStatic_ShowOpenFileDialog` is enough on desktop, but on the web a picker
+or a download only opens from inside the *real* click handler. An SDL app
+sees a click one frame later, by which time Safari has withdrawn permission
+— Firefox is laxer, which is why a dialog can appear to work until someone
+tries it in Safari. The fix is to let the browser's own elements take the
+click, so the GUI offers two widgets that are ordinary buttons on desktop
+and transparent DOM overlays on the web:
+
+```c
+/* Open: the picker's result arrives through the usual dialog state machine. */
+SDLStatic_GuiOpenFileButton(gui, "Open", "Text files", "txt");
+if (SDLStatic_DialogStatus() == SDLSTATIC_DIALOG_ACCEPTED) {
+    load(SDLStatic_DialogPath());
+    SDLStatic_DialogReset();
+}
+
+/* Save: pass the document's current bytes every frame — the download link
+   has to hold them before the click, not after it. */
+if (SDLStatic_GuiSaveFileButton(gui, "Save", "untitled.txt", body, len)) {
+    printf("saved to %s\n", SDLStatic_GuiSavedPath(gui));
+}
+```
+
+The save button shows the native save dialog on desktop and writes the file
+itself once a path is chosen, which takes a few frames — keep calling it
+with the same arguments until it returns true. On the web the bytes are
+re-blobbed only when they change, so serialising each frame is cheap.
+
+Two consequences of the overlay: the browser click never reaches Nuklear, so
+these buttons do not show hover or press shading on the web, and one of each
+is supported at a time — enough for a File menu, and all a modal picker can
+be. The overlay is hidden automatically on any frame that does not draw the
+button, so it never swallows clicks meant for other widgets.
+
+### Keyboard and theming from scripts
+
+`SDLStatic_GuiKeyPressed(gui, SDL_SCANCODE_ESCAPE)` reports keys seen
+during the last pump — SDL's keyboard-state API returns a raw array that
+cannot cross a binding boundary, so this is how scripts implement
+"Escape quits". `SDLStatic_GuiPushStyleColor` / `PopStyleColor` theme the
+window background, text, buttons and header for the same reason:
+Nuklear's own style stack takes union-typed style items.
+
+```lua
+SDLStaticC.GuiPushStyleColor(gui, SDLStaticC.SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND,
+                             {r = 28, g = 30, b = 38, a = 255})
+-- ...build the window...
+SDLStaticC.GuiPopStyleColor(gui, 1)
+```
+
 `GuiPumpEvents` exists because `SDL_Event` is a union and cannot cross a
 script boundary — it is the supported way to feed input to the GUI from
 Lua and Ruby. Three idioms to know: `nk_bool` crosses as a real boolean

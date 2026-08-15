@@ -16,6 +16,8 @@ add_library(SDLStatic_Extras STATIC
   src/sdlstatic_compress.c
   src/sdlstatic_base64.c
   src/sdlstatic_signals.c
+  src/sdlstatic_dialog.c
+  src/sdlstatic_textfile.c
 )
 add_library(SDLStatic::Extras ALIAS SDLStatic_Extras)
 

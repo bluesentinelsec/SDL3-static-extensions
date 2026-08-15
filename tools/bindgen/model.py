@@ -86,6 +86,7 @@ class Library:
     opaque: set[str] = field(default_factory=set)  # forward-declared structs
     typedef_aliases: dict[str, str] = field(default_factory=dict)
     header_names: list[str] = field(default_factory=list)  # parsed files
+    macro_constants: list[str] = field(default_factory=list)  # #define ints
 
 
 @dataclass

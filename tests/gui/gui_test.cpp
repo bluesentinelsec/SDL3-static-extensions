@@ -457,4 +457,410 @@ TEST_F(GuiHarness, PumpEventsDrainsQueueAndReportsQuit)
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
 }
 
+// Key queries: what lets scripts implement "Escape quits" (SDL's keyboard
+// state API cannot cross the binding boundary).
+TEST_F(GuiHarness, KeyPressedReportsThisFramesKeys)
+{
+    ASSERT_TRUE(SDL_InitSubSystem(SDL_INIT_EVENTS)) << SDL_GetError();
+
+    SDL_Event key;
+    SDL_zero(key);
+    key.type = SDL_EVENT_KEY_DOWN;
+    key.key.scancode = SDL_SCANCODE_ESCAPE;
+    ASSERT_TRUE(SDL_PushEvent(&key));
+    EXPECT_TRUE(SDLStatic_GuiPumpEvents(gui_));
+    EXPECT_TRUE(SDLStatic_GuiKeyPressed(gui_, SDL_SCANCODE_ESCAPE));
+    EXPECT_FALSE(SDLStatic_GuiKeyPressed(gui_, SDL_SCANCODE_A)) << "only keys seen";
+
+    // The set is per-frame: a pump with no keys clears it.
+    EXPECT_TRUE(SDLStatic_GuiPumpEvents(gui_));
+    EXPECT_FALSE(SDLStatic_GuiKeyPressed(gui_, SDL_SCANCODE_ESCAPE));
+
+    // Out-of-range and null are safe.
+    EXPECT_FALSE(SDLStatic_GuiKeyPressed(gui_, -1));
+    EXPECT_FALSE(SDLStatic_GuiKeyPressed(gui_, 999999));
+    EXPECT_FALSE(SDLStatic_GuiKeyPressed(nullptr, SDL_SCANCODE_ESCAPE));
+
+    SDL_QuitSubSystem(SDL_INIT_EVENTS);
+}
+
+// Theming: Nuklear's own style stack takes union-typed items, so this is
+// the entry point Lua and Ruby can reach.
+TEST_F(GuiHarness, StyleColorPushPopRestoresTheme)
+{
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+    const struct nk_color before = ctx->style.window.fixed_background.data.color;
+    const struct nk_color text_before = ctx->style.text.color;
+
+    ASSERT_TRUE(SDLStatic_GuiPushStyleColor(
+        gui_, SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND, SDL_Color{10, 20, 30, 255}));
+    ASSERT_TRUE(SDLStatic_GuiPushStyleColor(gui_, SDLSTATIC_GUI_COLOR_TEXT,
+                                            SDL_Color{1, 2, 3, 255}));
+    EXPECT_EQ(ctx->style.window.fixed_background.data.color.r, 10);
+    EXPECT_EQ(ctx->style.text.color.g, 2) << "plain-colour stack too";
+
+    // Pops unwind both stacks in LIFO order, whichever kind each push used.
+    SDLStatic_GuiPopStyleColor(gui_, 2);
+    EXPECT_EQ(ctx->style.window.fixed_background.data.color.r, before.r);
+    EXPECT_EQ(ctx->style.text.color.g, text_before.g);
+
+    // Over-popping and null are safe no-ops.
+    SDLStatic_GuiPopStyleColor(gui_, 5);
+    SDLStatic_GuiPopStyleColor(nullptr, 1);
+    EXPECT_FALSE(SDLStatic_GuiPushStyleColor(nullptr, SDLSTATIC_GUI_COLOR_BUTTON,
+                                             SDL_Color{0, 0, 0, 255}));
+}
+
+// Runtime font sizing: Nuklear cannot add glyphs after the atlas is baked,
+// so the sizes are baked up front and selected here.
+TEST_F(GuiHarness, FontSizesAreSelectableAtRuntime)
+{
+    const float normal = SDLStatic_GuiFontHeight(gui_);
+    EXPECT_GT(normal, 0.0f);
+
+    ASSERT_TRUE(SDLStatic_GuiSetFont(gui_, SDLSTATIC_GUI_FONT_LARGE));
+    const float large = SDLStatic_GuiFontHeight(gui_);
+    EXPECT_GT(large, normal);
+
+    ASSERT_TRUE(SDLStatic_GuiSetFont(gui_, SDLSTATIC_GUI_FONT_SMALL));
+    EXPECT_LT(SDLStatic_GuiFontHeight(gui_), normal);
+
+    ASSERT_TRUE(SDLStatic_GuiSetFont(gui_, SDLSTATIC_GUI_FONT_NORMAL));
+    EXPECT_FLOAT_EQ(SDLStatic_GuiFontHeight(gui_), normal);
+
+    // Scoped push/pop restores the previous font.
+    ASSERT_TRUE(SDLStatic_GuiPushFont(gui_, SDLSTATIC_GUI_FONT_LARGE));
+    EXPECT_FLOAT_EQ(SDLStatic_GuiFontHeight(gui_), large);
+    SDLStatic_GuiPopFont(gui_, 1);
+    EXPECT_FLOAT_EQ(SDLStatic_GuiFontHeight(gui_), normal);
+
+    // Text actually measures wider with a bigger font (glyphs really differ).
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+    const char *sample = "Button 1 was clicked.";
+    const int len = static_cast<int>(SDL_strlen(sample));
+    const float w_normal = ctx->style.font->width(ctx->style.font->userdata,
+                                                  ctx->style.font->height, sample, len);
+    ASSERT_TRUE(SDLStatic_GuiSetFont(gui_, SDLSTATIC_GUI_FONT_LARGE));
+    const float w_large = ctx->style.font->width(ctx->style.font->userdata,
+                                                 ctx->style.font->height, sample, len);
+    EXPECT_GT(w_large, w_normal);
+    ASSERT_TRUE(SDLStatic_GuiSetFont(gui_, SDLSTATIC_GUI_FONT_NORMAL));
+
+    // Bad input and over-pop are safe.
+    // 3 is one past LARGE and still inside the enum's value range, so the
+    // cast is well defined — GCC rejects casting a far-out value like 99 to
+    // a three-value enum under -Wconversion.
+    EXPECT_FALSE(SDLStatic_GuiSetFont(gui_, static_cast<SDLStatic_GuiFontSize>(3)));
+    EXPECT_FALSE(SDLStatic_GuiSetFont(nullptr, SDLSTATIC_GUI_FONT_NORMAL));
+    EXPECT_FALSE(SDLStatic_GuiPushFont(nullptr, SDLSTATIC_GUI_FONT_LARGE));
+    SDLStatic_GuiPopFont(gui_, 5);
+    SDLStatic_GuiPopFont(nullptr, 1);
+    EXPECT_FLOAT_EQ(SDLStatic_GuiFontHeight(gui_), normal);
+    EXPECT_FLOAT_EQ(SDLStatic_GuiFontHeight(nullptr), 0.0f);
+}
+
+// nk_labelf float formatting. Nuklear's built-in printf (used because
+// NK_INCLUDE_STANDARD_IO is off) emitted only the first character for a
+// precision of 0: "%.0f" of 40.0 rendered as "4". Compared black-box by
+// rendering the formatted text beside the literal it must equal.
+TEST_F(GuiHarness, LabelfFormatsFloatsCorrectly)
+{
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+
+    auto render_text = [&](bool formatted, double value, const char *literal) {
+        SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
+        SDL_RenderClear(renderer_);
+        SDLStatic_GuiInputBegin(gui_);
+        SDLStatic_GuiInputEnd(gui_);
+        if (nk_begin(ctx, "fmt", nk_rect(0, 0, kScreen, kScreen), 0))
+        {
+            nk_layout_row_dynamic(ctx, 30, 1);
+            if (formatted)
+            {
+                nk_labelf(ctx, NK_TEXT_LEFT, "%.0f", value);
+            }
+            else
+            {
+                nk_label(ctx, literal, NK_TEXT_LEFT);
+            }
+        }
+        nk_end(ctx);
+        SDLStatic_GuiRender(gui_);
+        SDL_FlushRenderer(renderer_);
+        int lit = 0;
+        for (int y = 0; y < kScreen; y++)
+        {
+            for (int x = 0; x < kScreen; x++)
+            {
+                Uint8 r = 0, g = 0, b = 0, a = 0;
+                SDL_ReadSurfacePixel(surface_, x, y, &r, &g, &b, &a);
+                if (r > 40 || g > 40 || b > 40)
+                {
+                    lit++;
+                }
+            }
+        }
+        return lit;
+    };
+
+    // "%.0f" of 40.0 must paint exactly what "40" paints.
+    EXPECT_EQ(render_text(true, 40.0, nullptr), render_text(false, 0, "40"));
+    // Rounds like printf rather than truncating.
+    EXPECT_EQ(render_text(true, 2.7, nullptr), render_text(false, 0, "3"));
+    // Precision beyond zero still works.
+    EXPECT_GT(render_text(true, 1.5, nullptr), 0);
+}
+
+// Image widget: Nuklear's nk_image takes a union-handle struct that cannot
+// cross a script boundary, so the library takes an SDL_Texture directly and
+// applies the PictureBox-style sizing modes itself.
+TEST_F(GuiHarness, ImageWidgetHonoursSizingModes)
+{
+    // A 40x20 texture (2:1) drawn into a square slot: Stretch fills it,
+    // Zoom leaves letterbox bars, Fill covers it.
+    SDL_Surface *pixels = SDL_CreateSurface(40, 20, SDL_PIXELFORMAT_RGBA32);
+    ASSERT_NE(pixels, nullptr);
+    SDL_FillSurfaceRect(pixels, nullptr, SDL_MapSurfaceRGBA(pixels, 255, 0, 0, 255));
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer_, pixels);
+    ASSERT_NE(texture, nullptr) << SDL_GetError();
+    SDL_DestroySurface(pixels);
+
+    auto painted = [&](SDLStatic_GuiImageMode mode) {
+        SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
+        SDL_RenderClear(renderer_);
+        SDLStatic_GuiInputBegin(gui_);
+        SDLStatic_GuiInputEnd(gui_);
+        struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+        if (nk_begin(ctx, "img", nk_rect(0, 0, kScreen, kScreen), 0))
+        {
+            nk_layout_row_static(ctx, 100, 100, 1);  // square 100x100 slot
+            EXPECT_TRUE(SDLStatic_GuiImage(gui_, texture, mode));
+        }
+        nk_end(ctx);
+        SDLStatic_GuiRender(gui_);
+        SDL_FlushRenderer(renderer_);
+        int red = 0;
+        for (int y = 0; y < kScreen; y++)
+        {
+            for (int x = 0; x < kScreen; x++)
+            {
+                Uint8 r = 0, g = 0, b = 0, a = 0;
+                SDL_ReadSurfacePixel(surface_, x, y, &r, &g, &b, &a);
+                if (r > 150 && g < 100)
+                {
+                    red++;
+                }
+            }
+        }
+        return red;
+    };
+
+    const int stretch = painted(SDLSTATIC_GUI_IMAGE_STRETCH);
+    const int zoom = painted(SDLSTATIC_GUI_IMAGE_ZOOM);
+    const int fill = painted(SDLSTATIC_GUI_IMAGE_FILL);
+    const int center = painted(SDLSTATIC_GUI_IMAGE_CENTER);
+
+    EXPECT_GT(stretch, 0) << "stretch must paint the whole slot";
+    // 2:1 source zoomed into a square slot covers about half of it.
+    EXPECT_LT(zoom, stretch);
+    EXPECT_NEAR(static_cast<double>(zoom) / stretch, 0.5, 0.15);
+    // Fill covers the slot but is clipped to it, so it matches stretch's area.
+    EXPECT_NEAR(static_cast<double>(fill) / stretch, 1.0, 0.15);
+    // Native 40x20 centred is much smaller than the 100x100 slot.
+    EXPECT_LT(center, zoom);
+
+    EXPECT_FALSE(SDLStatic_GuiImage(nullptr, texture, SDLSTATIC_GUI_IMAGE_ZOOM));
+    EXPECT_FALSE(SDLStatic_GuiImage(gui_, nullptr, SDLSTATIC_GUI_IMAGE_ZOOM));
+    SDL_DestroyTexture(texture);
+}
+
+// The gui-owned grid: same layout as the caller-owned helper, but reachable
+// from scripts (which cannot hold a struct or pass a float array).
+TEST_F(GuiHarness, OwnedGridMatchesCallerOwnedGrid)
+{
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+
+    auto widths = [&](bool owned) {
+        std::vector<float> out;
+        SDLStatic_GuiInputBegin(gui_);
+        SDLStatic_GuiInputEnd(gui_);
+        if (nk_begin(ctx, "grid", nk_rect(0, 0, 300, 200), 0))
+        {
+            static const float weights[] = {1.0f, 2.0f, 1.0f};
+            SDLStatic_GuiGrid caller_grid;
+            if (owned)
+            {
+                SDLStatic_GuiGridWeight(gui_, 0, 1.0f);
+                SDLStatic_GuiGridWeight(gui_, 1, 2.0f);
+                SDLStatic_GuiGridWeight(gui_, 2, 1.0f);
+                SDLStatic_GuiGridBeginOwned(gui_, 3, 24.0f);
+            }
+            else
+            {
+                SDLStatic_GuiGridBegin(ctx, &caller_grid, 3, weights, 24.0f);
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                if (owned)
+                {
+                    SDLStatic_GuiGridCellOwned(gui_);
+                }
+                else
+                {
+                    SDLStatic_GuiGridCell(&caller_grid);
+                }
+                struct nk_rect bounds = nk_widget_bounds(ctx);
+                out.push_back(bounds.w);
+                nk_label(ctx, "x", NK_TEXT_LEFT);
+            }
+            if (owned)
+            {
+                SDLStatic_GuiGridEndOwned(gui_);
+            }
+            else
+            {
+                SDLStatic_GuiGridEnd(&caller_grid);
+            }
+        }
+        nk_end(ctx);
+        SDLStatic_GuiRender(gui_);  // ends the frame (nk_clear)
+        return out;
+    };
+
+    const std::vector<float> caller = widths(false);
+    const std::vector<float> owned = widths(true);
+    ASSERT_EQ(caller.size(), 3u);
+    ASSERT_EQ(owned.size(), 3u);
+    for (size_t i = 0; i < caller.size(); i++)
+    {
+        EXPECT_NEAR(owned[i], caller[i], 0.5f) << "column " << i;
+    }
+    // The middle column carries weight 2, so it is about twice as wide.
+    EXPECT_NEAR(owned[1] / owned[0], 2.0, 0.15);
+
+    // Weights reset between grids: the next one is equal-width.
+    SDLStatic_GuiInputBegin(gui_);
+    SDLStatic_GuiInputEnd(gui_);
+    std::vector<float> equal;
+    if (nk_begin(ctx, "grid2", nk_rect(0, 0, 300, 200), 0))
+    {
+        SDLStatic_GuiGridBeginOwned(gui_, 3, 24.0f);
+        for (int i = 0; i < 3; i++)
+        {
+            SDLStatic_GuiGridCellOwned(gui_);
+            equal.push_back(nk_widget_bounds(ctx).w);
+            nk_label(ctx, "x", NK_TEXT_LEFT);
+        }
+        SDLStatic_GuiGridEndOwned(gui_);
+    }
+    nk_end(ctx);
+    SDLStatic_GuiRender(gui_);
+    ASSERT_EQ(equal.size(), 3u);
+    EXPECT_NEAR(equal[1] / equal[0], 1.0, 0.05);
+
+    EXPECT_FALSE(SDLStatic_GuiGridWeight(nullptr, 0, 1.0f));
+    EXPECT_FALSE(SDLStatic_GuiGridWeight(gui_, -1, 1.0f));
+    EXPECT_FALSE(SDLStatic_GuiGridBeginOwned(nullptr, 2, 20.0f));
+    SDLStatic_GuiGridEndOwned(nullptr);  // safe no-op
+}
+
+// Tooltip timing: Nuklear's nk_tooltip draws immediately and stays up as
+// long as the pointer is inside the widget. SDLStatic_GuiTooltip adds the
+// desktop behaviour — appear after a dwell, hide as soon as the pointer
+// moves.
+TEST_F(GuiHarness, TooltipWaitsForHoverDwellAndHidesOnMotion)
+{
+    ASSERT_TRUE(SDL_InitSubSystem(SDL_INIT_EVENTS)) << SDL_GetError();
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+
+    // Drive one frame with the pointer at (x, y); returns whether the
+    // tooltip was displayed for the button occupying the top-left row.
+    auto frame_at = [&](float x, float y) {
+        SDL_Event motion;
+        SDL_zero(motion);
+        motion.type = SDL_EVENT_MOUSE_MOTION;
+        motion.motion.x = x;
+        motion.motion.y = y;
+        SDL_PushEvent(&motion);
+        SDLStatic_GuiPumpEvents(gui_);
+
+        bool shown = false;
+        if (nk_begin(ctx, "tips", nk_rect(0, 0, 200, 120), 0))
+        {
+            nk_layout_row_dynamic(ctx, 40, 1);
+            shown = SDLStatic_GuiTooltip(gui_, "hover text");
+            nk_button_label(ctx, "Hover me");
+        }
+        nk_end(ctx);
+        SDLStatic_GuiRender(gui_);  // ends the frame
+        return shown;
+    };
+
+    EXPECT_EQ(SDLStatic_GuiTooltipDelay(gui_), 1000) << "desktop-style default";
+
+    // Pointer away from the widget: never shown.
+    EXPECT_FALSE(frame_at(180.0f, 110.0f));
+
+    // Arrive on the widget: the dwell has only just started, so not yet.
+    EXPECT_FALSE(frame_at(50.0f, 30.0f));
+    EXPECT_FALSE(frame_at(50.0f, 30.0f)) << "still counting down";
+
+    // With no delay it appears as soon as the pointer is resting.
+    SDLStatic_GuiSetTooltipDelay(gui_, 0);
+    EXPECT_TRUE(frame_at(50.0f, 30.0f));
+
+    // Moving the pointer re-arms it, even within the same widget.
+    EXPECT_FALSE(frame_at(70.0f, 34.0f)) << "motion hides the tooltip";
+    EXPECT_TRUE(frame_at(70.0f, 34.0f)) << "resting again shows it";
+
+    // A long delay keeps it hidden no matter how many frames pass.
+    SDLStatic_GuiSetTooltipDelay(gui_, 60000);
+    EXPECT_FALSE(frame_at(90.0f, 34.0f));
+    for (int i = 0; i < 5; i++)
+    {
+        EXPECT_FALSE(frame_at(90.0f, 34.0f));
+    }
+
+    SDLStatic_GuiSetTooltipDelay(gui_, -5);
+    EXPECT_EQ(SDLStatic_GuiTooltipDelay(gui_), 0) << "negative clamps to 0";
+    EXPECT_FALSE(SDLStatic_GuiTooltip(nullptr, "x"));
+    EXPECT_FALSE(SDLStatic_GuiTooltip(gui_, nullptr));
+    SDLStatic_GuiSetTooltipDelay(nullptr, 100);  // safe no-op
+
+    SDL_QuitSubSystem(SDL_INIT_EVENTS);
+}
+
+// A windowless (software) renderer stays at 1.0 so headless tests and
+// non-Retina displays are unaffected by the high-DPI path.
+TEST_F(GuiHarness, ScaleDefaultsToOneWithoutAWindow)
+{
+    EXPECT_FLOAT_EQ(SDLStatic_GuiScale(gui_), 1.0f);
+    EXPECT_FLOAT_EQ(SDLStatic_GuiScale(nullptr), 1.0f);
+}
+
+// The file buttons are ordinary buttons on desktop: nothing happens until
+// they are clicked, and a save reports nowhere until one completes. (The
+// browser halves are DOM overlays and are exercised in a real engine.)
+TEST_F(GuiHarness, FileButtonsAreInertUntilClicked)
+{
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+    BeginFrame();
+    if (nk_begin(ctx, "files", nk_rect(10, 10, 300, 200), NK_WINDOW_NO_SCROLLBAR))
+    {
+        nk_layout_row_dynamic(ctx, 30.0f, 1);
+        EXPECT_FALSE(SDLStatic_GuiOpenFileButton(gui_, "Open", "Text files", "txt"));
+        EXPECT_FALSE(SDLStatic_GuiSaveFileButton(gui_, "Save", "untitled.txt", "hi", 2));
+    }
+    nk_end(ctx);
+    EXPECT_TRUE(SDLStatic_GuiRender(gui_));
+    EXPECT_EQ(SDLStatic_GuiSavedPath(gui_), nullptr) << "nothing has been saved";
+    EXPECT_EQ(SDLStatic_GuiSavedPath(nullptr), nullptr);
+
+    EXPECT_FALSE(SDLStatic_GuiOpenFileButton(nullptr, "Open", nullptr, nullptr));
+    EXPECT_FALSE(SDLStatic_GuiOpenFileButton(gui_, nullptr, nullptr, nullptr));
+    EXPECT_FALSE(SDLStatic_GuiSaveFileButton(gui_, "Save", nullptr, "hi", 2));
+    EXPECT_FALSE(SDLStatic_GuiSaveFileButton(gui_, "Save", "f.txt", nullptr, 4))
+        << "a null buffer with a non-zero length is a caller bug";
+}
+
 } // namespace

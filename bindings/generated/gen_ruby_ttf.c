@@ -2003,4 +2003,64 @@ void SDLStaticGen_OpenRuby_ttf(mrb_state *mrb)
     mrb_define_const(mrb, mod, "IMAGE_ALPHA", mrb_int_value(mrb, (mrb_int)TTF_IMAGE_ALPHA));
     mrb_define_const(mrb, mod, "IMAGE_COLOR", mrb_int_value(mrb, (mrb_int)TTF_IMAGE_COLOR));
     mrb_define_const(mrb, mod, "IMAGE_SDF", mrb_int_value(mrb, (mrb_int)TTF_IMAGE_SDF));
+#ifdef TTF_STYLE_NORMAL
+    mrb_define_const(mrb, mod, "STYLE_NORMAL", mrb_int_value(mrb, (mrb_int)(TTF_STYLE_NORMAL)));
+#endif
+#ifdef TTF_STYLE_BOLD
+    mrb_define_const(mrb, mod, "STYLE_BOLD", mrb_int_value(mrb, (mrb_int)(TTF_STYLE_BOLD)));
+#endif
+#ifdef TTF_STYLE_ITALIC
+    mrb_define_const(mrb, mod, "STYLE_ITALIC", mrb_int_value(mrb, (mrb_int)(TTF_STYLE_ITALIC)));
+#endif
+#ifdef TTF_STYLE_UNDERLINE
+    mrb_define_const(mrb, mod, "STYLE_UNDERLINE", mrb_int_value(mrb, (mrb_int)(TTF_STYLE_UNDERLINE)));
+#endif
+#ifdef TTF_STYLE_STRIKETHROUGH
+    mrb_define_const(mrb, mod, "STYLE_STRIKETHROUGH", mrb_int_value(mrb, (mrb_int)(TTF_STYLE_STRIKETHROUGH)));
+#endif
+#ifdef TTF_FONT_WEIGHT_THIN
+    mrb_define_const(mrb, mod, "FONT_WEIGHT_THIN", mrb_int_value(mrb, (mrb_int)(TTF_FONT_WEIGHT_THIN)));
+#endif
+#ifdef TTF_FONT_WEIGHT_EXTRA_LIGHT
+    mrb_define_const(mrb, mod, "FONT_WEIGHT_EXTRA_LIGHT", mrb_int_value(mrb, (mrb_int)(TTF_FONT_WEIGHT_EXTRA_LIGHT)));
+#endif
+#ifdef TTF_FONT_WEIGHT_LIGHT
+    mrb_define_const(mrb, mod, "FONT_WEIGHT_LIGHT", mrb_int_value(mrb, (mrb_int)(TTF_FONT_WEIGHT_LIGHT)));
+#endif
+#ifdef TTF_FONT_WEIGHT_NORMAL
+    mrb_define_const(mrb, mod, "FONT_WEIGHT_NORMAL", mrb_int_value(mrb, (mrb_int)(TTF_FONT_WEIGHT_NORMAL)));
+#endif
+#ifdef TTF_FONT_WEIGHT_MEDIUM
+    mrb_define_const(mrb, mod, "FONT_WEIGHT_MEDIUM", mrb_int_value(mrb, (mrb_int)(TTF_FONT_WEIGHT_MEDIUM)));
+#endif
+#ifdef TTF_FONT_WEIGHT_SEMI_BOLD
+    mrb_define_const(mrb, mod, "FONT_WEIGHT_SEMI_BOLD", mrb_int_value(mrb, (mrb_int)(TTF_FONT_WEIGHT_SEMI_BOLD)));
+#endif
+#ifdef TTF_FONT_WEIGHT_BOLD
+    mrb_define_const(mrb, mod, "FONT_WEIGHT_BOLD", mrb_int_value(mrb, (mrb_int)(TTF_FONT_WEIGHT_BOLD)));
+#endif
+#ifdef TTF_FONT_WEIGHT_EXTRA_BOLD
+    mrb_define_const(mrb, mod, "FONT_WEIGHT_EXTRA_BOLD", mrb_int_value(mrb, (mrb_int)(TTF_FONT_WEIGHT_EXTRA_BOLD)));
+#endif
+#ifdef TTF_FONT_WEIGHT_BLACK
+    mrb_define_const(mrb, mod, "FONT_WEIGHT_BLACK", mrb_int_value(mrb, (mrb_int)(TTF_FONT_WEIGHT_BLACK)));
+#endif
+#ifdef TTF_FONT_WEIGHT_EXTRA_BLACK
+    mrb_define_const(mrb, mod, "FONT_WEIGHT_EXTRA_BLACK", mrb_int_value(mrb, (mrb_int)(TTF_FONT_WEIGHT_EXTRA_BLACK)));
+#endif
+#ifdef TTF_SUBSTRING_DIRECTION_MASK
+    mrb_define_const(mrb, mod, "SUBSTRING_DIRECTION_MASK", mrb_int_value(mrb, (mrb_int)(TTF_SUBSTRING_DIRECTION_MASK)));
+#endif
+#ifdef TTF_SUBSTRING_TEXT_START
+    mrb_define_const(mrb, mod, "SUBSTRING_TEXT_START", mrb_int_value(mrb, (mrb_int)(TTF_SUBSTRING_TEXT_START)));
+#endif
+#ifdef TTF_SUBSTRING_LINE_START
+    mrb_define_const(mrb, mod, "SUBSTRING_LINE_START", mrb_int_value(mrb, (mrb_int)(TTF_SUBSTRING_LINE_START)));
+#endif
+#ifdef TTF_SUBSTRING_LINE_END
+    mrb_define_const(mrb, mod, "SUBSTRING_LINE_END", mrb_int_value(mrb, (mrb_int)(TTF_SUBSTRING_LINE_END)));
+#endif
+#ifdef TTF_SUBSTRING_TEXT_END
+    mrb_define_const(mrb, mod, "SUBSTRING_TEXT_END", mrb_int_value(mrb, (mrb_int)(TTF_SUBSTRING_TEXT_END)));
+#endif
 }

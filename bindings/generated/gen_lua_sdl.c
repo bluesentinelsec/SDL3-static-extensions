@@ -13607,6 +13607,730 @@ int SDLStaticGen_OpenLua_sdl(lua_State *L)
     lua_setfield(L, -2, "HID_API_BUS_I2C");
     lua_pushinteger(L, (lua_Integer)SDL_HID_API_BUS_SPI);
     lua_setfield(L, -2, "HID_API_BUS_SPI");
+#ifdef SDL_ASSERT_LEVEL
+    lua_pushinteger(L, (lua_Integer)(SDL_ASSERT_LEVEL));
+    lua_setfield(L, -2, "ASSERT_LEVEL");
+#endif
+#ifdef SDL_NULL_WHILE_LOOP_CONDITION
+    lua_pushinteger(L, (lua_Integer)(SDL_NULL_WHILE_LOOP_CONDITION));
+    lua_setfield(L, -2, "NULL_WHILE_LOOP_CONDITION");
+#endif
+#ifdef SDL_AUDIO_MASK_BITSIZE
+    lua_pushinteger(L, (lua_Integer)(SDL_AUDIO_MASK_BITSIZE));
+    lua_setfield(L, -2, "AUDIO_MASK_BITSIZE");
+#endif
+#ifdef SDL_AUDIO_MASK_FLOAT
+    lua_pushinteger(L, (lua_Integer)(SDL_AUDIO_MASK_FLOAT));
+    lua_setfield(L, -2, "AUDIO_MASK_FLOAT");
+#endif
+#ifdef SDL_AUDIO_MASK_BIG_ENDIAN
+    lua_pushinteger(L, (lua_Integer)(SDL_AUDIO_MASK_BIG_ENDIAN));
+    lua_setfield(L, -2, "AUDIO_MASK_BIG_ENDIAN");
+#endif
+#ifdef SDL_AUDIO_MASK_SIGNED
+    lua_pushinteger(L, (lua_Integer)(SDL_AUDIO_MASK_SIGNED));
+    lua_setfield(L, -2, "AUDIO_MASK_SIGNED");
+#endif
+#ifdef SDL_BLENDMODE_NONE
+    lua_pushinteger(L, (lua_Integer)(SDL_BLENDMODE_NONE));
+    lua_setfield(L, -2, "BLENDMODE_NONE");
+#endif
+#ifdef SDL_BLENDMODE_BLEND
+    lua_pushinteger(L, (lua_Integer)(SDL_BLENDMODE_BLEND));
+    lua_setfield(L, -2, "BLENDMODE_BLEND");
+#endif
+#ifdef SDL_BLENDMODE_BLEND_PREMULTIPLIED
+    lua_pushinteger(L, (lua_Integer)(SDL_BLENDMODE_BLEND_PREMULTIPLIED));
+    lua_setfield(L, -2, "BLENDMODE_BLEND_PREMULTIPLIED");
+#endif
+#ifdef SDL_BLENDMODE_ADD
+    lua_pushinteger(L, (lua_Integer)(SDL_BLENDMODE_ADD));
+    lua_setfield(L, -2, "BLENDMODE_ADD");
+#endif
+#ifdef SDL_BLENDMODE_ADD_PREMULTIPLIED
+    lua_pushinteger(L, (lua_Integer)(SDL_BLENDMODE_ADD_PREMULTIPLIED));
+    lua_setfield(L, -2, "BLENDMODE_ADD_PREMULTIPLIED");
+#endif
+#ifdef SDL_BLENDMODE_MOD
+    lua_pushinteger(L, (lua_Integer)(SDL_BLENDMODE_MOD));
+    lua_setfield(L, -2, "BLENDMODE_MOD");
+#endif
+#ifdef SDL_BLENDMODE_MUL
+    lua_pushinteger(L, (lua_Integer)(SDL_BLENDMODE_MUL));
+    lua_setfield(L, -2, "BLENDMODE_MUL");
+#endif
+#ifdef SDL_BLENDMODE_INVALID
+    lua_pushinteger(L, (lua_Integer)(SDL_BLENDMODE_INVALID));
+    lua_setfield(L, -2, "BLENDMODE_INVALID");
+#endif
+#ifdef SDL_CACHELINE_SIZE
+    lua_pushinteger(L, (lua_Integer)(SDL_CACHELINE_SIZE));
+    lua_setfield(L, -2, "CACHELINE_SIZE");
+#endif
+#ifdef SDL_ELF_NOTE_DLOPEN_TYPE
+    lua_pushinteger(L, (lua_Integer)(SDL_ELF_NOTE_DLOPEN_TYPE));
+    lua_setfield(L, -2, "ELF_NOTE_DLOPEN_TYPE");
+#endif
+#ifdef SDL_LIL_ENDIAN
+    lua_pushinteger(L, (lua_Integer)(SDL_LIL_ENDIAN));
+    lua_setfield(L, -2, "LIL_ENDIAN");
+#endif
+#ifdef SDL_BIG_ENDIAN
+    lua_pushinteger(L, (lua_Integer)(SDL_BIG_ENDIAN));
+    lua_setfield(L, -2, "BIG_ENDIAN");
+#endif
+#ifdef SDL_GLOB_CASEINSENSITIVE
+    lua_pushinteger(L, (lua_Integer)(SDL_GLOB_CASEINSENSITIVE));
+    lua_setfield(L, -2, "GLOB_CASEINSENSITIVE");
+#endif
+#ifdef SDL_GPU_TEXTUREUSAGE_SAMPLER
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_TEXTUREUSAGE_SAMPLER));
+    lua_setfield(L, -2, "GPU_TEXTUREUSAGE_SAMPLER");
+#endif
+#ifdef SDL_GPU_TEXTUREUSAGE_COLOR_TARGET
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_TEXTUREUSAGE_COLOR_TARGET));
+    lua_setfield(L, -2, "GPU_TEXTUREUSAGE_COLOR_TARGET");
+#endif
+#ifdef SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET));
+    lua_setfield(L, -2, "GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET");
+#endif
+#ifdef SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ));
+    lua_setfield(L, -2, "GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ");
+#endif
+#ifdef SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ));
+    lua_setfield(L, -2, "GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ");
+#endif
+#ifdef SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE));
+    lua_setfield(L, -2, "GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE");
+#endif
+#ifdef SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE));
+    lua_setfield(L, -2, "GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE");
+#endif
+#ifdef SDL_GPU_BUFFERUSAGE_VERTEX
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_BUFFERUSAGE_VERTEX));
+    lua_setfield(L, -2, "GPU_BUFFERUSAGE_VERTEX");
+#endif
+#ifdef SDL_GPU_BUFFERUSAGE_INDEX
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_BUFFERUSAGE_INDEX));
+    lua_setfield(L, -2, "GPU_BUFFERUSAGE_INDEX");
+#endif
+#ifdef SDL_GPU_BUFFERUSAGE_INDIRECT
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_BUFFERUSAGE_INDIRECT));
+    lua_setfield(L, -2, "GPU_BUFFERUSAGE_INDIRECT");
+#endif
+#ifdef SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ));
+    lua_setfield(L, -2, "GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ");
+#endif
+#ifdef SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ));
+    lua_setfield(L, -2, "GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ");
+#endif
+#ifdef SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE));
+    lua_setfield(L, -2, "GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE");
+#endif
+#ifdef SDL_GPU_SHADERFORMAT_INVALID
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_SHADERFORMAT_INVALID));
+    lua_setfield(L, -2, "GPU_SHADERFORMAT_INVALID");
+#endif
+#ifdef SDL_GPU_SHADERFORMAT_PRIVATE
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_SHADERFORMAT_PRIVATE));
+    lua_setfield(L, -2, "GPU_SHADERFORMAT_PRIVATE");
+#endif
+#ifdef SDL_GPU_SHADERFORMAT_SPIRV
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_SHADERFORMAT_SPIRV));
+    lua_setfield(L, -2, "GPU_SHADERFORMAT_SPIRV");
+#endif
+#ifdef SDL_GPU_SHADERFORMAT_DXBC
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_SHADERFORMAT_DXBC));
+    lua_setfield(L, -2, "GPU_SHADERFORMAT_DXBC");
+#endif
+#ifdef SDL_GPU_SHADERFORMAT_DXIL
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_SHADERFORMAT_DXIL));
+    lua_setfield(L, -2, "GPU_SHADERFORMAT_DXIL");
+#endif
+#ifdef SDL_GPU_SHADERFORMAT_MSL
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_SHADERFORMAT_MSL));
+    lua_setfield(L, -2, "GPU_SHADERFORMAT_MSL");
+#endif
+#ifdef SDL_GPU_SHADERFORMAT_METALLIB
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_SHADERFORMAT_METALLIB));
+    lua_setfield(L, -2, "GPU_SHADERFORMAT_METALLIB");
+#endif
+#ifdef SDL_GPU_COLORCOMPONENT_R
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_COLORCOMPONENT_R));
+    lua_setfield(L, -2, "GPU_COLORCOMPONENT_R");
+#endif
+#ifdef SDL_GPU_COLORCOMPONENT_G
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_COLORCOMPONENT_G));
+    lua_setfield(L, -2, "GPU_COLORCOMPONENT_G");
+#endif
+#ifdef SDL_GPU_COLORCOMPONENT_B
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_COLORCOMPONENT_B));
+    lua_setfield(L, -2, "GPU_COLORCOMPONENT_B");
+#endif
+#ifdef SDL_GPU_COLORCOMPONENT_A
+    lua_pushinteger(L, (lua_Integer)(SDL_GPU_COLORCOMPONENT_A));
+    lua_setfield(L, -2, "GPU_COLORCOMPONENT_A");
+#endif
+#ifdef SDL_HAPTIC_INFINITY
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_INFINITY));
+    lua_setfield(L, -2, "HAPTIC_INFINITY");
+#endif
+#ifdef SDL_HAPTIC_CONSTANT
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_CONSTANT));
+    lua_setfield(L, -2, "HAPTIC_CONSTANT");
+#endif
+#ifdef SDL_HAPTIC_SINE
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_SINE));
+    lua_setfield(L, -2, "HAPTIC_SINE");
+#endif
+#ifdef SDL_HAPTIC_SQUARE
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_SQUARE));
+    lua_setfield(L, -2, "HAPTIC_SQUARE");
+#endif
+#ifdef SDL_HAPTIC_TRIANGLE
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_TRIANGLE));
+    lua_setfield(L, -2, "HAPTIC_TRIANGLE");
+#endif
+#ifdef SDL_HAPTIC_SAWTOOTHUP
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_SAWTOOTHUP));
+    lua_setfield(L, -2, "HAPTIC_SAWTOOTHUP");
+#endif
+#ifdef SDL_HAPTIC_SAWTOOTHDOWN
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_SAWTOOTHDOWN));
+    lua_setfield(L, -2, "HAPTIC_SAWTOOTHDOWN");
+#endif
+#ifdef SDL_HAPTIC_RAMP
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_RAMP));
+    lua_setfield(L, -2, "HAPTIC_RAMP");
+#endif
+#ifdef SDL_HAPTIC_SPRING
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_SPRING));
+    lua_setfield(L, -2, "HAPTIC_SPRING");
+#endif
+#ifdef SDL_HAPTIC_DAMPER
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_DAMPER));
+    lua_setfield(L, -2, "HAPTIC_DAMPER");
+#endif
+#ifdef SDL_HAPTIC_INERTIA
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_INERTIA));
+    lua_setfield(L, -2, "HAPTIC_INERTIA");
+#endif
+#ifdef SDL_HAPTIC_FRICTION
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_FRICTION));
+    lua_setfield(L, -2, "HAPTIC_FRICTION");
+#endif
+#ifdef SDL_HAPTIC_LEFTRIGHT
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_LEFTRIGHT));
+    lua_setfield(L, -2, "HAPTIC_LEFTRIGHT");
+#endif
+#ifdef SDL_HAPTIC_RESERVED1
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_RESERVED1));
+    lua_setfield(L, -2, "HAPTIC_RESERVED1");
+#endif
+#ifdef SDL_HAPTIC_RESERVED2
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_RESERVED2));
+    lua_setfield(L, -2, "HAPTIC_RESERVED2");
+#endif
+#ifdef SDL_HAPTIC_RESERVED3
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_RESERVED3));
+    lua_setfield(L, -2, "HAPTIC_RESERVED3");
+#endif
+#ifdef SDL_HAPTIC_CUSTOM
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_CUSTOM));
+    lua_setfield(L, -2, "HAPTIC_CUSTOM");
+#endif
+#ifdef SDL_HAPTIC_GAIN
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_GAIN));
+    lua_setfield(L, -2, "HAPTIC_GAIN");
+#endif
+#ifdef SDL_HAPTIC_AUTOCENTER
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_AUTOCENTER));
+    lua_setfield(L, -2, "HAPTIC_AUTOCENTER");
+#endif
+#ifdef SDL_HAPTIC_STATUS
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_STATUS));
+    lua_setfield(L, -2, "HAPTIC_STATUS");
+#endif
+#ifdef SDL_HAPTIC_PAUSE
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_PAUSE));
+    lua_setfield(L, -2, "HAPTIC_PAUSE");
+#endif
+#ifdef SDL_HAPTIC_POLAR
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_POLAR));
+    lua_setfield(L, -2, "HAPTIC_POLAR");
+#endif
+#ifdef SDL_HAPTIC_CARTESIAN
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_CARTESIAN));
+    lua_setfield(L, -2, "HAPTIC_CARTESIAN");
+#endif
+#ifdef SDL_HAPTIC_SPHERICAL
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_SPHERICAL));
+    lua_setfield(L, -2, "HAPTIC_SPHERICAL");
+#endif
+#ifdef SDL_HAPTIC_STEERING_AXIS
+    lua_pushinteger(L, (lua_Integer)(SDL_HAPTIC_STEERING_AXIS));
+    lua_setfield(L, -2, "HAPTIC_STEERING_AXIS");
+#endif
+#ifdef SDL_INIT_AUDIO
+    lua_pushinteger(L, (lua_Integer)(SDL_INIT_AUDIO));
+    lua_setfield(L, -2, "INIT_AUDIO");
+#endif
+#ifdef SDL_INIT_VIDEO
+    lua_pushinteger(L, (lua_Integer)(SDL_INIT_VIDEO));
+    lua_setfield(L, -2, "INIT_VIDEO");
+#endif
+#ifdef SDL_INIT_JOYSTICK
+    lua_pushinteger(L, (lua_Integer)(SDL_INIT_JOYSTICK));
+    lua_setfield(L, -2, "INIT_JOYSTICK");
+#endif
+#ifdef SDL_INIT_HAPTIC
+    lua_pushinteger(L, (lua_Integer)(SDL_INIT_HAPTIC));
+    lua_setfield(L, -2, "INIT_HAPTIC");
+#endif
+#ifdef SDL_INIT_GAMEPAD
+    lua_pushinteger(L, (lua_Integer)(SDL_INIT_GAMEPAD));
+    lua_setfield(L, -2, "INIT_GAMEPAD");
+#endif
+#ifdef SDL_INIT_EVENTS
+    lua_pushinteger(L, (lua_Integer)(SDL_INIT_EVENTS));
+    lua_setfield(L, -2, "INIT_EVENTS");
+#endif
+#ifdef SDL_INIT_SENSOR
+    lua_pushinteger(L, (lua_Integer)(SDL_INIT_SENSOR));
+    lua_setfield(L, -2, "INIT_SENSOR");
+#endif
+#ifdef SDL_INIT_CAMERA
+    lua_pushinteger(L, (lua_Integer)(SDL_INIT_CAMERA));
+    lua_setfield(L, -2, "INIT_CAMERA");
+#endif
+#ifdef SDL_JOYSTICK_AXIS_MAX
+    lua_pushinteger(L, (lua_Integer)(SDL_JOYSTICK_AXIS_MAX));
+    lua_setfield(L, -2, "JOYSTICK_AXIS_MAX");
+#endif
+#ifdef SDL_HAT_CENTERED
+    lua_pushinteger(L, (lua_Integer)(SDL_HAT_CENTERED));
+    lua_setfield(L, -2, "HAT_CENTERED");
+#endif
+#ifdef SDL_HAT_UP
+    lua_pushinteger(L, (lua_Integer)(SDL_HAT_UP));
+    lua_setfield(L, -2, "HAT_UP");
+#endif
+#ifdef SDL_HAT_RIGHT
+    lua_pushinteger(L, (lua_Integer)(SDL_HAT_RIGHT));
+    lua_setfield(L, -2, "HAT_RIGHT");
+#endif
+#ifdef SDL_HAT_DOWN
+    lua_pushinteger(L, (lua_Integer)(SDL_HAT_DOWN));
+    lua_setfield(L, -2, "HAT_DOWN");
+#endif
+#ifdef SDL_HAT_LEFT
+    lua_pushinteger(L, (lua_Integer)(SDL_HAT_LEFT));
+    lua_setfield(L, -2, "HAT_LEFT");
+#endif
+#ifdef SDL_KMOD_NONE
+    lua_pushinteger(L, (lua_Integer)(SDL_KMOD_NONE));
+    lua_setfield(L, -2, "KMOD_NONE");
+#endif
+#ifdef SDL_KMOD_LSHIFT
+    lua_pushinteger(L, (lua_Integer)(SDL_KMOD_LSHIFT));
+    lua_setfield(L, -2, "KMOD_LSHIFT");
+#endif
+#ifdef SDL_KMOD_RSHIFT
+    lua_pushinteger(L, (lua_Integer)(SDL_KMOD_RSHIFT));
+    lua_setfield(L, -2, "KMOD_RSHIFT");
+#endif
+#ifdef SDL_KMOD_LEVEL5
+    lua_pushinteger(L, (lua_Integer)(SDL_KMOD_LEVEL5));
+    lua_setfield(L, -2, "KMOD_LEVEL5");
+#endif
+#ifdef SDL_KMOD_LCTRL
+    lua_pushinteger(L, (lua_Integer)(SDL_KMOD_LCTRL));
+    lua_setfield(L, -2, "KMOD_LCTRL");
+#endif
+#ifdef SDL_KMOD_RCTRL
+    lua_pushinteger(L, (lua_Integer)(SDL_KMOD_RCTRL));
+    lua_setfield(L, -2, "KMOD_RCTRL");
+#endif
+#ifdef SDL_KMOD_LALT
+    lua_pushinteger(L, (lua_Integer)(SDL_KMOD_LALT));
+    lua_setfield(L, -2, "KMOD_LALT");
+#endif
+#ifdef SDL_KMOD_RALT
+    lua_pushinteger(L, (lua_Integer)(SDL_KMOD_RALT));
+    lua_setfield(L, -2, "KMOD_RALT");
+#endif
+#ifdef SDL_KMOD_LGUI
+    lua_pushinteger(L, (lua_Integer)(SDL_KMOD_LGUI));
+    lua_setfield(L, -2, "KMOD_LGUI");
+#endif
+#ifdef SDL_KMOD_RGUI
+    lua_pushinteger(L, (lua_Integer)(SDL_KMOD_RGUI));
+    lua_setfield(L, -2, "KMOD_RGUI");
+#endif
+#ifdef SDL_KMOD_NUM
+    lua_pushinteger(L, (lua_Integer)(SDL_KMOD_NUM));
+    lua_setfield(L, -2, "KMOD_NUM");
+#endif
+#ifdef SDL_KMOD_CAPS
+    lua_pushinteger(L, (lua_Integer)(SDL_KMOD_CAPS));
+    lua_setfield(L, -2, "KMOD_CAPS");
+#endif
+#ifdef SDL_KMOD_MODE
+    lua_pushinteger(L, (lua_Integer)(SDL_KMOD_MODE));
+    lua_setfield(L, -2, "KMOD_MODE");
+#endif
+#ifdef SDL_KMOD_SCROLL
+    lua_pushinteger(L, (lua_Integer)(SDL_KMOD_SCROLL));
+    lua_setfield(L, -2, "KMOD_SCROLL");
+#endif
+#ifdef SDL_MESSAGEBOX_ERROR
+    lua_pushinteger(L, (lua_Integer)(SDL_MESSAGEBOX_ERROR));
+    lua_setfield(L, -2, "MESSAGEBOX_ERROR");
+#endif
+#ifdef SDL_MESSAGEBOX_WARNING
+    lua_pushinteger(L, (lua_Integer)(SDL_MESSAGEBOX_WARNING));
+    lua_setfield(L, -2, "MESSAGEBOX_WARNING");
+#endif
+#ifdef SDL_MESSAGEBOX_INFORMATION
+    lua_pushinteger(L, (lua_Integer)(SDL_MESSAGEBOX_INFORMATION));
+    lua_setfield(L, -2, "MESSAGEBOX_INFORMATION");
+#endif
+#ifdef SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT
+    lua_pushinteger(L, (lua_Integer)(SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT));
+    lua_setfield(L, -2, "MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT");
+#endif
+#ifdef SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT
+    lua_pushinteger(L, (lua_Integer)(SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT));
+    lua_setfield(L, -2, "MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT");
+#endif
+#ifdef SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT
+    lua_pushinteger(L, (lua_Integer)(SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT));
+    lua_setfield(L, -2, "MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT");
+#endif
+#ifdef SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT
+    lua_pushinteger(L, (lua_Integer)(SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT));
+    lua_setfield(L, -2, "MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT");
+#endif
+#ifdef SDL_BUTTON_LEFT
+    lua_pushinteger(L, (lua_Integer)(SDL_BUTTON_LEFT));
+    lua_setfield(L, -2, "BUTTON_LEFT");
+#endif
+#ifdef SDL_BUTTON_MIDDLE
+    lua_pushinteger(L, (lua_Integer)(SDL_BUTTON_MIDDLE));
+    lua_setfield(L, -2, "BUTTON_MIDDLE");
+#endif
+#ifdef SDL_BUTTON_RIGHT
+    lua_pushinteger(L, (lua_Integer)(SDL_BUTTON_RIGHT));
+    lua_setfield(L, -2, "BUTTON_RIGHT");
+#endif
+#ifdef SDL_BUTTON_X1
+    lua_pushinteger(L, (lua_Integer)(SDL_BUTTON_X1));
+    lua_setfield(L, -2, "BUTTON_X1");
+#endif
+#ifdef SDL_BUTTON_X2
+    lua_pushinteger(L, (lua_Integer)(SDL_BUTTON_X2));
+    lua_setfield(L, -2, "BUTTON_X2");
+#endif
+#ifdef SDL_PEN_INPUT_DOWN
+    lua_pushinteger(L, (lua_Integer)(SDL_PEN_INPUT_DOWN));
+    lua_setfield(L, -2, "PEN_INPUT_DOWN");
+#endif
+#ifdef SDL_PEN_INPUT_BUTTON_1
+    lua_pushinteger(L, (lua_Integer)(SDL_PEN_INPUT_BUTTON_1));
+    lua_setfield(L, -2, "PEN_INPUT_BUTTON_1");
+#endif
+#ifdef SDL_PEN_INPUT_BUTTON_2
+    lua_pushinteger(L, (lua_Integer)(SDL_PEN_INPUT_BUTTON_2));
+    lua_setfield(L, -2, "PEN_INPUT_BUTTON_2");
+#endif
+#ifdef SDL_PEN_INPUT_BUTTON_3
+    lua_pushinteger(L, (lua_Integer)(SDL_PEN_INPUT_BUTTON_3));
+    lua_setfield(L, -2, "PEN_INPUT_BUTTON_3");
+#endif
+#ifdef SDL_PEN_INPUT_BUTTON_4
+    lua_pushinteger(L, (lua_Integer)(SDL_PEN_INPUT_BUTTON_4));
+    lua_setfield(L, -2, "PEN_INPUT_BUTTON_4");
+#endif
+#ifdef SDL_PEN_INPUT_BUTTON_5
+    lua_pushinteger(L, (lua_Integer)(SDL_PEN_INPUT_BUTTON_5));
+    lua_setfield(L, -2, "PEN_INPUT_BUTTON_5");
+#endif
+#ifdef SDL_PEN_INPUT_ERASER_TIP
+    lua_pushinteger(L, (lua_Integer)(SDL_PEN_INPUT_ERASER_TIP));
+    lua_setfield(L, -2, "PEN_INPUT_ERASER_TIP");
+#endif
+#ifdef SDL_PEN_INPUT_IN_PROXIMITY
+    lua_pushinteger(L, (lua_Integer)(SDL_PEN_INPUT_IN_PROXIMITY));
+    lua_setfield(L, -2, "PEN_INPUT_IN_PROXIMITY");
+#endif
+#ifdef SDL_ALPHA_OPAQUE
+    lua_pushinteger(L, (lua_Integer)(SDL_ALPHA_OPAQUE));
+    lua_setfield(L, -2, "ALPHA_OPAQUE");
+#endif
+#ifdef SDL_ALPHA_TRANSPARENT
+    lua_pushinteger(L, (lua_Integer)(SDL_ALPHA_TRANSPARENT));
+    lua_setfield(L, -2, "ALPHA_TRANSPARENT");
+#endif
+#ifdef SDL_RENDERER_VSYNC_DISABLED
+    lua_pushinteger(L, (lua_Integer)(SDL_RENDERER_VSYNC_DISABLED));
+    lua_setfield(L, -2, "RENDERER_VSYNC_DISABLED");
+#endif
+#ifdef SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE
+    lua_pushinteger(L, (lua_Integer)(SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE));
+    lua_setfield(L, -2, "DEBUG_TEXT_FONT_CHARACTER_SIZE");
+#endif
+#ifdef SDL_MAX_SINT64
+    lua_pushinteger(L, (lua_Integer)(SDL_MAX_SINT64));
+    lua_setfield(L, -2, "MAX_SINT64");
+#endif
+#ifdef SDL_MAX_UINT64
+    lua_pushinteger(L, (lua_Integer)(SDL_MAX_UINT64));
+    lua_setfield(L, -2, "MAX_UINT64");
+#endif
+#ifdef SDL_MIN_UINT64
+    lua_pushinteger(L, (lua_Integer)(SDL_MIN_UINT64));
+    lua_setfield(L, -2, "MIN_UINT64");
+#endif
+#ifdef SDL_INVALID_UNICODE_CODEPOINT
+    lua_pushinteger(L, (lua_Integer)(SDL_INVALID_UNICODE_CODEPOINT));
+    lua_setfield(L, -2, "INVALID_UNICODE_CODEPOINT");
+#endif
+#ifdef SDL_SURFACE_PREALLOCATED
+    lua_pushinteger(L, (lua_Integer)(SDL_SURFACE_PREALLOCATED));
+    lua_setfield(L, -2, "SURFACE_PREALLOCATED");
+#endif
+#ifdef SDL_SURFACE_LOCK_NEEDED
+    lua_pushinteger(L, (lua_Integer)(SDL_SURFACE_LOCK_NEEDED));
+    lua_setfield(L, -2, "SURFACE_LOCK_NEEDED");
+#endif
+#ifdef SDL_SURFACE_LOCKED
+    lua_pushinteger(L, (lua_Integer)(SDL_SURFACE_LOCKED));
+    lua_setfield(L, -2, "SURFACE_LOCKED");
+#endif
+#ifdef SDL_SURFACE_SIMD_ALIGNED
+    lua_pushinteger(L, (lua_Integer)(SDL_SURFACE_SIMD_ALIGNED));
+    lua_setfield(L, -2, "SURFACE_SIMD_ALIGNED");
+#endif
+#ifdef SDL_MS_PER_SECOND
+    lua_pushinteger(L, (lua_Integer)(SDL_MS_PER_SECOND));
+    lua_setfield(L, -2, "MS_PER_SECOND");
+#endif
+#ifdef SDL_US_PER_SECOND
+    lua_pushinteger(L, (lua_Integer)(SDL_US_PER_SECOND));
+    lua_setfield(L, -2, "US_PER_SECOND");
+#endif
+#ifdef SDL_NS_PER_SECOND
+    lua_pushinteger(L, (lua_Integer)(SDL_NS_PER_SECOND));
+    lua_setfield(L, -2, "NS_PER_SECOND");
+#endif
+#ifdef SDL_NS_PER_MS
+    lua_pushinteger(L, (lua_Integer)(SDL_NS_PER_MS));
+    lua_setfield(L, -2, "NS_PER_MS");
+#endif
+#ifdef SDL_NS_PER_US
+    lua_pushinteger(L, (lua_Integer)(SDL_NS_PER_US));
+    lua_setfield(L, -2, "NS_PER_US");
+#endif
+#ifdef SDL_TRAYENTRY_BUTTON
+    lua_pushinteger(L, (lua_Integer)(SDL_TRAYENTRY_BUTTON));
+    lua_setfield(L, -2, "TRAYENTRY_BUTTON");
+#endif
+#ifdef SDL_TRAYENTRY_CHECKBOX
+    lua_pushinteger(L, (lua_Integer)(SDL_TRAYENTRY_CHECKBOX));
+    lua_setfield(L, -2, "TRAYENTRY_CHECKBOX");
+#endif
+#ifdef SDL_TRAYENTRY_SUBMENU
+    lua_pushinteger(L, (lua_Integer)(SDL_TRAYENTRY_SUBMENU));
+    lua_setfield(L, -2, "TRAYENTRY_SUBMENU");
+#endif
+#ifdef SDL_TRAYENTRY_DISABLED
+    lua_pushinteger(L, (lua_Integer)(SDL_TRAYENTRY_DISABLED));
+    lua_setfield(L, -2, "TRAYENTRY_DISABLED");
+#endif
+#ifdef SDL_TRAYENTRY_CHECKED
+    lua_pushinteger(L, (lua_Integer)(SDL_TRAYENTRY_CHECKED));
+    lua_setfield(L, -2, "TRAYENTRY_CHECKED");
+#endif
+#ifdef SDL_MAJOR_VERSION
+    lua_pushinteger(L, (lua_Integer)(SDL_MAJOR_VERSION));
+    lua_setfield(L, -2, "MAJOR_VERSION");
+#endif
+#ifdef SDL_MINOR_VERSION
+    lua_pushinteger(L, (lua_Integer)(SDL_MINOR_VERSION));
+    lua_setfield(L, -2, "MINOR_VERSION");
+#endif
+#ifdef SDL_MICRO_VERSION
+    lua_pushinteger(L, (lua_Integer)(SDL_MICRO_VERSION));
+    lua_setfield(L, -2, "MICRO_VERSION");
+#endif
+#ifdef SDL_WINDOW_FULLSCREEN
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_FULLSCREEN));
+    lua_setfield(L, -2, "WINDOW_FULLSCREEN");
+#endif
+#ifdef SDL_WINDOW_OPENGL
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_OPENGL));
+    lua_setfield(L, -2, "WINDOW_OPENGL");
+#endif
+#ifdef SDL_WINDOW_OCCLUDED
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_OCCLUDED));
+    lua_setfield(L, -2, "WINDOW_OCCLUDED");
+#endif
+#ifdef SDL_WINDOW_HIDDEN
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_HIDDEN));
+    lua_setfield(L, -2, "WINDOW_HIDDEN");
+#endif
+#ifdef SDL_WINDOW_BORDERLESS
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_BORDERLESS));
+    lua_setfield(L, -2, "WINDOW_BORDERLESS");
+#endif
+#ifdef SDL_WINDOW_RESIZABLE
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_RESIZABLE));
+    lua_setfield(L, -2, "WINDOW_RESIZABLE");
+#endif
+#ifdef SDL_WINDOW_MINIMIZED
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_MINIMIZED));
+    lua_setfield(L, -2, "WINDOW_MINIMIZED");
+#endif
+#ifdef SDL_WINDOW_MAXIMIZED
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_MAXIMIZED));
+    lua_setfield(L, -2, "WINDOW_MAXIMIZED");
+#endif
+#ifdef SDL_WINDOW_MOUSE_GRABBED
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_MOUSE_GRABBED));
+    lua_setfield(L, -2, "WINDOW_MOUSE_GRABBED");
+#endif
+#ifdef SDL_WINDOW_INPUT_FOCUS
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_INPUT_FOCUS));
+    lua_setfield(L, -2, "WINDOW_INPUT_FOCUS");
+#endif
+#ifdef SDL_WINDOW_MOUSE_FOCUS
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_MOUSE_FOCUS));
+    lua_setfield(L, -2, "WINDOW_MOUSE_FOCUS");
+#endif
+#ifdef SDL_WINDOW_EXTERNAL
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_EXTERNAL));
+    lua_setfield(L, -2, "WINDOW_EXTERNAL");
+#endif
+#ifdef SDL_WINDOW_MODAL
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_MODAL));
+    lua_setfield(L, -2, "WINDOW_MODAL");
+#endif
+#ifdef SDL_WINDOW_HIGH_PIXEL_DENSITY
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_HIGH_PIXEL_DENSITY));
+    lua_setfield(L, -2, "WINDOW_HIGH_PIXEL_DENSITY");
+#endif
+#ifdef SDL_WINDOW_MOUSE_CAPTURE
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_MOUSE_CAPTURE));
+    lua_setfield(L, -2, "WINDOW_MOUSE_CAPTURE");
+#endif
+#ifdef SDL_WINDOW_MOUSE_RELATIVE_MODE
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_MOUSE_RELATIVE_MODE));
+    lua_setfield(L, -2, "WINDOW_MOUSE_RELATIVE_MODE");
+#endif
+#ifdef SDL_WINDOW_ALWAYS_ON_TOP
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_ALWAYS_ON_TOP));
+    lua_setfield(L, -2, "WINDOW_ALWAYS_ON_TOP");
+#endif
+#ifdef SDL_WINDOW_UTILITY
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_UTILITY));
+    lua_setfield(L, -2, "WINDOW_UTILITY");
+#endif
+#ifdef SDL_WINDOW_TOOLTIP
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_TOOLTIP));
+    lua_setfield(L, -2, "WINDOW_TOOLTIP");
+#endif
+#ifdef SDL_WINDOW_POPUP_MENU
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_POPUP_MENU));
+    lua_setfield(L, -2, "WINDOW_POPUP_MENU");
+#endif
+#ifdef SDL_WINDOW_KEYBOARD_GRABBED
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_KEYBOARD_GRABBED));
+    lua_setfield(L, -2, "WINDOW_KEYBOARD_GRABBED");
+#endif
+#ifdef SDL_WINDOW_FILL_DOCUMENT
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_FILL_DOCUMENT));
+    lua_setfield(L, -2, "WINDOW_FILL_DOCUMENT");
+#endif
+#ifdef SDL_WINDOW_VULKAN
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_VULKAN));
+    lua_setfield(L, -2, "WINDOW_VULKAN");
+#endif
+#ifdef SDL_WINDOW_METAL
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_METAL));
+    lua_setfield(L, -2, "WINDOW_METAL");
+#endif
+#ifdef SDL_WINDOW_TRANSPARENT
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_TRANSPARENT));
+    lua_setfield(L, -2, "WINDOW_TRANSPARENT");
+#endif
+#ifdef SDL_WINDOW_NOT_FOCUSABLE
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_NOT_FOCUSABLE));
+    lua_setfield(L, -2, "WINDOW_NOT_FOCUSABLE");
+#endif
+#ifdef SDL_WINDOWPOS_UNDEFINED_MASK
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOWPOS_UNDEFINED_MASK));
+    lua_setfield(L, -2, "WINDOWPOS_UNDEFINED_MASK");
+#endif
+#ifdef SDL_WINDOWPOS_CENTERED_MASK
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOWPOS_CENTERED_MASK));
+    lua_setfield(L, -2, "WINDOWPOS_CENTERED_MASK");
+#endif
+#ifdef SDL_GL_CONTEXT_PROFILE_CORE
+    lua_pushinteger(L, (lua_Integer)(SDL_GL_CONTEXT_PROFILE_CORE));
+    lua_setfield(L, -2, "GL_CONTEXT_PROFILE_CORE");
+#endif
+#ifdef SDL_GL_CONTEXT_PROFILE_COMPATIBILITY
+    lua_pushinteger(L, (lua_Integer)(SDL_GL_CONTEXT_PROFILE_COMPATIBILITY));
+    lua_setfield(L, -2, "GL_CONTEXT_PROFILE_COMPATIBILITY");
+#endif
+#ifdef SDL_GL_CONTEXT_PROFILE_ES
+    lua_pushinteger(L, (lua_Integer)(SDL_GL_CONTEXT_PROFILE_ES));
+    lua_setfield(L, -2, "GL_CONTEXT_PROFILE_ES");
+#endif
+#ifdef SDL_GL_CONTEXT_DEBUG_FLAG
+    lua_pushinteger(L, (lua_Integer)(SDL_GL_CONTEXT_DEBUG_FLAG));
+    lua_setfield(L, -2, "GL_CONTEXT_DEBUG_FLAG");
+#endif
+#ifdef SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG
+    lua_pushinteger(L, (lua_Integer)(SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG));
+    lua_setfield(L, -2, "GL_CONTEXT_FORWARD_COMPATIBLE_FLAG");
+#endif
+#ifdef SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG
+    lua_pushinteger(L, (lua_Integer)(SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG));
+    lua_setfield(L, -2, "GL_CONTEXT_ROBUST_ACCESS_FLAG");
+#endif
+#ifdef SDL_GL_CONTEXT_RESET_ISOLATION_FLAG
+    lua_pushinteger(L, (lua_Integer)(SDL_GL_CONTEXT_RESET_ISOLATION_FLAG));
+    lua_setfield(L, -2, "GL_CONTEXT_RESET_ISOLATION_FLAG");
+#endif
+#ifdef SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE
+    lua_pushinteger(L, (lua_Integer)(SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE));
+    lua_setfield(L, -2, "GL_CONTEXT_RELEASE_BEHAVIOR_NONE");
+#endif
+#ifdef SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH
+    lua_pushinteger(L, (lua_Integer)(SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH));
+    lua_setfield(L, -2, "GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH");
+#endif
+#ifdef SDL_GL_CONTEXT_RESET_NO_NOTIFICATION
+    lua_pushinteger(L, (lua_Integer)(SDL_GL_CONTEXT_RESET_NO_NOTIFICATION));
+    lua_setfield(L, -2, "GL_CONTEXT_RESET_NO_NOTIFICATION");
+#endif
+#ifdef SDL_GL_CONTEXT_RESET_LOSE_CONTEXT
+    lua_pushinteger(L, (lua_Integer)(SDL_GL_CONTEXT_RESET_LOSE_CONTEXT));
+    lua_setfield(L, -2, "GL_CONTEXT_RESET_LOSE_CONTEXT");
+#endif
+#ifdef SDL_WINDOW_SURFACE_VSYNC_DISABLED
+    lua_pushinteger(L, (lua_Integer)(SDL_WINDOW_SURFACE_VSYNC_DISABLED));
+    lua_setfield(L, -2, "WINDOW_SURFACE_VSYNC_DISABLED");
+#endif
     lua_setglobal(L, "SDL");
     return 0;
 }

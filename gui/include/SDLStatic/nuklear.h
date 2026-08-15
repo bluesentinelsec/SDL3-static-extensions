@@ -26,6 +26,20 @@
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 
+/* Nuklear's built-in double->string conversion is documented upstream as
+ * "imprecise and possibly unsafe"; it emits exponent form for ordinary
+ * values, which its own %f formatter then mis-parses (40.0 renders as
+ * "4"). Route conversion through SDL's printf, which is always present
+ * here, so nk_labelf/nk_text formatting is correct. */
+#define NK_DTOA(buffer, value) SDLStatic_NuklearDtoa((buffer), (value))
+#ifdef __cplusplus
+extern "C" {
+#endif
+extern char *SDLStatic_NuklearDtoa(char *buffer, double value);
+#ifdef __cplusplus
+}
+#endif
+
 #include <nuklear.h>
 
 #endif /* SDLSTATIC_NUKLEAR_H */

@@ -15372,4 +15372,547 @@ void SDLStaticGen_OpenRuby_sdl(mrb_state *mrb)
     mrb_define_const(mrb, mod, "HID_API_BUS_BLUETOOTH", mrb_int_value(mrb, (mrb_int)SDL_HID_API_BUS_BLUETOOTH));
     mrb_define_const(mrb, mod, "HID_API_BUS_I2C", mrb_int_value(mrb, (mrb_int)SDL_HID_API_BUS_I2C));
     mrb_define_const(mrb, mod, "HID_API_BUS_SPI", mrb_int_value(mrb, (mrb_int)SDL_HID_API_BUS_SPI));
+#ifdef SDL_ASSERT_LEVEL
+    mrb_define_const(mrb, mod, "ASSERT_LEVEL", mrb_int_value(mrb, (mrb_int)(SDL_ASSERT_LEVEL)));
+#endif
+#ifdef SDL_NULL_WHILE_LOOP_CONDITION
+    mrb_define_const(mrb, mod, "NULL_WHILE_LOOP_CONDITION", mrb_int_value(mrb, (mrb_int)(SDL_NULL_WHILE_LOOP_CONDITION)));
+#endif
+#ifdef SDL_AUDIO_MASK_BITSIZE
+    mrb_define_const(mrb, mod, "AUDIO_MASK_BITSIZE", mrb_int_value(mrb, (mrb_int)(SDL_AUDIO_MASK_BITSIZE)));
+#endif
+#ifdef SDL_AUDIO_MASK_FLOAT
+    mrb_define_const(mrb, mod, "AUDIO_MASK_FLOAT", mrb_int_value(mrb, (mrb_int)(SDL_AUDIO_MASK_FLOAT)));
+#endif
+#ifdef SDL_AUDIO_MASK_BIG_ENDIAN
+    mrb_define_const(mrb, mod, "AUDIO_MASK_BIG_ENDIAN", mrb_int_value(mrb, (mrb_int)(SDL_AUDIO_MASK_BIG_ENDIAN)));
+#endif
+#ifdef SDL_AUDIO_MASK_SIGNED
+    mrb_define_const(mrb, mod, "AUDIO_MASK_SIGNED", mrb_int_value(mrb, (mrb_int)(SDL_AUDIO_MASK_SIGNED)));
+#endif
+#ifdef SDL_BLENDMODE_NONE
+    mrb_define_const(mrb, mod, "BLENDMODE_NONE", mrb_int_value(mrb, (mrb_int)(SDL_BLENDMODE_NONE)));
+#endif
+#ifdef SDL_BLENDMODE_BLEND
+    mrb_define_const(mrb, mod, "BLENDMODE_BLEND", mrb_int_value(mrb, (mrb_int)(SDL_BLENDMODE_BLEND)));
+#endif
+#ifdef SDL_BLENDMODE_BLEND_PREMULTIPLIED
+    mrb_define_const(mrb, mod, "BLENDMODE_BLEND_PREMULTIPLIED", mrb_int_value(mrb, (mrb_int)(SDL_BLENDMODE_BLEND_PREMULTIPLIED)));
+#endif
+#ifdef SDL_BLENDMODE_ADD
+    mrb_define_const(mrb, mod, "BLENDMODE_ADD", mrb_int_value(mrb, (mrb_int)(SDL_BLENDMODE_ADD)));
+#endif
+#ifdef SDL_BLENDMODE_ADD_PREMULTIPLIED
+    mrb_define_const(mrb, mod, "BLENDMODE_ADD_PREMULTIPLIED", mrb_int_value(mrb, (mrb_int)(SDL_BLENDMODE_ADD_PREMULTIPLIED)));
+#endif
+#ifdef SDL_BLENDMODE_MOD
+    mrb_define_const(mrb, mod, "BLENDMODE_MOD", mrb_int_value(mrb, (mrb_int)(SDL_BLENDMODE_MOD)));
+#endif
+#ifdef SDL_BLENDMODE_MUL
+    mrb_define_const(mrb, mod, "BLENDMODE_MUL", mrb_int_value(mrb, (mrb_int)(SDL_BLENDMODE_MUL)));
+#endif
+#ifdef SDL_BLENDMODE_INVALID
+    mrb_define_const(mrb, mod, "BLENDMODE_INVALID", mrb_int_value(mrb, (mrb_int)(SDL_BLENDMODE_INVALID)));
+#endif
+#ifdef SDL_CACHELINE_SIZE
+    mrb_define_const(mrb, mod, "CACHELINE_SIZE", mrb_int_value(mrb, (mrb_int)(SDL_CACHELINE_SIZE)));
+#endif
+#ifdef SDL_ELF_NOTE_DLOPEN_TYPE
+    mrb_define_const(mrb, mod, "ELF_NOTE_DLOPEN_TYPE", mrb_int_value(mrb, (mrb_int)(SDL_ELF_NOTE_DLOPEN_TYPE)));
+#endif
+#ifdef SDL_LIL_ENDIAN
+    mrb_define_const(mrb, mod, "LIL_ENDIAN", mrb_int_value(mrb, (mrb_int)(SDL_LIL_ENDIAN)));
+#endif
+#ifdef SDL_BIG_ENDIAN
+    mrb_define_const(mrb, mod, "BIG_ENDIAN", mrb_int_value(mrb, (mrb_int)(SDL_BIG_ENDIAN)));
+#endif
+#ifdef SDL_GLOB_CASEINSENSITIVE
+    mrb_define_const(mrb, mod, "GLOB_CASEINSENSITIVE", mrb_int_value(mrb, (mrb_int)(SDL_GLOB_CASEINSENSITIVE)));
+#endif
+#ifdef SDL_GPU_TEXTUREUSAGE_SAMPLER
+    mrb_define_const(mrb, mod, "GPU_TEXTUREUSAGE_SAMPLER", mrb_int_value(mrb, (mrb_int)(SDL_GPU_TEXTUREUSAGE_SAMPLER)));
+#endif
+#ifdef SDL_GPU_TEXTUREUSAGE_COLOR_TARGET
+    mrb_define_const(mrb, mod, "GPU_TEXTUREUSAGE_COLOR_TARGET", mrb_int_value(mrb, (mrb_int)(SDL_GPU_TEXTUREUSAGE_COLOR_TARGET)));
+#endif
+#ifdef SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET
+    mrb_define_const(mrb, mod, "GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET", mrb_int_value(mrb, (mrb_int)(SDL_GPU_TEXTUREUSAGE_DEPTH_STENCIL_TARGET)));
+#endif
+#ifdef SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ
+    mrb_define_const(mrb, mod, "GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ", mrb_int_value(mrb, (mrb_int)(SDL_GPU_TEXTUREUSAGE_GRAPHICS_STORAGE_READ)));
+#endif
+#ifdef SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ
+    mrb_define_const(mrb, mod, "GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ", mrb_int_value(mrb, (mrb_int)(SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_READ)));
+#endif
+#ifdef SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE
+    mrb_define_const(mrb, mod, "GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE", mrb_int_value(mrb, (mrb_int)(SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_WRITE)));
+#endif
+#ifdef SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE
+    mrb_define_const(mrb, mod, "GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE", mrb_int_value(mrb, (mrb_int)(SDL_GPU_TEXTUREUSAGE_COMPUTE_STORAGE_SIMULTANEOUS_READ_WRITE)));
+#endif
+#ifdef SDL_GPU_BUFFERUSAGE_VERTEX
+    mrb_define_const(mrb, mod, "GPU_BUFFERUSAGE_VERTEX", mrb_int_value(mrb, (mrb_int)(SDL_GPU_BUFFERUSAGE_VERTEX)));
+#endif
+#ifdef SDL_GPU_BUFFERUSAGE_INDEX
+    mrb_define_const(mrb, mod, "GPU_BUFFERUSAGE_INDEX", mrb_int_value(mrb, (mrb_int)(SDL_GPU_BUFFERUSAGE_INDEX)));
+#endif
+#ifdef SDL_GPU_BUFFERUSAGE_INDIRECT
+    mrb_define_const(mrb, mod, "GPU_BUFFERUSAGE_INDIRECT", mrb_int_value(mrb, (mrb_int)(SDL_GPU_BUFFERUSAGE_INDIRECT)));
+#endif
+#ifdef SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ
+    mrb_define_const(mrb, mod, "GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ", mrb_int_value(mrb, (mrb_int)(SDL_GPU_BUFFERUSAGE_GRAPHICS_STORAGE_READ)));
+#endif
+#ifdef SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ
+    mrb_define_const(mrb, mod, "GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ", mrb_int_value(mrb, (mrb_int)(SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_READ)));
+#endif
+#ifdef SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE
+    mrb_define_const(mrb, mod, "GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE", mrb_int_value(mrb, (mrb_int)(SDL_GPU_BUFFERUSAGE_COMPUTE_STORAGE_WRITE)));
+#endif
+#ifdef SDL_GPU_SHADERFORMAT_INVALID
+    mrb_define_const(mrb, mod, "GPU_SHADERFORMAT_INVALID", mrb_int_value(mrb, (mrb_int)(SDL_GPU_SHADERFORMAT_INVALID)));
+#endif
+#ifdef SDL_GPU_SHADERFORMAT_PRIVATE
+    mrb_define_const(mrb, mod, "GPU_SHADERFORMAT_PRIVATE", mrb_int_value(mrb, (mrb_int)(SDL_GPU_SHADERFORMAT_PRIVATE)));
+#endif
+#ifdef SDL_GPU_SHADERFORMAT_SPIRV
+    mrb_define_const(mrb, mod, "GPU_SHADERFORMAT_SPIRV", mrb_int_value(mrb, (mrb_int)(SDL_GPU_SHADERFORMAT_SPIRV)));
+#endif
+#ifdef SDL_GPU_SHADERFORMAT_DXBC
+    mrb_define_const(mrb, mod, "GPU_SHADERFORMAT_DXBC", mrb_int_value(mrb, (mrb_int)(SDL_GPU_SHADERFORMAT_DXBC)));
+#endif
+#ifdef SDL_GPU_SHADERFORMAT_DXIL
+    mrb_define_const(mrb, mod, "GPU_SHADERFORMAT_DXIL", mrb_int_value(mrb, (mrb_int)(SDL_GPU_SHADERFORMAT_DXIL)));
+#endif
+#ifdef SDL_GPU_SHADERFORMAT_MSL
+    mrb_define_const(mrb, mod, "GPU_SHADERFORMAT_MSL", mrb_int_value(mrb, (mrb_int)(SDL_GPU_SHADERFORMAT_MSL)));
+#endif
+#ifdef SDL_GPU_SHADERFORMAT_METALLIB
+    mrb_define_const(mrb, mod, "GPU_SHADERFORMAT_METALLIB", mrb_int_value(mrb, (mrb_int)(SDL_GPU_SHADERFORMAT_METALLIB)));
+#endif
+#ifdef SDL_GPU_COLORCOMPONENT_R
+    mrb_define_const(mrb, mod, "GPU_COLORCOMPONENT_R", mrb_int_value(mrb, (mrb_int)(SDL_GPU_COLORCOMPONENT_R)));
+#endif
+#ifdef SDL_GPU_COLORCOMPONENT_G
+    mrb_define_const(mrb, mod, "GPU_COLORCOMPONENT_G", mrb_int_value(mrb, (mrb_int)(SDL_GPU_COLORCOMPONENT_G)));
+#endif
+#ifdef SDL_GPU_COLORCOMPONENT_B
+    mrb_define_const(mrb, mod, "GPU_COLORCOMPONENT_B", mrb_int_value(mrb, (mrb_int)(SDL_GPU_COLORCOMPONENT_B)));
+#endif
+#ifdef SDL_GPU_COLORCOMPONENT_A
+    mrb_define_const(mrb, mod, "GPU_COLORCOMPONENT_A", mrb_int_value(mrb, (mrb_int)(SDL_GPU_COLORCOMPONENT_A)));
+#endif
+#ifdef SDL_HAPTIC_INFINITY
+    mrb_define_const(mrb, mod, "HAPTIC_INFINITY", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_INFINITY)));
+#endif
+#ifdef SDL_HAPTIC_CONSTANT
+    mrb_define_const(mrb, mod, "HAPTIC_CONSTANT", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_CONSTANT)));
+#endif
+#ifdef SDL_HAPTIC_SINE
+    mrb_define_const(mrb, mod, "HAPTIC_SINE", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_SINE)));
+#endif
+#ifdef SDL_HAPTIC_SQUARE
+    mrb_define_const(mrb, mod, "HAPTIC_SQUARE", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_SQUARE)));
+#endif
+#ifdef SDL_HAPTIC_TRIANGLE
+    mrb_define_const(mrb, mod, "HAPTIC_TRIANGLE", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_TRIANGLE)));
+#endif
+#ifdef SDL_HAPTIC_SAWTOOTHUP
+    mrb_define_const(mrb, mod, "HAPTIC_SAWTOOTHUP", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_SAWTOOTHUP)));
+#endif
+#ifdef SDL_HAPTIC_SAWTOOTHDOWN
+    mrb_define_const(mrb, mod, "HAPTIC_SAWTOOTHDOWN", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_SAWTOOTHDOWN)));
+#endif
+#ifdef SDL_HAPTIC_RAMP
+    mrb_define_const(mrb, mod, "HAPTIC_RAMP", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_RAMP)));
+#endif
+#ifdef SDL_HAPTIC_SPRING
+    mrb_define_const(mrb, mod, "HAPTIC_SPRING", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_SPRING)));
+#endif
+#ifdef SDL_HAPTIC_DAMPER
+    mrb_define_const(mrb, mod, "HAPTIC_DAMPER", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_DAMPER)));
+#endif
+#ifdef SDL_HAPTIC_INERTIA
+    mrb_define_const(mrb, mod, "HAPTIC_INERTIA", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_INERTIA)));
+#endif
+#ifdef SDL_HAPTIC_FRICTION
+    mrb_define_const(mrb, mod, "HAPTIC_FRICTION", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_FRICTION)));
+#endif
+#ifdef SDL_HAPTIC_LEFTRIGHT
+    mrb_define_const(mrb, mod, "HAPTIC_LEFTRIGHT", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_LEFTRIGHT)));
+#endif
+#ifdef SDL_HAPTIC_RESERVED1
+    mrb_define_const(mrb, mod, "HAPTIC_RESERVED1", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_RESERVED1)));
+#endif
+#ifdef SDL_HAPTIC_RESERVED2
+    mrb_define_const(mrb, mod, "HAPTIC_RESERVED2", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_RESERVED2)));
+#endif
+#ifdef SDL_HAPTIC_RESERVED3
+    mrb_define_const(mrb, mod, "HAPTIC_RESERVED3", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_RESERVED3)));
+#endif
+#ifdef SDL_HAPTIC_CUSTOM
+    mrb_define_const(mrb, mod, "HAPTIC_CUSTOM", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_CUSTOM)));
+#endif
+#ifdef SDL_HAPTIC_GAIN
+    mrb_define_const(mrb, mod, "HAPTIC_GAIN", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_GAIN)));
+#endif
+#ifdef SDL_HAPTIC_AUTOCENTER
+    mrb_define_const(mrb, mod, "HAPTIC_AUTOCENTER", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_AUTOCENTER)));
+#endif
+#ifdef SDL_HAPTIC_STATUS
+    mrb_define_const(mrb, mod, "HAPTIC_STATUS", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_STATUS)));
+#endif
+#ifdef SDL_HAPTIC_PAUSE
+    mrb_define_const(mrb, mod, "HAPTIC_PAUSE", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_PAUSE)));
+#endif
+#ifdef SDL_HAPTIC_POLAR
+    mrb_define_const(mrb, mod, "HAPTIC_POLAR", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_POLAR)));
+#endif
+#ifdef SDL_HAPTIC_CARTESIAN
+    mrb_define_const(mrb, mod, "HAPTIC_CARTESIAN", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_CARTESIAN)));
+#endif
+#ifdef SDL_HAPTIC_SPHERICAL
+    mrb_define_const(mrb, mod, "HAPTIC_SPHERICAL", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_SPHERICAL)));
+#endif
+#ifdef SDL_HAPTIC_STEERING_AXIS
+    mrb_define_const(mrb, mod, "HAPTIC_STEERING_AXIS", mrb_int_value(mrb, (mrb_int)(SDL_HAPTIC_STEERING_AXIS)));
+#endif
+#ifdef SDL_INIT_AUDIO
+    mrb_define_const(mrb, mod, "INIT_AUDIO", mrb_int_value(mrb, (mrb_int)(SDL_INIT_AUDIO)));
+#endif
+#ifdef SDL_INIT_VIDEO
+    mrb_define_const(mrb, mod, "INIT_VIDEO", mrb_int_value(mrb, (mrb_int)(SDL_INIT_VIDEO)));
+#endif
+#ifdef SDL_INIT_JOYSTICK
+    mrb_define_const(mrb, mod, "INIT_JOYSTICK", mrb_int_value(mrb, (mrb_int)(SDL_INIT_JOYSTICK)));
+#endif
+#ifdef SDL_INIT_HAPTIC
+    mrb_define_const(mrb, mod, "INIT_HAPTIC", mrb_int_value(mrb, (mrb_int)(SDL_INIT_HAPTIC)));
+#endif
+#ifdef SDL_INIT_GAMEPAD
+    mrb_define_const(mrb, mod, "INIT_GAMEPAD", mrb_int_value(mrb, (mrb_int)(SDL_INIT_GAMEPAD)));
+#endif
+#ifdef SDL_INIT_EVENTS
+    mrb_define_const(mrb, mod, "INIT_EVENTS", mrb_int_value(mrb, (mrb_int)(SDL_INIT_EVENTS)));
+#endif
+#ifdef SDL_INIT_SENSOR
+    mrb_define_const(mrb, mod, "INIT_SENSOR", mrb_int_value(mrb, (mrb_int)(SDL_INIT_SENSOR)));
+#endif
+#ifdef SDL_INIT_CAMERA
+    mrb_define_const(mrb, mod, "INIT_CAMERA", mrb_int_value(mrb, (mrb_int)(SDL_INIT_CAMERA)));
+#endif
+#ifdef SDL_JOYSTICK_AXIS_MAX
+    mrb_define_const(mrb, mod, "JOYSTICK_AXIS_MAX", mrb_int_value(mrb, (mrb_int)(SDL_JOYSTICK_AXIS_MAX)));
+#endif
+#ifdef SDL_HAT_CENTERED
+    mrb_define_const(mrb, mod, "HAT_CENTERED", mrb_int_value(mrb, (mrb_int)(SDL_HAT_CENTERED)));
+#endif
+#ifdef SDL_HAT_UP
+    mrb_define_const(mrb, mod, "HAT_UP", mrb_int_value(mrb, (mrb_int)(SDL_HAT_UP)));
+#endif
+#ifdef SDL_HAT_RIGHT
+    mrb_define_const(mrb, mod, "HAT_RIGHT", mrb_int_value(mrb, (mrb_int)(SDL_HAT_RIGHT)));
+#endif
+#ifdef SDL_HAT_DOWN
+    mrb_define_const(mrb, mod, "HAT_DOWN", mrb_int_value(mrb, (mrb_int)(SDL_HAT_DOWN)));
+#endif
+#ifdef SDL_HAT_LEFT
+    mrb_define_const(mrb, mod, "HAT_LEFT", mrb_int_value(mrb, (mrb_int)(SDL_HAT_LEFT)));
+#endif
+#ifdef SDL_KMOD_NONE
+    mrb_define_const(mrb, mod, "KMOD_NONE", mrb_int_value(mrb, (mrb_int)(SDL_KMOD_NONE)));
+#endif
+#ifdef SDL_KMOD_LSHIFT
+    mrb_define_const(mrb, mod, "KMOD_LSHIFT", mrb_int_value(mrb, (mrb_int)(SDL_KMOD_LSHIFT)));
+#endif
+#ifdef SDL_KMOD_RSHIFT
+    mrb_define_const(mrb, mod, "KMOD_RSHIFT", mrb_int_value(mrb, (mrb_int)(SDL_KMOD_RSHIFT)));
+#endif
+#ifdef SDL_KMOD_LEVEL5
+    mrb_define_const(mrb, mod, "KMOD_LEVEL5", mrb_int_value(mrb, (mrb_int)(SDL_KMOD_LEVEL5)));
+#endif
+#ifdef SDL_KMOD_LCTRL
+    mrb_define_const(mrb, mod, "KMOD_LCTRL", mrb_int_value(mrb, (mrb_int)(SDL_KMOD_LCTRL)));
+#endif
+#ifdef SDL_KMOD_RCTRL
+    mrb_define_const(mrb, mod, "KMOD_RCTRL", mrb_int_value(mrb, (mrb_int)(SDL_KMOD_RCTRL)));
+#endif
+#ifdef SDL_KMOD_LALT
+    mrb_define_const(mrb, mod, "KMOD_LALT", mrb_int_value(mrb, (mrb_int)(SDL_KMOD_LALT)));
+#endif
+#ifdef SDL_KMOD_RALT
+    mrb_define_const(mrb, mod, "KMOD_RALT", mrb_int_value(mrb, (mrb_int)(SDL_KMOD_RALT)));
+#endif
+#ifdef SDL_KMOD_LGUI
+    mrb_define_const(mrb, mod, "KMOD_LGUI", mrb_int_value(mrb, (mrb_int)(SDL_KMOD_LGUI)));
+#endif
+#ifdef SDL_KMOD_RGUI
+    mrb_define_const(mrb, mod, "KMOD_RGUI", mrb_int_value(mrb, (mrb_int)(SDL_KMOD_RGUI)));
+#endif
+#ifdef SDL_KMOD_NUM
+    mrb_define_const(mrb, mod, "KMOD_NUM", mrb_int_value(mrb, (mrb_int)(SDL_KMOD_NUM)));
+#endif
+#ifdef SDL_KMOD_CAPS
+    mrb_define_const(mrb, mod, "KMOD_CAPS", mrb_int_value(mrb, (mrb_int)(SDL_KMOD_CAPS)));
+#endif
+#ifdef SDL_KMOD_MODE
+    mrb_define_const(mrb, mod, "KMOD_MODE", mrb_int_value(mrb, (mrb_int)(SDL_KMOD_MODE)));
+#endif
+#ifdef SDL_KMOD_SCROLL
+    mrb_define_const(mrb, mod, "KMOD_SCROLL", mrb_int_value(mrb, (mrb_int)(SDL_KMOD_SCROLL)));
+#endif
+#ifdef SDL_MESSAGEBOX_ERROR
+    mrb_define_const(mrb, mod, "MESSAGEBOX_ERROR", mrb_int_value(mrb, (mrb_int)(SDL_MESSAGEBOX_ERROR)));
+#endif
+#ifdef SDL_MESSAGEBOX_WARNING
+    mrb_define_const(mrb, mod, "MESSAGEBOX_WARNING", mrb_int_value(mrb, (mrb_int)(SDL_MESSAGEBOX_WARNING)));
+#endif
+#ifdef SDL_MESSAGEBOX_INFORMATION
+    mrb_define_const(mrb, mod, "MESSAGEBOX_INFORMATION", mrb_int_value(mrb, (mrb_int)(SDL_MESSAGEBOX_INFORMATION)));
+#endif
+#ifdef SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT
+    mrb_define_const(mrb, mod, "MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT", mrb_int_value(mrb, (mrb_int)(SDL_MESSAGEBOX_BUTTONS_LEFT_TO_RIGHT)));
+#endif
+#ifdef SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT
+    mrb_define_const(mrb, mod, "MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT", mrb_int_value(mrb, (mrb_int)(SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT)));
+#endif
+#ifdef SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT
+    mrb_define_const(mrb, mod, "MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT", mrb_int_value(mrb, (mrb_int)(SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT)));
+#endif
+#ifdef SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT
+    mrb_define_const(mrb, mod, "MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT", mrb_int_value(mrb, (mrb_int)(SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT)));
+#endif
+#ifdef SDL_BUTTON_LEFT
+    mrb_define_const(mrb, mod, "BUTTON_LEFT", mrb_int_value(mrb, (mrb_int)(SDL_BUTTON_LEFT)));
+#endif
+#ifdef SDL_BUTTON_MIDDLE
+    mrb_define_const(mrb, mod, "BUTTON_MIDDLE", mrb_int_value(mrb, (mrb_int)(SDL_BUTTON_MIDDLE)));
+#endif
+#ifdef SDL_BUTTON_RIGHT
+    mrb_define_const(mrb, mod, "BUTTON_RIGHT", mrb_int_value(mrb, (mrb_int)(SDL_BUTTON_RIGHT)));
+#endif
+#ifdef SDL_BUTTON_X1
+    mrb_define_const(mrb, mod, "BUTTON_X1", mrb_int_value(mrb, (mrb_int)(SDL_BUTTON_X1)));
+#endif
+#ifdef SDL_BUTTON_X2
+    mrb_define_const(mrb, mod, "BUTTON_X2", mrb_int_value(mrb, (mrb_int)(SDL_BUTTON_X2)));
+#endif
+#ifdef SDL_PEN_INPUT_DOWN
+    mrb_define_const(mrb, mod, "PEN_INPUT_DOWN", mrb_int_value(mrb, (mrb_int)(SDL_PEN_INPUT_DOWN)));
+#endif
+#ifdef SDL_PEN_INPUT_BUTTON_1
+    mrb_define_const(mrb, mod, "PEN_INPUT_BUTTON_1", mrb_int_value(mrb, (mrb_int)(SDL_PEN_INPUT_BUTTON_1)));
+#endif
+#ifdef SDL_PEN_INPUT_BUTTON_2
+    mrb_define_const(mrb, mod, "PEN_INPUT_BUTTON_2", mrb_int_value(mrb, (mrb_int)(SDL_PEN_INPUT_BUTTON_2)));
+#endif
+#ifdef SDL_PEN_INPUT_BUTTON_3
+    mrb_define_const(mrb, mod, "PEN_INPUT_BUTTON_3", mrb_int_value(mrb, (mrb_int)(SDL_PEN_INPUT_BUTTON_3)));
+#endif
+#ifdef SDL_PEN_INPUT_BUTTON_4
+    mrb_define_const(mrb, mod, "PEN_INPUT_BUTTON_4", mrb_int_value(mrb, (mrb_int)(SDL_PEN_INPUT_BUTTON_4)));
+#endif
+#ifdef SDL_PEN_INPUT_BUTTON_5
+    mrb_define_const(mrb, mod, "PEN_INPUT_BUTTON_5", mrb_int_value(mrb, (mrb_int)(SDL_PEN_INPUT_BUTTON_5)));
+#endif
+#ifdef SDL_PEN_INPUT_ERASER_TIP
+    mrb_define_const(mrb, mod, "PEN_INPUT_ERASER_TIP", mrb_int_value(mrb, (mrb_int)(SDL_PEN_INPUT_ERASER_TIP)));
+#endif
+#ifdef SDL_PEN_INPUT_IN_PROXIMITY
+    mrb_define_const(mrb, mod, "PEN_INPUT_IN_PROXIMITY", mrb_int_value(mrb, (mrb_int)(SDL_PEN_INPUT_IN_PROXIMITY)));
+#endif
+#ifdef SDL_ALPHA_OPAQUE
+    mrb_define_const(mrb, mod, "ALPHA_OPAQUE", mrb_int_value(mrb, (mrb_int)(SDL_ALPHA_OPAQUE)));
+#endif
+#ifdef SDL_ALPHA_TRANSPARENT
+    mrb_define_const(mrb, mod, "ALPHA_TRANSPARENT", mrb_int_value(mrb, (mrb_int)(SDL_ALPHA_TRANSPARENT)));
+#endif
+#ifdef SDL_RENDERER_VSYNC_DISABLED
+    mrb_define_const(mrb, mod, "RENDERER_VSYNC_DISABLED", mrb_int_value(mrb, (mrb_int)(SDL_RENDERER_VSYNC_DISABLED)));
+#endif
+#ifdef SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE
+    mrb_define_const(mrb, mod, "DEBUG_TEXT_FONT_CHARACTER_SIZE", mrb_int_value(mrb, (mrb_int)(SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE)));
+#endif
+#ifdef SDL_MAX_SINT64
+    mrb_define_const(mrb, mod, "MAX_SINT64", mrb_int_value(mrb, (mrb_int)(SDL_MAX_SINT64)));
+#endif
+#ifdef SDL_MAX_UINT64
+    mrb_define_const(mrb, mod, "MAX_UINT64", mrb_int_value(mrb, (mrb_int)(SDL_MAX_UINT64)));
+#endif
+#ifdef SDL_MIN_UINT64
+    mrb_define_const(mrb, mod, "MIN_UINT64", mrb_int_value(mrb, (mrb_int)(SDL_MIN_UINT64)));
+#endif
+#ifdef SDL_INVALID_UNICODE_CODEPOINT
+    mrb_define_const(mrb, mod, "INVALID_UNICODE_CODEPOINT", mrb_int_value(mrb, (mrb_int)(SDL_INVALID_UNICODE_CODEPOINT)));
+#endif
+#ifdef SDL_SURFACE_PREALLOCATED
+    mrb_define_const(mrb, mod, "SURFACE_PREALLOCATED", mrb_int_value(mrb, (mrb_int)(SDL_SURFACE_PREALLOCATED)));
+#endif
+#ifdef SDL_SURFACE_LOCK_NEEDED
+    mrb_define_const(mrb, mod, "SURFACE_LOCK_NEEDED", mrb_int_value(mrb, (mrb_int)(SDL_SURFACE_LOCK_NEEDED)));
+#endif
+#ifdef SDL_SURFACE_LOCKED
+    mrb_define_const(mrb, mod, "SURFACE_LOCKED", mrb_int_value(mrb, (mrb_int)(SDL_SURFACE_LOCKED)));
+#endif
+#ifdef SDL_SURFACE_SIMD_ALIGNED
+    mrb_define_const(mrb, mod, "SURFACE_SIMD_ALIGNED", mrb_int_value(mrb, (mrb_int)(SDL_SURFACE_SIMD_ALIGNED)));
+#endif
+#ifdef SDL_MS_PER_SECOND
+    mrb_define_const(mrb, mod, "MS_PER_SECOND", mrb_int_value(mrb, (mrb_int)(SDL_MS_PER_SECOND)));
+#endif
+#ifdef SDL_US_PER_SECOND
+    mrb_define_const(mrb, mod, "US_PER_SECOND", mrb_int_value(mrb, (mrb_int)(SDL_US_PER_SECOND)));
+#endif
+#ifdef SDL_NS_PER_SECOND
+    mrb_define_const(mrb, mod, "NS_PER_SECOND", mrb_int_value(mrb, (mrb_int)(SDL_NS_PER_SECOND)));
+#endif
+#ifdef SDL_NS_PER_MS
+    mrb_define_const(mrb, mod, "NS_PER_MS", mrb_int_value(mrb, (mrb_int)(SDL_NS_PER_MS)));
+#endif
+#ifdef SDL_NS_PER_US
+    mrb_define_const(mrb, mod, "NS_PER_US", mrb_int_value(mrb, (mrb_int)(SDL_NS_PER_US)));
+#endif
+#ifdef SDL_TRAYENTRY_BUTTON
+    mrb_define_const(mrb, mod, "TRAYENTRY_BUTTON", mrb_int_value(mrb, (mrb_int)(SDL_TRAYENTRY_BUTTON)));
+#endif
+#ifdef SDL_TRAYENTRY_CHECKBOX
+    mrb_define_const(mrb, mod, "TRAYENTRY_CHECKBOX", mrb_int_value(mrb, (mrb_int)(SDL_TRAYENTRY_CHECKBOX)));
+#endif
+#ifdef SDL_TRAYENTRY_SUBMENU
+    mrb_define_const(mrb, mod, "TRAYENTRY_SUBMENU", mrb_int_value(mrb, (mrb_int)(SDL_TRAYENTRY_SUBMENU)));
+#endif
+#ifdef SDL_TRAYENTRY_DISABLED
+    mrb_define_const(mrb, mod, "TRAYENTRY_DISABLED", mrb_int_value(mrb, (mrb_int)(SDL_TRAYENTRY_DISABLED)));
+#endif
+#ifdef SDL_TRAYENTRY_CHECKED
+    mrb_define_const(mrb, mod, "TRAYENTRY_CHECKED", mrb_int_value(mrb, (mrb_int)(SDL_TRAYENTRY_CHECKED)));
+#endif
+#ifdef SDL_MAJOR_VERSION
+    mrb_define_const(mrb, mod, "MAJOR_VERSION", mrb_int_value(mrb, (mrb_int)(SDL_MAJOR_VERSION)));
+#endif
+#ifdef SDL_MINOR_VERSION
+    mrb_define_const(mrb, mod, "MINOR_VERSION", mrb_int_value(mrb, (mrb_int)(SDL_MINOR_VERSION)));
+#endif
+#ifdef SDL_MICRO_VERSION
+    mrb_define_const(mrb, mod, "MICRO_VERSION", mrb_int_value(mrb, (mrb_int)(SDL_MICRO_VERSION)));
+#endif
+#ifdef SDL_WINDOW_FULLSCREEN
+    mrb_define_const(mrb, mod, "WINDOW_FULLSCREEN", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_FULLSCREEN)));
+#endif
+#ifdef SDL_WINDOW_OPENGL
+    mrb_define_const(mrb, mod, "WINDOW_OPENGL", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_OPENGL)));
+#endif
+#ifdef SDL_WINDOW_OCCLUDED
+    mrb_define_const(mrb, mod, "WINDOW_OCCLUDED", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_OCCLUDED)));
+#endif
+#ifdef SDL_WINDOW_HIDDEN
+    mrb_define_const(mrb, mod, "WINDOW_HIDDEN", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_HIDDEN)));
+#endif
+#ifdef SDL_WINDOW_BORDERLESS
+    mrb_define_const(mrb, mod, "WINDOW_BORDERLESS", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_BORDERLESS)));
+#endif
+#ifdef SDL_WINDOW_RESIZABLE
+    mrb_define_const(mrb, mod, "WINDOW_RESIZABLE", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_RESIZABLE)));
+#endif
+#ifdef SDL_WINDOW_MINIMIZED
+    mrb_define_const(mrb, mod, "WINDOW_MINIMIZED", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_MINIMIZED)));
+#endif
+#ifdef SDL_WINDOW_MAXIMIZED
+    mrb_define_const(mrb, mod, "WINDOW_MAXIMIZED", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_MAXIMIZED)));
+#endif
+#ifdef SDL_WINDOW_MOUSE_GRABBED
+    mrb_define_const(mrb, mod, "WINDOW_MOUSE_GRABBED", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_MOUSE_GRABBED)));
+#endif
+#ifdef SDL_WINDOW_INPUT_FOCUS
+    mrb_define_const(mrb, mod, "WINDOW_INPUT_FOCUS", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_INPUT_FOCUS)));
+#endif
+#ifdef SDL_WINDOW_MOUSE_FOCUS
+    mrb_define_const(mrb, mod, "WINDOW_MOUSE_FOCUS", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_MOUSE_FOCUS)));
+#endif
+#ifdef SDL_WINDOW_EXTERNAL
+    mrb_define_const(mrb, mod, "WINDOW_EXTERNAL", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_EXTERNAL)));
+#endif
+#ifdef SDL_WINDOW_MODAL
+    mrb_define_const(mrb, mod, "WINDOW_MODAL", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_MODAL)));
+#endif
+#ifdef SDL_WINDOW_HIGH_PIXEL_DENSITY
+    mrb_define_const(mrb, mod, "WINDOW_HIGH_PIXEL_DENSITY", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_HIGH_PIXEL_DENSITY)));
+#endif
+#ifdef SDL_WINDOW_MOUSE_CAPTURE
+    mrb_define_const(mrb, mod, "WINDOW_MOUSE_CAPTURE", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_MOUSE_CAPTURE)));
+#endif
+#ifdef SDL_WINDOW_MOUSE_RELATIVE_MODE
+    mrb_define_const(mrb, mod, "WINDOW_MOUSE_RELATIVE_MODE", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_MOUSE_RELATIVE_MODE)));
+#endif
+#ifdef SDL_WINDOW_ALWAYS_ON_TOP
+    mrb_define_const(mrb, mod, "WINDOW_ALWAYS_ON_TOP", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_ALWAYS_ON_TOP)));
+#endif
+#ifdef SDL_WINDOW_UTILITY
+    mrb_define_const(mrb, mod, "WINDOW_UTILITY", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_UTILITY)));
+#endif
+#ifdef SDL_WINDOW_TOOLTIP
+    mrb_define_const(mrb, mod, "WINDOW_TOOLTIP", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_TOOLTIP)));
+#endif
+#ifdef SDL_WINDOW_POPUP_MENU
+    mrb_define_const(mrb, mod, "WINDOW_POPUP_MENU", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_POPUP_MENU)));
+#endif
+#ifdef SDL_WINDOW_KEYBOARD_GRABBED
+    mrb_define_const(mrb, mod, "WINDOW_KEYBOARD_GRABBED", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_KEYBOARD_GRABBED)));
+#endif
+#ifdef SDL_WINDOW_FILL_DOCUMENT
+    mrb_define_const(mrb, mod, "WINDOW_FILL_DOCUMENT", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_FILL_DOCUMENT)));
+#endif
+#ifdef SDL_WINDOW_VULKAN
+    mrb_define_const(mrb, mod, "WINDOW_VULKAN", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_VULKAN)));
+#endif
+#ifdef SDL_WINDOW_METAL
+    mrb_define_const(mrb, mod, "WINDOW_METAL", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_METAL)));
+#endif
+#ifdef SDL_WINDOW_TRANSPARENT
+    mrb_define_const(mrb, mod, "WINDOW_TRANSPARENT", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_TRANSPARENT)));
+#endif
+#ifdef SDL_WINDOW_NOT_FOCUSABLE
+    mrb_define_const(mrb, mod, "WINDOW_NOT_FOCUSABLE", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_NOT_FOCUSABLE)));
+#endif
+#ifdef SDL_WINDOWPOS_UNDEFINED_MASK
+    mrb_define_const(mrb, mod, "WINDOWPOS_UNDEFINED_MASK", mrb_int_value(mrb, (mrb_int)(SDL_WINDOWPOS_UNDEFINED_MASK)));
+#endif
+#ifdef SDL_WINDOWPOS_CENTERED_MASK
+    mrb_define_const(mrb, mod, "WINDOWPOS_CENTERED_MASK", mrb_int_value(mrb, (mrb_int)(SDL_WINDOWPOS_CENTERED_MASK)));
+#endif
+#ifdef SDL_GL_CONTEXT_PROFILE_CORE
+    mrb_define_const(mrb, mod, "GL_CONTEXT_PROFILE_CORE", mrb_int_value(mrb, (mrb_int)(SDL_GL_CONTEXT_PROFILE_CORE)));
+#endif
+#ifdef SDL_GL_CONTEXT_PROFILE_COMPATIBILITY
+    mrb_define_const(mrb, mod, "GL_CONTEXT_PROFILE_COMPATIBILITY", mrb_int_value(mrb, (mrb_int)(SDL_GL_CONTEXT_PROFILE_COMPATIBILITY)));
+#endif
+#ifdef SDL_GL_CONTEXT_PROFILE_ES
+    mrb_define_const(mrb, mod, "GL_CONTEXT_PROFILE_ES", mrb_int_value(mrb, (mrb_int)(SDL_GL_CONTEXT_PROFILE_ES)));
+#endif
+#ifdef SDL_GL_CONTEXT_DEBUG_FLAG
+    mrb_define_const(mrb, mod, "GL_CONTEXT_DEBUG_FLAG", mrb_int_value(mrb, (mrb_int)(SDL_GL_CONTEXT_DEBUG_FLAG)));
+#endif
+#ifdef SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG
+    mrb_define_const(mrb, mod, "GL_CONTEXT_FORWARD_COMPATIBLE_FLAG", mrb_int_value(mrb, (mrb_int)(SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG)));
+#endif
+#ifdef SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG
+    mrb_define_const(mrb, mod, "GL_CONTEXT_ROBUST_ACCESS_FLAG", mrb_int_value(mrb, (mrb_int)(SDL_GL_CONTEXT_ROBUST_ACCESS_FLAG)));
+#endif
+#ifdef SDL_GL_CONTEXT_RESET_ISOLATION_FLAG
+    mrb_define_const(mrb, mod, "GL_CONTEXT_RESET_ISOLATION_FLAG", mrb_int_value(mrb, (mrb_int)(SDL_GL_CONTEXT_RESET_ISOLATION_FLAG)));
+#endif
+#ifdef SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE
+    mrb_define_const(mrb, mod, "GL_CONTEXT_RELEASE_BEHAVIOR_NONE", mrb_int_value(mrb, (mrb_int)(SDL_GL_CONTEXT_RELEASE_BEHAVIOR_NONE)));
+#endif
+#ifdef SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH
+    mrb_define_const(mrb, mod, "GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH", mrb_int_value(mrb, (mrb_int)(SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH)));
+#endif
+#ifdef SDL_GL_CONTEXT_RESET_NO_NOTIFICATION
+    mrb_define_const(mrb, mod, "GL_CONTEXT_RESET_NO_NOTIFICATION", mrb_int_value(mrb, (mrb_int)(SDL_GL_CONTEXT_RESET_NO_NOTIFICATION)));
+#endif
+#ifdef SDL_GL_CONTEXT_RESET_LOSE_CONTEXT
+    mrb_define_const(mrb, mod, "GL_CONTEXT_RESET_LOSE_CONTEXT", mrb_int_value(mrb, (mrb_int)(SDL_GL_CONTEXT_RESET_LOSE_CONTEXT)));
+#endif
+#ifdef SDL_WINDOW_SURFACE_VSYNC_DISABLED
+    mrb_define_const(mrb, mod, "WINDOW_SURFACE_VSYNC_DISABLED", mrb_int_value(mrb, (mrb_int)(SDL_WINDOW_SURFACE_VSYNC_DISABLED)));
+#endif
 }

@@ -9,10 +9,13 @@
 #include <SDLStatic/compress.h>
 #include <SDLStatic/crypto.h>
 #include <SDLStatic/debug_text.h>
+#include <SDLStatic/dialog.h>
 #include <SDLStatic/gpu_primitives.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
+#include <SDLStatic/regex.h>
 #include <SDLStatic/signals.h>
+#include <SDLStatic/textfile.h>
 #include <SDLStatic/tiled.h>
 #include <SDLStatic/vfs.h>
 #include <string.h>
@@ -32,6 +35,16 @@ static void GenRead_SDLStatic_ChipToneDesc(lua_State *L, int idx, SDLStatic_Chip
     out->vibrato_semitones = (float)SDLStaticGen_LuaFieldNum(L, idx, "vibrato_semitones");
 }
 
+static void GenRead_SDL_Color(lua_State *L, int idx, SDL_Color *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    out->r = (Uint8)SDLStaticGen_LuaFieldInt(L, idx, "r");
+    out->g = (Uint8)SDLStaticGen_LuaFieldInt(L, idx, "g");
+    out->b = (Uint8)SDLStaticGen_LuaFieldInt(L, idx, "b");
+    out->a = (Uint8)SDLStaticGen_LuaFieldInt(L, idx, "a");
+}
+
 static void GenDtor_SDLStatic_FreeTiledMap(void *p)
 {
     SDLStatic_TiledMap *typed = (SDLStatic_TiledMap *)p;
@@ -44,6 +57,12 @@ static void GenDtor_SDLStatic_DestroyGui(void *p)
     SDLStatic_DestroyGui(typed);
 }
 
+static void GenDtor_SDLStatic_DestroyRegex(void *p)
+{
+    SDLStatic_Regex *typed = (SDLStatic_Regex *)p;
+    SDLStatic_DestroyRegex(typed);
+}
+
 static int GenL_SDLStatic_BidiBaseIsRTL(lua_State *L)
 {
     (void)L;
@@ -51,6 +70,16 @@ static int GenL_SDLStatic_BidiBaseIsRTL(lua_State *L)
     int a1 = (int)luaL_checkinteger(L, 2);
     bool rv = SDLStatic_BidiBaseIsRTL(a0, a1);
     lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_CompileRegex(lua_State *L)
+{
+    (void)L;
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checkstring(L, 1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    SDLStatic_Regex * rv = SDLStatic_CompileRegex(a0, a1);
+    SDLStaticGen_LuaPushOwned(L, (void *)rv, "SDLStatic_Regex", GenDtor_SDLStatic_DestroyRegex);
     return 1;
 }
 
@@ -135,12 +164,52 @@ static int GenL_SDLStatic_DestroyGui(lua_State *L)
     return 0;
 }
 
+static int GenL_SDLStatic_DestroyRegex(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaTakeHandle(L, 1, "SDLStatic_Regex");
+    SDLStatic_DestroyRegex(a0);
+    return 0;
+}
+
 static int GenL_SDLStatic_DestroySignalEmitter(lua_State *L)
 {
     (void)L;
     SDLStatic_SignalEmitter *a0 = (SDLStatic_SignalEmitter *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_SignalEmitter");
     SDLStatic_DestroySignalEmitter(a0);
     return 0;
+}
+
+static int GenL_SDLStatic_DialogDeliverSave(lua_State *L)
+{
+    (void)L;
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checkstring(L, 1);
+    bool rv = SDLStatic_DialogDeliverSave(a0);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_DialogPath(lua_State *L)
+{
+    (void)L;
+    const char * rv = SDLStatic_DialogPath();
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_DialogReset(lua_State *L)
+{
+    (void)L;
+    SDLStatic_DialogReset();
+    return 0;
+}
+
+static int GenL_SDLStatic_DialogStatus(lua_State *L)
+{
+    (void)L;
+    SDLStatic_DialogState rv = SDLStatic_DialogStatus();
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
 }
 
 static int GenL_SDLStatic_DisconnectSignal(lua_State *L)
@@ -183,11 +252,39 @@ static int GenL_SDLStatic_GuiContext(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_GuiFontHeight(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    float rv = SDLStatic_GuiFontHeight(a0);
+    lua_pushnumber(L, (lua_Number)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiGridBeginOwned(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    bool rv = SDLStatic_GuiGridBeginOwned(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_GuiGridCell(lua_State *L)
 {
     (void)L;
     SDLStatic_GuiGrid *a0 = (SDLStatic_GuiGrid *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_GuiGrid");
     SDLStatic_GuiGridCell(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GuiGridCellOwned(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDLStatic_GuiGridCellOwned(a0);
     return 0;
 }
 
@@ -200,11 +297,28 @@ static int GenL_SDLStatic_GuiGridCellSpan(lua_State *L)
     return 0;
 }
 
+static int GenL_SDLStatic_GuiGridCellSpanOwned(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    SDLStatic_GuiGridCellSpanOwned(a0, a1);
+    return 0;
+}
+
 static int GenL_SDLStatic_GuiGridEnd(lua_State *L)
 {
     (void)L;
     SDLStatic_GuiGrid *a0 = (SDLStatic_GuiGrid *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_GuiGrid");
     SDLStatic_GuiGridEnd(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GuiGridEndOwned(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDLStatic_GuiGridEndOwned(a0);
     return 0;
 }
 
@@ -214,6 +328,36 @@ static int GenL_SDLStatic_GuiGridNextRow(lua_State *L)
     SDLStatic_GuiGrid *a0 = (SDLStatic_GuiGrid *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_GuiGrid");
     SDLStatic_GuiGridNextRow(a0);
     return 0;
+}
+
+static int GenL_SDLStatic_GuiGridNextRowOwned(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDLStatic_GuiGridNextRowOwned(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GuiGridWeight(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    bool rv = SDLStatic_GuiGridWeight(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiImage(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDL_Texture *a1 = (SDL_Texture *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_Texture");
+    SDLStatic_GuiImageMode a2 = (SDLStatic_GuiImageMode)luaL_checkinteger(L, 3);
+    bool rv = SDLStatic_GuiImage(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
 }
 
 static int GenL_SDLStatic_GuiInputBegin(lua_State *L)
@@ -229,6 +373,46 @@ static int GenL_SDLStatic_GuiInputEnd(lua_State *L)
     (void)L;
     SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
     SDLStatic_GuiInputEnd(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GuiKeyPressed(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    bool rv = SDLStatic_GuiKeyPressed(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiOpenFileButton(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checkstring(L, 3);
+    const char *a3 = lua_isnoneornil(L, 4) ? NULL : luaL_checkstring(L, 4);
+    bool rv = SDLStatic_GuiOpenFileButton(a0, a1, a2, a3);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiPopFont(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    SDLStatic_GuiPopFont(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_GuiPopStyleColor(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    SDLStatic_GuiPopStyleColor(a0, a1);
     return 0;
 }
 
@@ -251,12 +435,103 @@ static int GenL_SDLStatic_GuiPumpEvents(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_GuiPushFont(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDLStatic_GuiFontSize a1 = (SDLStatic_GuiFontSize)luaL_checkinteger(L, 2);
+    bool rv = SDLStatic_GuiPushFont(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiPushStyleColor(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDLStatic_GuiStyleColor a1 = (SDLStatic_GuiStyleColor)luaL_checkinteger(L, 2);
+    SDL_Color a2;
+    GenRead_SDL_Color(L, 3, &a2);
+    bool rv = SDLStatic_GuiPushStyleColor(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_GuiRender(lua_State *L)
 {
     (void)L;
     SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
     bool rv = SDLStatic_GuiRender(a0);
     lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiSaveFileButton(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checkstring(L, 3);
+    size_t len3 = 0;
+    const char *a3 = lua_isnoneornil(L, 4) ? NULL : luaL_checklstring(L, 4, &len3);
+    bool rv = SDLStatic_GuiSaveFileButton(a0, a1, a2, (const void *)a3, (size_t)len3);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiSavedPath(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    const char * rv = SDLStatic_GuiSavedPath(a0);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiScale(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    float rv = SDLStatic_GuiScale(a0);
+    lua_pushnumber(L, (lua_Number)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiSetFont(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDLStatic_GuiFontSize a1 = (SDLStatic_GuiFontSize)luaL_checkinteger(L, 2);
+    bool rv = SDLStatic_GuiSetFont(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiSetTooltipDelay(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    SDLStatic_GuiSetTooltipDelay(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_GuiTooltip(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    bool rv = SDLStatic_GuiTooltip(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiTooltipDelay(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int rv = SDLStatic_GuiTooltipDelay(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
     return 1;
 }
 
@@ -281,6 +556,16 @@ static int GenL_SDLStatic_HMACSHA256(lua_State *L)
     lua_pushboolean(L, (int)rv);
     lua_pushinteger(L, (lua_Integer)io4);
     return 2;
+}
+
+static int GenL_SDLStatic_LoadTextFile(lua_State *L)
+{
+    (void)L;
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checkstring(L, 1);
+    char * rv = SDLStatic_LoadTextFile(a0);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    if (rv != NULL) { SDL_free(rv); }
+    return 1;
 }
 
 static int GenL_SDLStatic_LoadTiledMap(lua_State *L)
@@ -331,6 +616,136 @@ static int GenL_SDLStatic_QuitDebugText(lua_State *L)
     return 0;
 }
 
+static int GenL_SDLStatic_RegexEscape(lua_State *L)
+{
+    (void)L;
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checkstring(L, 1);
+    char * rv = SDLStatic_RegexEscape(a0);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    if (rv != NULL) { SDL_free(rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexFlags(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    const char * rv = SDLStatic_RegexFlags(a0);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexGroup(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    const char * rv = SDLStatic_RegexGroup(a0, a1);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexGroupBegin(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    int rv = SDLStatic_RegexGroupBegin(a0, a1);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexGroupCount(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    int rv = SDLStatic_RegexGroupCount(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexGroupEnd(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    int rv = SDLStatic_RegexGroupEnd(a0, a1);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexMatchAt(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    int a2 = (int)luaL_checkinteger(L, 3);
+    bool rv = SDLStatic_RegexMatchAt(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexNamedGroup(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    int rv = SDLStatic_RegexNamedGroup(a0, a1);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexNamedGroupCount(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    int rv = SDLStatic_RegexNamedGroupCount(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexNamedGroupName(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    const char * rv = SDLStatic_RegexNamedGroupName(a0, a1);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexPattern(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    const char * rv = SDLStatic_RegexPattern(a0);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexReplace(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checkstring(L, 3);
+    bool a3 = (bool)lua_toboolean(L, 4);
+    const char * rv = SDLStatic_RegexReplace(a0, a1, a2, a3);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexSearch(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    int a2 = (int)luaL_checkinteger(L, 3);
+    bool rv = SDLStatic_RegexSearch(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_RenderDebugText(lua_State *L)
 {
     (void)L;
@@ -361,6 +776,30 @@ static int GenL_SDLStatic_SetDebugTextSize(lua_State *L)
     float a0 = (float)luaL_checknumber(L, 1);
     SDLStatic_SetDebugTextSize(a0);
     return 0;
+}
+
+static int GenL_SDLStatic_ShowOpenFileDialog(lua_State *L)
+{
+    (void)L;
+    SDL_Window *a0 = (SDL_Window *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Window");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checkstring(L, 3);
+    const char *a3 = lua_isnoneornil(L, 4) ? NULL : luaL_checkstring(L, 4);
+    bool rv = SDLStatic_ShowOpenFileDialog(a0, a1, a2, a3);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_ShowSaveFileDialog(lua_State *L)
+{
+    (void)L;
+    SDL_Window *a0 = (SDL_Window *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Window");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checkstring(L, 3);
+    const char *a3 = lua_isnoneornil(L, 4) ? NULL : luaL_checkstring(L, 4);
+    bool rv = SDLStatic_ShowSaveFileDialog(a0, a1, a2, a3);
+    lua_pushboolean(L, (int)rv);
+    return 1;
 }
 
 static int GenL_SDLStatic_TiledLayerCount(lua_State *L)
@@ -474,9 +913,11 @@ static int GenL_SDLStatic_TiledTileWidth(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 44);
+    lua_createtable(L, 0, 87);
     lua_pushcfunction(L, GenL_SDLStatic_BidiBaseIsRTL);
     lua_setfield(L, -2, "BidiBaseIsRTL");
+    lua_pushcfunction(L, GenL_SDLStatic_CompileRegex);
+    lua_setfield(L, -2, "CompileRegex");
     lua_pushcfunction(L, GenL_SDLStatic_CountSignalConnections);
     lua_setfield(L, -2, "CountSignalConnections");
     lua_pushcfunction(L, GenL_SDLStatic_CreateChipSFX);
@@ -493,8 +934,18 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "CryptoSelfTest");
     lua_pushcfunction(L, GenL_SDLStatic_DestroyGui);
     lua_setfield(L, -2, "DestroyGui");
+    lua_pushcfunction(L, GenL_SDLStatic_DestroyRegex);
+    lua_setfield(L, -2, "DestroyRegex");
     lua_pushcfunction(L, GenL_SDLStatic_DestroySignalEmitter);
     lua_setfield(L, -2, "DestroySignalEmitter");
+    lua_pushcfunction(L, GenL_SDLStatic_DialogDeliverSave);
+    lua_setfield(L, -2, "DialogDeliverSave");
+    lua_pushcfunction(L, GenL_SDLStatic_DialogPath);
+    lua_setfield(L, -2, "DialogPath");
+    lua_pushcfunction(L, GenL_SDLStatic_DialogReset);
+    lua_setfield(L, -2, "DialogReset");
+    lua_pushcfunction(L, GenL_SDLStatic_DialogStatus);
+    lua_setfield(L, -2, "DialogStatus");
     lua_pushcfunction(L, GenL_SDLStatic_DisconnectSignal);
     lua_setfield(L, -2, "DisconnectSignal");
     lua_pushcfunction(L, GenL_SDLStatic_EncodeDataBase64);
@@ -503,28 +954,72 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "FreeTiledMap");
     lua_pushcfunction(L, GenL_SDLStatic_GuiContext);
     lua_setfield(L, -2, "GuiContext");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiFontHeight);
+    lua_setfield(L, -2, "GuiFontHeight");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiGridBeginOwned);
+    lua_setfield(L, -2, "GuiGridBeginOwned");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridCell);
     lua_setfield(L, -2, "GuiGridCell");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiGridCellOwned);
+    lua_setfield(L, -2, "GuiGridCellOwned");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridCellSpan);
     lua_setfield(L, -2, "GuiGridCellSpan");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiGridCellSpanOwned);
+    lua_setfield(L, -2, "GuiGridCellSpanOwned");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridEnd);
     lua_setfield(L, -2, "GuiGridEnd");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiGridEndOwned);
+    lua_setfield(L, -2, "GuiGridEndOwned");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridNextRow);
     lua_setfield(L, -2, "GuiGridNextRow");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiGridNextRowOwned);
+    lua_setfield(L, -2, "GuiGridNextRowOwned");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiGridWeight);
+    lua_setfield(L, -2, "GuiGridWeight");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiImage);
+    lua_setfield(L, -2, "GuiImage");
     lua_pushcfunction(L, GenL_SDLStatic_GuiInputBegin);
     lua_setfield(L, -2, "GuiInputBegin");
     lua_pushcfunction(L, GenL_SDLStatic_GuiInputEnd);
     lua_setfield(L, -2, "GuiInputEnd");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiKeyPressed);
+    lua_setfield(L, -2, "GuiKeyPressed");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiOpenFileButton);
+    lua_setfield(L, -2, "GuiOpenFileButton");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiPopFont);
+    lua_setfield(L, -2, "GuiPopFont");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiPopStyleColor);
+    lua_setfield(L, -2, "GuiPopStyleColor");
     lua_pushcfunction(L, GenL_SDLStatic_GuiProcessEvent);
     lua_setfield(L, -2, "GuiProcessEvent");
     lua_pushcfunction(L, GenL_SDLStatic_GuiPumpEvents);
     lua_setfield(L, -2, "GuiPumpEvents");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiPushFont);
+    lua_setfield(L, -2, "GuiPushFont");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiPushStyleColor);
+    lua_setfield(L, -2, "GuiPushStyleColor");
     lua_pushcfunction(L, GenL_SDLStatic_GuiRender);
     lua_setfield(L, -2, "GuiRender");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiSaveFileButton);
+    lua_setfield(L, -2, "GuiSaveFileButton");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiSavedPath);
+    lua_setfield(L, -2, "GuiSavedPath");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiScale);
+    lua_setfield(L, -2, "GuiScale");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiSetFont);
+    lua_setfield(L, -2, "GuiSetFont");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiSetTooltipDelay);
+    lua_setfield(L, -2, "GuiSetTooltipDelay");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiTooltip);
+    lua_setfield(L, -2, "GuiTooltip");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiTooltipDelay);
+    lua_setfield(L, -2, "GuiTooltipDelay");
     lua_pushcfunction(L, GenL_SDLStatic_GuiWantsInput);
     lua_setfield(L, -2, "GuiWantsInput");
     lua_pushcfunction(L, GenL_SDLStatic_HMACSHA256);
     lua_setfield(L, -2, "HMACSHA256");
+    lua_pushcfunction(L, GenL_SDLStatic_LoadTextFile);
+    lua_setfield(L, -2, "LoadTextFile");
     lua_pushcfunction(L, GenL_SDLStatic_LoadTiledMap);
     lua_setfield(L, -2, "LoadTiledMap");
     lua_pushcfunction(L, GenL_SDLStatic_MountEncryptedArchive);
@@ -535,12 +1030,42 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "OpenVFSRead");
     lua_pushcfunction(L, GenL_SDLStatic_QuitDebugText);
     lua_setfield(L, -2, "QuitDebugText");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexEscape);
+    lua_setfield(L, -2, "RegexEscape");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexFlags);
+    lua_setfield(L, -2, "RegexFlags");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexGroup);
+    lua_setfield(L, -2, "RegexGroup");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexGroupBegin);
+    lua_setfield(L, -2, "RegexGroupBegin");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexGroupCount);
+    lua_setfield(L, -2, "RegexGroupCount");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexGroupEnd);
+    lua_setfield(L, -2, "RegexGroupEnd");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexMatchAt);
+    lua_setfield(L, -2, "RegexMatchAt");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexNamedGroup);
+    lua_setfield(L, -2, "RegexNamedGroup");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexNamedGroupCount);
+    lua_setfield(L, -2, "RegexNamedGroupCount");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexNamedGroupName);
+    lua_setfield(L, -2, "RegexNamedGroupName");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexPattern);
+    lua_setfield(L, -2, "RegexPattern");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexReplace);
+    lua_setfield(L, -2, "RegexReplace");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexSearch);
+    lua_setfield(L, -2, "RegexSearch");
     lua_pushcfunction(L, GenL_SDLStatic_RenderDebugText);
     lua_setfield(L, -2, "RenderDebugText");
     lua_pushcfunction(L, GenL_SDLStatic_SHA256);
     lua_setfield(L, -2, "SHA256");
     lua_pushcfunction(L, GenL_SDLStatic_SetDebugTextSize);
     lua_setfield(L, -2, "SetDebugTextSize");
+    lua_pushcfunction(L, GenL_SDLStatic_ShowOpenFileDialog);
+    lua_setfield(L, -2, "ShowOpenFileDialog");
+    lua_pushcfunction(L, GenL_SDLStatic_ShowSaveFileDialog);
+    lua_setfield(L, -2, "ShowSaveFileDialog");
     lua_pushcfunction(L, GenL_SDLStatic_TiledLayerCount);
     lua_setfield(L, -2, "TiledLayerCount");
     lua_pushcfunction(L, GenL_SDLStatic_TiledLayerName);
@@ -591,6 +1116,42 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "SDLSTATIC_CHIP_NOISE_METALLIC");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_CHIP_SINE);
     lua_setfield(L, -2, "SDLSTATIC_CHIP_SINE");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_DIALOG_IDLE);
+    lua_setfield(L, -2, "SDLSTATIC_DIALOG_IDLE");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_DIALOG_PENDING);
+    lua_setfield(L, -2, "SDLSTATIC_DIALOG_PENDING");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_DIALOG_ACCEPTED);
+    lua_setfield(L, -2, "SDLSTATIC_DIALOG_ACCEPTED");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_DIALOG_CANCELLED);
+    lua_setfield(L, -2, "SDLSTATIC_DIALOG_CANCELLED");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_DIALOG_ERROR);
+    lua_setfield(L, -2, "SDLSTATIC_DIALOG_ERROR");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_FONT_SMALL);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_FONT_SMALL");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_FONT_NORMAL);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_FONT_NORMAL");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_FONT_LARGE);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_FONT_LARGE");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_IMAGE_STRETCH);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_IMAGE_STRETCH");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_IMAGE_ZOOM);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_IMAGE_ZOOM");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_IMAGE_CENTER);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_IMAGE_CENTER");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_IMAGE_FILL);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_IMAGE_FILL");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_COLOR_TEXT);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_COLOR_TEXT");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_COLOR_BUTTON);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_COLOR_BUTTON");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_COLOR_BUTTON_HOVER);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_COLOR_BUTTON_HOVER");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_COLOR_BUTTON_TEXT);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_COLOR_BUTTON_TEXT");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_COLOR_HEADER);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_COLOR_HEADER");
     lua_setglobal(L, "SDLStaticC");
     return 0;
 }

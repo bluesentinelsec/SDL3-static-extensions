@@ -1058,4 +1058,37 @@ void SDLStaticGen_OpenRuby_cjson(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "SetNumberHelper", GenR_cJSON_SetNumberHelper, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetValuestring", GenR_cJSON_SetValuestring, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "Version", GenR_cJSON_Version, MRB_ARGS_ANY());
+#ifdef cJSON_Invalid
+    mrb_define_const(mrb, mod, "Invalid", mrb_int_value(mrb, (mrb_int)(cJSON_Invalid)));
+#endif
+#ifdef cJSON_False
+    mrb_define_const(mrb, mod, "False", mrb_int_value(mrb, (mrb_int)(cJSON_False)));
+#endif
+#ifdef cJSON_True
+    mrb_define_const(mrb, mod, "True", mrb_int_value(mrb, (mrb_int)(cJSON_True)));
+#endif
+#ifdef cJSON_NULL
+    mrb_define_const(mrb, mod, "NULL", mrb_int_value(mrb, (mrb_int)(cJSON_NULL)));
+#endif
+#ifdef cJSON_Number
+    mrb_define_const(mrb, mod, "Number", mrb_int_value(mrb, (mrb_int)(cJSON_Number)));
+#endif
+#ifdef cJSON_String
+    mrb_define_const(mrb, mod, "String", mrb_int_value(mrb, (mrb_int)(cJSON_String)));
+#endif
+#ifdef cJSON_Array
+    mrb_define_const(mrb, mod, "Array", mrb_int_value(mrb, (mrb_int)(cJSON_Array)));
+#endif
+#ifdef cJSON_Object
+    mrb_define_const(mrb, mod, "Object", mrb_int_value(mrb, (mrb_int)(cJSON_Object)));
+#endif
+#ifdef cJSON_Raw
+    mrb_define_const(mrb, mod, "Raw", mrb_int_value(mrb, (mrb_int)(cJSON_Raw)));
+#endif
+#ifdef cJSON_IsReference
+    mrb_define_const(mrb, mod, "IsReference", mrb_int_value(mrb, (mrb_int)(cJSON_IsReference)));
+#endif
+#ifdef cJSON_StringIsConst
+    mrb_define_const(mrb, mod, "StringIsConst", mrb_int_value(mrb, (mrb_int)(cJSON_StringIsConst)));
+#endif
 }

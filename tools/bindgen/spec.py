@@ -188,6 +188,7 @@ LIBRARIES: list[LibrarySpec] = [
             "gui/include/SDLStatic/gui.h",
             "gui/include/SDLStatic/gui_grid.h",
             "tiled/include/SDLStatic/*.h",
+            "regex/include/SDLStatic/regex.h",
             "ttf/include/SDLStatic/*.h",
         ],
         includes=[],
@@ -361,6 +362,8 @@ RESOURCES: dict[str, list[ResourceSpec]] = {
                      ["SDLStatic_LoadTiledMap"]),
         ResourceSpec("SDLStatic_Gui", "GuiHandle", "SDLStatic_DestroyGui",
                      ["SDLStatic_CreateGui"]),
+        ResourceSpec("SDLStatic_Regex", "RegexHandle", "SDLStatic_DestroyRegex",
+                     ["SDLStatic_CompileRegex"]),
     ],
 }
 
