@@ -66,6 +66,16 @@ struct SDLStatic_Gui
     SDLStatic_GuiGrid grid;   /* the script-reachable grid */
     float grid_weights[SDLSTATIC_GUI_GRID_MAX_COLS];
     bool grid_active;
+    /* Queued by SDLStatic_GuiDrawTextureOverlay, flushed after the GUI. */
+    struct
+    {
+        SDL_Texture *texture;
+        SDL_FRect rect;
+        SDLStatic_GuiImageMode mode;
+    } overlays[SDLSTATIC_GUI_MAX_OVERLAYS];
+    int overlay_count;
+    int draw_commands; /* what the last frame cost */
+    int memory_used;
     bool file_button_synced; /* a file-button overlay was placed this frame */
     bool save_button_synced; /* a save-button overlay was placed this frame */
     bool save_pending;       /* desktop: waiting on the native save dialog */
@@ -104,8 +114,51 @@ static void ClipboardPaste(nk_handle usr, struct nk_text_edit *edit)
 
 /* --------------------------------------------------------- lifetime ---- */
 
+/* Latin-1 plus the punctuation UI text actually contains: dashes, curly
+ * quotes, bullet, ellipsis, arrows, and the currency symbols a price tag
+ * needs. Without these an em dash bakes as the missing-glyph box. */
+static const nk_rune *PunctuationRanges(void)
+{
+    static const nk_rune ranges[] = {
+        0x0020, 0x00FF, /* Latin-1 */
+        0x2010, 0x2027, /* dashes, quotes, bullet, ellipsis */
+        0x2030, 0x205E, /* per-mille, primes, guillemets */
+        0x20A0, 0x20BF, /* currency */
+        0x2190, 0x21FF, /* arrows */
+        0x2713, 0x2716, /* check and cross marks */
+        0,
+    };
+    return ranges;
+}
+
+static const nk_rune *RangesFor(SDLStatic_GuiGlyphRange range)
+{
+    switch (range)
+    {
+    case SDLSTATIC_GUI_GLYPHS_PUNCTUATION:
+        return PunctuationRanges();
+    case SDLSTATIC_GUI_GLYPHS_CYRILLIC:
+        return nk_font_cyrillic_glyph_ranges();
+    case SDLSTATIC_GUI_GLYPHS_CHINESE:
+        return nk_font_chinese_glyph_ranges();
+    case SDLSTATIC_GUI_GLYPHS_KOREAN:
+        return nk_font_korean_glyph_ranges();
+    case SDLSTATIC_GUI_GLYPHS_LATIN1:
+    default:
+        return NULL; /* Nuklear's own default: U+0020..U+00FF */
+    }
+}
+
 SDLStatic_Gui *SDLStatic_CreateGui(SDL_Renderer *renderer, const void *font_data, size_t font_len,
                                    float font_size)
+{
+    return SDLStatic_CreateGuiWithGlyphs(renderer, font_data, font_len, font_size,
+                                         SDLSTATIC_GUI_GLYPHS_LATIN1);
+}
+
+SDLStatic_Gui *SDLStatic_CreateGuiWithGlyphs(SDL_Renderer *renderer, const void *font_data,
+                                             size_t font_len, float font_size,
+                                             SDLStatic_GuiGlyphRange range)
 {
     if (renderer == NULL)
     {
@@ -166,17 +219,23 @@ SDLStatic_Gui *SDLStatic_CreateGui(SDL_Renderer *renderer, const void *font_data
             SDL_memcpy(gui->font_copy, font_data, font_len);
         }
     }
+    const nk_rune *ranges = RangesFor(range);
     for (int i = 0; i < 3; i++)
     {
         const float size = font_size * kSizeFactors[i];
+        /* A zeroed config means Nuklear's defaults; only the ranges differ,
+           and NULL ranges are themselves the default. */
+        struct nk_font_config config = nk_font_config(size);
+        config.range = ranges;
+        struct nk_font_config *config_ptr = (ranges != NULL) ? &config : NULL;
         if (gui->font_copy != NULL)
         {
             gui->fonts[i] = nk_font_atlas_add_from_memory(
-                &gui->atlas, gui->font_copy, (nk_size)font_len, size, NULL);
+                &gui->atlas, gui->font_copy, (nk_size)font_len, size, config_ptr);
         }
         if (gui->fonts[i] == NULL)
         {
-            gui->fonts[i] = nk_font_atlas_add_default(&gui->atlas, size, NULL);
+            gui->fonts[i] = nk_font_atlas_add_default(&gui->atlas, size, config_ptr);
         }
     }
     struct nk_font *font = gui->fonts[SDLSTATIC_GUI_FONT_NORMAL];
@@ -642,28 +701,17 @@ void SDLStatic_GuiGridEndOwned(SDLStatic_Gui *gui)
     }
 }
 
-bool SDLStatic_GuiImage(SDLStatic_Gui *gui, SDL_Texture *texture,
-                        SDLStatic_GuiImageMode mode)
+/* Where a texture lands inside `slot` under a sizing mode. Shared by the
+ * widget-slot, explicit-rect and overlay paths so all three agree. */
+static bool FitTexture(SDL_Texture *texture, struct nk_rect slot, SDLStatic_GuiImageMode mode,
+                       struct nk_rect *out)
 {
-    if (gui == NULL || texture == NULL)
-    {
-        SDL_InvalidParamError("gui/texture");
-        return false;
-    }
-    struct nk_context *ctx = &gui->ctx;
-    struct nk_rect slot;
-    if (nk_widget(&slot, ctx) == NK_WIDGET_INVALID)
-    {
-        return false; /* scrolled out of view */
-    }
-
     float tex_w = 0.0f;
     float tex_h = 0.0f;
     if (!SDL_GetTextureSize(texture, &tex_w, &tex_h) || tex_w <= 0.0f || tex_h <= 0.0f)
     {
         return false;
     }
-
     struct nk_rect dst = slot;
     if (mode != SDLSTATIC_GUI_IMAGE_STRETCH)
     {
@@ -683,6 +731,30 @@ bool SDLStatic_GuiImage(SDLStatic_Gui *gui, SDL_Texture *texture,
         dst.y = slot.y + (slot.h - h) * 0.5f;
         dst.w = w;
         dst.h = h;
+    }
+    *out = dst;
+    return true;
+}
+
+bool SDLStatic_GuiImage(SDLStatic_Gui *gui, SDL_Texture *texture,
+                        SDLStatic_GuiImageMode mode)
+{
+    if (gui == NULL || texture == NULL)
+    {
+        SDL_InvalidParamError("gui/texture");
+        return false;
+    }
+    struct nk_context *ctx = &gui->ctx;
+    struct nk_rect slot;
+    if (nk_widget(&slot, ctx) == NK_WIDGET_INVALID)
+    {
+        return false; /* scrolled out of view */
+    }
+
+    struct nk_rect dst;
+    if (!FitTexture(texture, slot, mode, &dst))
+    {
+        return false;
     }
 
     struct nk_command_buffer *canvas = nk_window_get_canvas(ctx);
@@ -705,6 +777,72 @@ bool SDLStatic_GuiImage(SDLStatic_Gui *gui, SDL_Texture *texture,
         nk_push_scissor(canvas, nk_null_rect);
     }
     return true;
+}
+
+bool SDLStatic_GuiDrawTexture(SDLStatic_Gui *gui, SDL_Texture *texture, SDL_FRect rect,
+                              SDLStatic_GuiImageMode mode)
+{
+    if (gui == NULL || texture == NULL)
+    {
+        SDL_InvalidParamError("gui/texture");
+        return false;
+    }
+    /* nk_window_get_canvas asserts on a NULL current window rather than
+     * returning NULL, so the check has to happen before the call. */
+    if (gui->ctx.current == NULL)
+    {
+        SDL_SetError("SDLStatic_GuiDrawTexture must be called inside a window");
+        return false;
+    }
+    struct nk_command_buffer *canvas = nk_window_get_canvas(&gui->ctx);
+    if (canvas == NULL)
+    {
+        SDL_SetError("SDLStatic_GuiDrawTexture must be called inside a window");
+        return false;
+    }
+    const struct nk_rect slot = nk_rect(rect.x, rect.y, rect.w, rect.h);
+    struct nk_rect dst;
+    if (!FitTexture(texture, slot, mode, &dst))
+    {
+        return false;
+    }
+    /* The caller gave an explicit rectangle, so honour it exactly: clip
+     * every mode that can exceed it rather than only the usual two. */
+    nk_push_scissor(canvas, slot);
+    struct nk_image img = nk_image_ptr(texture);
+    nk_draw_image(canvas, dst, &img, nk_rgb(255, 255, 255));
+    nk_push_scissor(canvas, nk_null_rect);
+    return true;
+}
+
+bool SDLStatic_GuiDrawTextureOverlay(SDLStatic_Gui *gui, SDL_Texture *texture, SDL_FRect rect,
+                                     SDLStatic_GuiImageMode mode)
+{
+    if (gui == NULL || texture == NULL)
+    {
+        SDL_InvalidParamError("gui/texture");
+        return false;
+    }
+    if (gui->overlay_count >= SDLSTATIC_GUI_MAX_OVERLAYS)
+    {
+        SDL_SetError("at most %d overlay draws per frame", SDLSTATIC_GUI_MAX_OVERLAYS);
+        return false;
+    }
+    gui->overlays[gui->overlay_count].texture = texture;
+    gui->overlays[gui->overlay_count].rect = rect;
+    gui->overlays[gui->overlay_count].mode = mode;
+    gui->overlay_count++;
+    return true;
+}
+
+int SDLStatic_GuiDrawCommandCount(SDLStatic_Gui *gui)
+{
+    return (gui != NULL) ? gui->draw_commands : 0;
+}
+
+int SDLStatic_GuiMemoryUsed(SDLStatic_Gui *gui)
+{
+    return (gui != NULL) ? gui->memory_used : 0;
 }
 
 static struct nk_font *FontFor(SDLStatic_Gui *gui, SDLStatic_GuiFontSize which)
@@ -1090,12 +1228,14 @@ bool SDLStatic_GuiRender(SDLStatic_Gui *gui)
 
         const struct nk_draw_command *cmd = NULL;
         nk_size index_offset = 0;
+        int commands = 0;
         nk_draw_foreach(cmd, &gui->ctx, &gui->cmds)
         {
             if (cmd->elem_count == 0)
             {
                 continue;
             }
+            commands++;
             const SDL_Rect clip = {(int)cmd->clip_rect.x, (int)cmd->clip_rect.y,
                                    (int)cmd->clip_rect.w, (int)cmd->clip_rect.h};
             SDL_SetRenderClipRect(gui->renderer, &clip);
@@ -1113,11 +1253,36 @@ bool SDLStatic_GuiRender(SDLStatic_Gui *gui)
             index_offset += cmd->elem_count;
         }
         SDL_SetRenderClipRect(gui->renderer, NULL);
+        gui->draw_commands = commands;
+        gui->memory_used = (int)gui->ctx.memory.allocated;
     }
     else
     {
         SDL_SetError("nk_convert failed (0x%x)", (unsigned)rc);
     }
+
+    /* Overlays are drawn straight through SDL after the GUI: queuing them
+     * into Nuklear's own overlay buffer would not survive, because
+     * nk_build re-initialises it for the mouse cursor every frame. */
+    for (int i = 0; i < gui->overlay_count; i++)
+    {
+        SDL_Texture *texture = gui->overlays[i].texture;
+        const SDL_FRect r = gui->overlays[i].rect;
+        struct nk_rect dst;
+        if (!FitTexture(texture, nk_rect(r.x, r.y, r.w, r.h), gui->overlays[i].mode, &dst))
+        {
+            continue;
+        }
+        const SDL_FRect out = {dst.x, dst.y, dst.w, dst.h};
+        const SDL_Rect clip = {(int)r.x, (int)r.y, (int)r.w, (int)r.h};
+        SDL_SetRenderClipRect(gui->renderer, &clip);
+        if (!SDL_RenderTexture(gui->renderer, texture, NULL, &out))
+        {
+            ok = false;
+        }
+    }
+    SDL_SetRenderClipRect(gui->renderer, NULL);
+    gui->overlay_count = 0;
 
     nk_buffer_free(&verts);
     nk_buffer_free(&idx);

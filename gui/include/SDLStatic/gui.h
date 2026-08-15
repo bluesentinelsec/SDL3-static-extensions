@@ -41,15 +41,51 @@ extern "C" {
 
 typedef struct SDLStatic_Gui SDLStatic_Gui;
 
+/** Which glyphs to bake into the font atlas.
+ *
+ *  A font atlas is rasterised once, at creation, so this decides for the
+ *  lifetime of the GUI what text can be drawn: anything outside the range
+ *  renders as the font's missing-glyph box, whatever font you supply.
+ *  Nuklear's own default is LATIN1, which is why an em dash or a curly
+ *  quote pasted into a label comes out wrong.
+ *
+ *  Wider ranges cost atlas space and baking time — CJK is thousands of
+ *  glyphs — so pick the narrowest that covers your strings. The ranges
+ *  above LATIN1 need a font that actually contains those glyphs; the
+ *  built-in default font has only ASCII. */
+typedef enum SDLStatic_GuiGlyphRange
+{
+    SDLSTATIC_GUI_GLYPHS_LATIN1 = 0,   /**< U+0020..U+00FF (the default) */
+    SDLSTATIC_GUI_GLYPHS_PUNCTUATION,  /**< Latin-1 plus dashes, quotes,
+                                            bullets, ellipsis, arrows and
+                                            common currency — what UI text
+                                            actually uses */
+    SDLSTATIC_GUI_GLYPHS_CYRILLIC,
+    SDLSTATIC_GUI_GLYPHS_CHINESE,
+    SDLSTATIC_GUI_GLYPHS_KOREAN
+} SDLStatic_GuiGlyphRange;
+
 /**
  * Create a GUI backend bound to `renderer`.
  * \param font_data  optional TTF bytes for the UI font (copied); NULL uses
  *                   Nuklear's embedded default font.
  * \param font_size  glyph height in pixels; <= 0 selects 13.
  * \returns a new backend (destroy with SDLStatic_DestroyGui), or NULL.
+ *
+ * Bakes SDLSTATIC_GUI_GLYPHS_LATIN1; use SDLStatic_CreateGuiWithGlyphs for
+ * anything else.
  */
 extern SDLStatic_Gui *SDLStatic_CreateGui(SDL_Renderer *renderer, const void *font_data,
                                           size_t font_len, float font_size);
+
+/** As SDLStatic_CreateGui, choosing which glyphs the atlas covers.
+ *
+ * Pair a wide range with a font that has the glyphs — pass the same TTF you
+ * would give SDLStatic::TTF for that language. */
+extern SDLStatic_Gui *SDLStatic_CreateGuiWithGlyphs(SDL_Renderer *renderer,
+                                                    const void *font_data, size_t font_len,
+                                                    float font_size,
+                                                    SDLStatic_GuiGlyphRange range);
 
 extern void SDLStatic_DestroyGui(SDLStatic_Gui *gui);
 
@@ -188,6 +224,9 @@ extern void SDLStatic_GuiGridNextRowOwned(SDLStatic_Gui *gui);
 /** Finish the grid. */
 extern void SDLStatic_GuiGridEndOwned(SDLStatic_Gui *gui);
 
+/** Most overlay draws accepted in one frame; see SDLStatic_GuiDrawTextureOverlay. */
+#define SDLSTATIC_GUI_MAX_OVERLAYS 32
+
 /** How SDLStatic_GuiImage fits a texture into its widget slot, mirroring
  *  the PictureBox sizing modes desktop toolkits offer. */
 typedef enum SDLStatic_GuiImageMode
@@ -207,6 +246,44 @@ typedef enum SDLStatic_GuiImageMode
  *  arguments are invalid. */
 extern bool SDLStatic_GuiImage(SDLStatic_Gui *gui, SDL_Texture *texture,
                                SDLStatic_GuiImageMode mode);
+
+/** Draw a texture at an explicit rectangle instead of in a widget slot.
+ *
+ *  Game UI rarely wants one image per layout cell: an inventory slot draws
+ *  its own background, icon and stack count inside a single rectangle it
+ *  measured with nk_widget_bounds, and an editor viewport paints wherever
+ *  it likes. This draws into the current window's canvas, so it is clipped
+ *  by that window and layered with it, and it does **not** advance the
+ *  layout — call it between widgets, not instead of one.
+ *
+ *  Must be called inside a window (between nk_begin and nk_end). */
+extern bool SDLStatic_GuiDrawTexture(SDLStatic_Gui *gui, SDL_Texture *texture, SDL_FRect rect,
+                                     SDLStatic_GuiImageMode mode);
+
+/** Draw a texture above every panel, after the GUI has been rendered.
+ *
+ *  The case this exists for is drag-and-drop: the icon under the cursor
+ *  has to float over whatever it is being dragged across, including
+ *  windows declared after the one it came from. Nuklear's own overlay
+ *  buffer is rebuilt for the cursor each frame, so these are queued by the
+ *  GUI and flushed by SDLStatic_GuiRender in call order.
+ *
+ *  The queue is emptied every frame, so call it each frame the ghost
+ *  should be visible. Up to SDLSTATIC_GUI_MAX_OVERLAYS per frame. */
+extern bool SDLStatic_GuiDrawTextureOverlay(SDLStatic_Gui *gui, SDL_Texture *texture,
+                                            SDL_FRect rect, SDLStatic_GuiImageMode mode);
+
+/** How many draw commands the last frame produced.
+ *
+ *  A cheap "is my UI getting expensive" number for a debug overlay: it
+ *  counts what the GUI actually handed the renderer, so hiding a panel
+ *  visibly drops it. Zero before the first SDLStatic_GuiRender. */
+extern int SDLStatic_GuiDrawCommandCount(SDLStatic_Gui *gui);
+
+/** Bytes of Nuklear's command buffer used by the last frame — the other
+ *  half of the same picture, and an early warning that a panel is
+ *  allocating more than it should. */
+extern int SDLStatic_GuiMemoryUsed(SDLStatic_Gui *gui);
 
 /** Font sizes baked at creation. Nuklear bakes glyphs into one atlas up
  *  front, so every size a program needs must exist before the first frame;

@@ -45,6 +45,16 @@ static void GenRead_SDL_Color(mrb_state *mrb, mrb_value h, SDL_Color *out)
     out->a = (Uint8)SDLStaticGen_RubyFieldInt(mrb, h, "a");
 }
 
+static void GenRead_SDL_FRect(mrb_state *mrb, mrb_value h, SDL_FRect *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!mrb_hash_p(h)) { return; }
+    out->x = (float)SDLStaticGen_RubyFieldNum(mrb, h, "x");
+    out->y = (float)SDLStaticGen_RubyFieldNum(mrb, h, "y");
+    out->w = (float)SDLStaticGen_RubyFieldNum(mrb, h, "w");
+    out->h = (float)SDLStaticGen_RubyFieldNum(mrb, h, "h");
+}
+
 static void GenDtor_SDLStatic_FreeTiledMap(void *p)
 {
     SDLStatic_TiledMap *typed = (SDLStatic_TiledMap *)p;
@@ -165,6 +175,23 @@ static mrb_value GenR_SDLStatic_CreateGui(mrb_state *mrb, mrb_value self)
     float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
     SDLStatic_Gui * rv = SDLStatic_CreateGui(a0, (const void *)a1, (size_t)len1, a3);
     return SDLStaticGen_RubyPushOwned(mrb, (void *)rv, "SDLStatic_Gui", GenDtor_SDLStatic_DestroyGui);
+    }
+}
+
+static mrb_value GenR_SDLStatic_CreateGuiWithGlyphs(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Renderer *a0 = (SDL_Renderer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Renderer");
+    size_t len1 = 0;
+    const char *a1 = SDLStaticGen_RubyToBlob(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &len1);
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_GuiGlyphRange a4 = (SDLStatic_GuiGlyphRange)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    SDLStatic_Gui * rv = SDLStatic_CreateGuiWithGlyphs(a0, (const void *)a1, (size_t)len1, a3, a4);
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDLStatic_Gui");
     }
 }
 
@@ -337,6 +364,53 @@ static mrb_value GenR_SDLStatic_GuiContext(mrb_state *mrb, mrb_value self)
     SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
     struct nk_context * rv = SDLStatic_GuiContext(a0);
     return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "nk_context");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiDrawCommandCount(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    int rv = SDLStatic_GuiDrawCommandCount(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiDrawTexture(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    SDL_Texture *a1 = (SDL_Texture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_Texture");
+    SDL_FRect a2;
+    GenRead_SDL_FRect(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), &a2);
+    SDLStatic_GuiImageMode a3 = (SDLStatic_GuiImageMode)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    bool rv = SDLStatic_GuiDrawTexture(a0, a1, a2, a3);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiDrawTextureOverlay(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    SDL_Texture *a1 = (SDL_Texture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_Texture");
+    SDL_FRect a2;
+    GenRead_SDL_FRect(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), &a2);
+    SDLStatic_GuiImageMode a3 = (SDLStatic_GuiImageMode)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    bool rv = SDLStatic_GuiDrawTextureOverlay(a0, a1, a2, a3);
+    return mrb_bool_value((mrb_bool)(rv != 0));
     }
 }
 
@@ -541,6 +615,19 @@ static mrb_value GenR_SDLStatic_GuiKeyPressed(mrb_state *mrb, mrb_value self)
     int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
     bool rv = SDLStatic_GuiKeyPressed(a0, a1);
     return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiMemoryUsed(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    int rv = SDLStatic_GuiMemoryUsed(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
     }
 }
 
@@ -1300,6 +1387,7 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "CreateChipTone", GenR_SDLStatic_CreateChipTone, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateChipTune", GenR_SDLStatic_CreateChipTune, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateGui", GenR_SDLStatic_CreateGui, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "CreateGuiWithGlyphs", GenR_SDLStatic_CreateGuiWithGlyphs, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateSignalEmitter", GenR_SDLStatic_CreateSignalEmitter, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CryptoSelfTest", GenR_SDLStatic_CryptoSelfTest, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DestroyGui", GenR_SDLStatic_DestroyGui, MRB_ARGS_ANY());
@@ -1313,6 +1401,9 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "EncodeDataBase64", GenR_SDLStatic_EncodeDataBase64, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "FreeTiledMap", GenR_SDLStatic_FreeTiledMap, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiContext", GenR_SDLStatic_GuiContext, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiDrawCommandCount", GenR_SDLStatic_GuiDrawCommandCount, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiDrawTexture", GenR_SDLStatic_GuiDrawTexture, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiDrawTextureOverlay", GenR_SDLStatic_GuiDrawTextureOverlay, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiFontHeight", GenR_SDLStatic_GuiFontHeight, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridBeginOwned", GenR_SDLStatic_GuiGridBeginOwned, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridCell", GenR_SDLStatic_GuiGridCell, MRB_ARGS_ANY());
@@ -1328,6 +1419,7 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GuiInputBegin", GenR_SDLStatic_GuiInputBegin, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiInputEnd", GenR_SDLStatic_GuiInputEnd, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiKeyPressed", GenR_SDLStatic_GuiKeyPressed, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiMemoryUsed", GenR_SDLStatic_GuiMemoryUsed, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiOpenFileButton", GenR_SDLStatic_GuiOpenFileButton, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiPopFont", GenR_SDLStatic_GuiPopFont, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiPopStyleColor", GenR_SDLStatic_GuiPopStyleColor, MRB_ARGS_ANY());
@@ -1402,6 +1494,11 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_FONT_SMALL", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_FONT_SMALL));
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_FONT_NORMAL", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_FONT_NORMAL));
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_FONT_LARGE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_FONT_LARGE));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_GLYPHS_LATIN1", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_GLYPHS_LATIN1));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_GLYPHS_PUNCTUATION", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_GLYPHS_PUNCTUATION));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_GLYPHS_CYRILLIC", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_GLYPHS_CYRILLIC));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_GLYPHS_CHINESE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_GLYPHS_CHINESE));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_GLYPHS_KOREAN", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_GLYPHS_KOREAN));
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_IMAGE_STRETCH", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_IMAGE_STRETCH));
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_IMAGE_ZOOM", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_IMAGE_ZOOM));
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_IMAGE_CENTER", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_IMAGE_CENTER));
