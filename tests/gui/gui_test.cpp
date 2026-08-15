@@ -511,6 +511,103 @@ TEST_F(GuiHarness, StyleColorPushPopRestoresTheme)
                                              SDL_Color{0, 0, 0, 255}));
 }
 
+// Runtime font sizing: Nuklear cannot add glyphs after the atlas is baked,
+// so the sizes are baked up front and selected here.
+TEST_F(GuiHarness, FontSizesAreSelectableAtRuntime)
+{
+    const float normal = SDLStatic_GuiFontHeight(gui_);
+    EXPECT_GT(normal, 0.0f);
+
+    ASSERT_TRUE(SDLStatic_GuiSetFont(gui_, SDLSTATIC_GUI_FONT_LARGE));
+    const float large = SDLStatic_GuiFontHeight(gui_);
+    EXPECT_GT(large, normal);
+
+    ASSERT_TRUE(SDLStatic_GuiSetFont(gui_, SDLSTATIC_GUI_FONT_SMALL));
+    EXPECT_LT(SDLStatic_GuiFontHeight(gui_), normal);
+
+    ASSERT_TRUE(SDLStatic_GuiSetFont(gui_, SDLSTATIC_GUI_FONT_NORMAL));
+    EXPECT_FLOAT_EQ(SDLStatic_GuiFontHeight(gui_), normal);
+
+    // Scoped push/pop restores the previous font.
+    ASSERT_TRUE(SDLStatic_GuiPushFont(gui_, SDLSTATIC_GUI_FONT_LARGE));
+    EXPECT_FLOAT_EQ(SDLStatic_GuiFontHeight(gui_), large);
+    SDLStatic_GuiPopFont(gui_, 1);
+    EXPECT_FLOAT_EQ(SDLStatic_GuiFontHeight(gui_), normal);
+
+    // Text actually measures wider with a bigger font (glyphs really differ).
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+    const char *sample = "Button 1 was clicked.";
+    const int len = static_cast<int>(SDL_strlen(sample));
+    const float w_normal = ctx->style.font->width(ctx->style.font->userdata,
+                                                  ctx->style.font->height, sample, len);
+    ASSERT_TRUE(SDLStatic_GuiSetFont(gui_, SDLSTATIC_GUI_FONT_LARGE));
+    const float w_large = ctx->style.font->width(ctx->style.font->userdata,
+                                                 ctx->style.font->height, sample, len);
+    EXPECT_GT(w_large, w_normal);
+    ASSERT_TRUE(SDLStatic_GuiSetFont(gui_, SDLSTATIC_GUI_FONT_NORMAL));
+
+    // Bad input and over-pop are safe.
+    EXPECT_FALSE(SDLStatic_GuiSetFont(gui_, static_cast<SDLStatic_GuiFontSize>(99)));
+    EXPECT_FALSE(SDLStatic_GuiSetFont(nullptr, SDLSTATIC_GUI_FONT_NORMAL));
+    EXPECT_FALSE(SDLStatic_GuiPushFont(nullptr, SDLSTATIC_GUI_FONT_LARGE));
+    SDLStatic_GuiPopFont(gui_, 5);
+    SDLStatic_GuiPopFont(nullptr, 1);
+    EXPECT_FLOAT_EQ(SDLStatic_GuiFontHeight(gui_), normal);
+    EXPECT_FLOAT_EQ(SDLStatic_GuiFontHeight(nullptr), 0.0f);
+}
+
+// nk_labelf float formatting. Nuklear's built-in printf (used because
+// NK_INCLUDE_STANDARD_IO is off) emitted only the first character for a
+// precision of 0: "%.0f" of 40.0 rendered as "4". Compared black-box by
+// rendering the formatted text beside the literal it must equal.
+TEST_F(GuiHarness, LabelfFormatsFloatsCorrectly)
+{
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+
+    auto render_text = [&](bool formatted, double value, const char *literal) {
+        SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
+        SDL_RenderClear(renderer_);
+        SDLStatic_GuiInputBegin(gui_);
+        SDLStatic_GuiInputEnd(gui_);
+        if (nk_begin(ctx, "fmt", nk_rect(0, 0, kScreen, kScreen), 0))
+        {
+            nk_layout_row_dynamic(ctx, 30, 1);
+            if (formatted)
+            {
+                nk_labelf(ctx, NK_TEXT_LEFT, "%.0f", value);
+            }
+            else
+            {
+                nk_label(ctx, literal, NK_TEXT_LEFT);
+            }
+        }
+        nk_end(ctx);
+        SDLStatic_GuiRender(gui_);
+        SDL_FlushRenderer(renderer_);
+        int lit = 0;
+        for (int y = 0; y < kScreen; y++)
+        {
+            for (int x = 0; x < kScreen; x++)
+            {
+                Uint8 r = 0, g = 0, b = 0, a = 0;
+                SDL_ReadSurfacePixel(surface_, x, y, &r, &g, &b, &a);
+                if (r > 40 || g > 40 || b > 40)
+                {
+                    lit++;
+                }
+            }
+        }
+        return lit;
+    };
+
+    // "%.0f" of 40.0 must paint exactly what "40" paints.
+    EXPECT_EQ(render_text(true, 40.0, nullptr), render_text(false, 0, "40"));
+    // Rounds like printf rather than truncating.
+    EXPECT_EQ(render_text(true, 2.7, nullptr), render_text(false, 0, "3"));
+    // Precision beyond zero still works.
+    EXPECT_GT(render_text(true, 1.5, nullptr), 0);
+}
+
 // A windowless (software) renderer stays at 1.0 so headless tests and
 // non-Retina displays are unaffected by the high-DPI path.
 TEST_F(GuiHarness, ScaleDefaultsToOneWithoutAWindow)

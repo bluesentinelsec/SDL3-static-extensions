@@ -92,6 +92,30 @@ extern bool SDLStatic_GuiPumpEvents(SDLStatic_Gui *gui);
  *  quitting on Escape. */
 extern bool SDLStatic_GuiKeyPressed(SDLStatic_Gui *gui, int scancode);
 
+/** Font sizes baked at creation. Nuklear bakes glyphs into one atlas up
+ *  front, so every size a program needs must exist before the first frame;
+ *  these three are always available and are crisp (not resampled). Sizes
+ *  are relative to the font size passed to SDLStatic_CreateGui. */
+typedef enum SDLStatic_GuiFontSize
+{
+    SDLSTATIC_GUI_FONT_SMALL = 0, /**< 0.75x */
+    SDLSTATIC_GUI_FONT_NORMAL,    /**< 1.0x, the default */
+    SDLSTATIC_GUI_FONT_LARGE      /**< 1.5x */
+} SDLStatic_GuiFontSize;
+
+/** Make `which` the font for subsequent widgets (persists across frames). */
+extern bool SDLStatic_GuiSetFont(SDLStatic_Gui *gui, SDLStatic_GuiFontSize which);
+
+/** Use `which` for the next widgets only; undo with SDLStatic_GuiPopFont.
+ *  Pushes nest. */
+extern bool SDLStatic_GuiPushFont(SDLStatic_Gui *gui, SDLStatic_GuiFontSize which);
+
+/** Undo `count` SDLStatic_GuiPushFont calls. */
+extern void SDLStatic_GuiPopFont(SDLStatic_Gui *gui, int count);
+
+/** Height in pixels of the currently selected font. */
+extern float SDLStatic_GuiFontHeight(SDLStatic_Gui *gui);
+
 /** Themable colours (see SDLStatic_GuiPushStyleColor). Nuklear's own
  *  style stack takes union-typed style items, which cannot cross a script
  *  boundary — this is the theming entry point Lua and Ruby can use, and a

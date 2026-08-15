@@ -2401,6 +2401,7 @@ returns as an array.
 | `SDLStaticC.EncodeDataBase64(data: string|nil, outputSize: integer)` | string|nil, outputSize: integer |
 | `SDLStaticC.FreeTiledMap(map: SDLStatic_TiledMap)` | nil |
 | `SDLStaticC.GuiContext(gui: SDLStatic_Gui)` | nk_context|nil |
+| `SDLStaticC.GuiFontHeight(gui: SDLStatic_Gui)` | number |
 | `SDLStaticC.GuiGridCell(grid: SDLStatic_GuiGrid)` | nil |
 | `SDLStaticC.GuiGridCellSpan(grid: SDLStatic_GuiGrid, span: integer)` | nil |
 | `SDLStaticC.GuiGridEnd(grid: SDLStatic_GuiGrid)` | nil |
@@ -2408,12 +2409,15 @@ returns as an array.
 | `SDLStaticC.GuiInputBegin(gui: SDLStatic_Gui)` | nil |
 | `SDLStaticC.GuiInputEnd(gui: SDLStatic_Gui)` | nil |
 | `SDLStaticC.GuiKeyPressed(gui: SDLStatic_Gui, scancode: integer)` | boolean |
+| `SDLStaticC.GuiPopFont(gui: SDLStatic_Gui, count: integer)` | nil |
 | `SDLStaticC.GuiPopStyleColor(gui: SDLStatic_Gui, count: integer)` | nil |
 | `SDLStaticC.GuiProcessEvent(gui: SDLStatic_Gui, event: SDL_Event)` | boolean |
 | `SDLStaticC.GuiPumpEvents(gui: SDLStatic_Gui)` | boolean |
+| `SDLStaticC.GuiPushFont(gui: SDLStatic_Gui, which: integer)` | boolean |
 | `SDLStaticC.GuiPushStyleColor(gui: SDLStatic_Gui, which: integer, color: SDL_Color table)` | boolean |
 | `SDLStaticC.GuiRender(gui: SDLStatic_Gui)` | boolean |
 | `SDLStaticC.GuiScale(gui: SDLStatic_Gui)` | number |
+| `SDLStaticC.GuiSetFont(gui: SDLStatic_Gui, which: integer)` | boolean |
 | `SDLStaticC.GuiWantsInput(gui: SDLStatic_Gui)` | boolean |
 | `SDLStaticC.HMACSHA256(key: string|nil, data: string|nil, digest: integer)` | boolean, digest: integer |
 | `SDLStaticC.LoadTiledMap(path: string|nil)` | SDLStatic_TiledMap|nil |

@@ -5,6 +5,25 @@
  * compiles the vendored Nuklear implementation; everything else includes
  * the SDLStatic/nuklear.h wrapper for declarations only.
  */
+/* Definition for the NK_DTOA hook declared in SDLStatic/nuklear.h. It must
+ * exist before nuklear's implementation is expanded below. */
+#include <SDL3/SDL.h>
+
+char *SDLStatic_NuklearDtoa(char *buffer, double value)
+{
+    /* Nuklear's %f formatter scans the result for '.', so plain decimal
+     * notation is required (never exponent form). NK_MAX_NUMBER_BUFFER is
+     * 64; %.6f of a double needs at most ~320 chars in the pathological
+     * case, so clamp the magnitude the way nuklear's own printf does. */
+    if (value != value || value > 1.0e18 || value < -1.0e18)
+    {
+        SDL_strlcpy(buffer, "0.0", 4);
+        return buffer;
+    }
+    SDL_snprintf(buffer, 64, "%.6f", value);
+    return buffer;
+}
+
 #define NK_IMPLEMENTATION
 #include <SDLStatic/nuklear.h>
 
@@ -29,6 +48,8 @@ struct SDLStatic_Gui
     float scale;   /* window pixel density: UI/input work in pixels */
     Uint8 style_kind[32]; /* 0 = style item, 1 = plain colour (pop order) */
     int style_depth;
+    struct nk_font *fonts[3]; /* small / normal / large, baked together */
+    int font_depth;           /* nk_style_push_font nesting */
     Uint8 pressed[(SDL_SCANCODE_COUNT + 7) / 8]; /* keys down this frame */
 };
 
@@ -111,7 +132,10 @@ SDLStatic_Gui *SDLStatic_CreateGui(SDL_Renderer *renderer, const void *font_data
 
     nk_font_atlas_init_default(&gui->atlas);
     nk_font_atlas_begin(&gui->atlas);
-    struct nk_font *font = NULL;
+    /* Bake a small ladder of sizes in one atlas: Nuklear cannot add glyphs
+     * after baking, so a program that changes text size at runtime needs
+     * every size up front. See SDLStatic_GuiSetFont. */
+    static const float kSizeFactors[3] = {0.75f, 1.0f, 1.5f};
     if (font_data != NULL && font_len > 0)
     {
         /* Nuklear reads the TTF during baking; keep an owned copy alive. */
@@ -119,14 +143,22 @@ SDLStatic_Gui *SDLStatic_CreateGui(SDL_Renderer *renderer, const void *font_data
         if (gui->font_copy != NULL)
         {
             SDL_memcpy(gui->font_copy, font_data, font_len);
-            font = nk_font_atlas_add_from_memory(&gui->atlas, gui->font_copy, (nk_size)font_len,
-                                                 font_size, NULL);
         }
     }
-    if (font == NULL)
+    for (int i = 0; i < 3; i++)
     {
-        font = nk_font_atlas_add_default(&gui->atlas, font_size, NULL);
+        const float size = font_size * kSizeFactors[i];
+        if (gui->font_copy != NULL)
+        {
+            gui->fonts[i] = nk_font_atlas_add_from_memory(
+                &gui->atlas, gui->font_copy, (nk_size)font_len, size, NULL);
+        }
+        if (gui->fonts[i] == NULL)
+        {
+            gui->fonts[i] = nk_font_atlas_add_default(&gui->atlas, size, NULL);
+        }
     }
+    struct nk_font *font = gui->fonts[SDLSTATIC_GUI_FONT_NORMAL];
 
     int atlas_w = 0;
     int atlas_h = 0;
@@ -200,6 +232,65 @@ void SDLStatic_GuiInputEnd(SDLStatic_Gui *gui)
 bool SDLStatic_GuiWantsInput(SDLStatic_Gui *gui)
 {
     return (gui != NULL) && nk_item_is_any_active(&gui->ctx);
+}
+
+static struct nk_font *FontFor(SDLStatic_Gui *gui, SDLStatic_GuiFontSize which)
+{
+    if (gui == NULL || which < SDLSTATIC_GUI_FONT_SMALL || which > SDLSTATIC_GUI_FONT_LARGE)
+    {
+        return NULL;
+    }
+    return gui->fonts[which];
+}
+
+bool SDLStatic_GuiSetFont(SDLStatic_Gui *gui, SDLStatic_GuiFontSize which)
+{
+    struct nk_font *font = FontFor(gui, which);
+    if (font == NULL)
+    {
+        SDL_InvalidParamError("which");
+        return false;
+    }
+    nk_style_set_font(&gui->ctx, &font->handle);
+    return true;
+}
+
+bool SDLStatic_GuiPushFont(SDLStatic_Gui *gui, SDLStatic_GuiFontSize which)
+{
+    struct nk_font *font = FontFor(gui, which);
+    if (font == NULL)
+    {
+        SDL_InvalidParamError("which");
+        return false;
+    }
+    if (!nk_style_push_font(&gui->ctx, &font->handle))
+    {
+        return false;
+    }
+    gui->font_depth++;
+    return true;
+}
+
+void SDLStatic_GuiPopFont(SDLStatic_Gui *gui, int count)
+{
+    if (gui == NULL)
+    {
+        return;
+    }
+    while (count-- > 0 && gui->font_depth > 0)
+    {
+        nk_style_pop_font(&gui->ctx);
+        gui->font_depth--;
+    }
+}
+
+float SDLStatic_GuiFontHeight(SDLStatic_Gui *gui)
+{
+    if (gui == NULL || gui->ctx.style.font == NULL)
+    {
+        return 0.0f;
+    }
+    return gui->ctx.style.font->height;
 }
 
 bool SDLStatic_GuiPushStyleColor(SDLStatic_Gui *gui, SDLStatic_GuiStyleColor which,

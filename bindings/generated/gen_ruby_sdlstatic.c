@@ -255,6 +255,19 @@ static mrb_value GenR_SDLStatic_GuiContext(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_GuiFontHeight(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    float rv = SDLStatic_GuiFontHeight(a0);
+    return mrb_float_value(mrb, (mrb_float)rv);
+    }
+}
+
 static mrb_value GenR_SDLStatic_GuiGridCell(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -348,6 +361,20 @@ static mrb_value GenR_SDLStatic_GuiKeyPressed(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_GuiPopFont(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_GuiPopFont(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
 static mrb_value GenR_SDLStatic_GuiPopStyleColor(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -385,6 +412,20 @@ static mrb_value GenR_SDLStatic_GuiPumpEvents(mrb_state *mrb, mrb_value self)
     {
     SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
     bool rv = SDLStatic_GuiPumpEvents(a0);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiPushFont(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    SDLStatic_GuiFontSize a1 = (SDLStatic_GuiFontSize)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool rv = SDLStatic_GuiPushFont(a0, a1);
     return mrb_bool_value((mrb_bool)(rv != 0));
     }
 }
@@ -428,6 +469,20 @@ static mrb_value GenR_SDLStatic_GuiScale(mrb_state *mrb, mrb_value self)
     SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
     float rv = SDLStatic_GuiScale(a0);
     return mrb_float_value(mrb, (mrb_float)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiSetFont(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    SDLStatic_GuiFontSize a1 = (SDLStatic_GuiFontSize)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool rv = SDLStatic_GuiSetFont(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
     }
 }
 
@@ -752,6 +807,7 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "EncodeDataBase64", GenR_SDLStatic_EncodeDataBase64, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "FreeTiledMap", GenR_SDLStatic_FreeTiledMap, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiContext", GenR_SDLStatic_GuiContext, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiFontHeight", GenR_SDLStatic_GuiFontHeight, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridCell", GenR_SDLStatic_GuiGridCell, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridCellSpan", GenR_SDLStatic_GuiGridCellSpan, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridEnd", GenR_SDLStatic_GuiGridEnd, MRB_ARGS_ANY());
@@ -759,12 +815,15 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GuiInputBegin", GenR_SDLStatic_GuiInputBegin, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiInputEnd", GenR_SDLStatic_GuiInputEnd, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiKeyPressed", GenR_SDLStatic_GuiKeyPressed, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiPopFont", GenR_SDLStatic_GuiPopFont, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiPopStyleColor", GenR_SDLStatic_GuiPopStyleColor, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiProcessEvent", GenR_SDLStatic_GuiProcessEvent, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiPumpEvents", GenR_SDLStatic_GuiPumpEvents, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiPushFont", GenR_SDLStatic_GuiPushFont, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiPushStyleColor", GenR_SDLStatic_GuiPushStyleColor, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiRender", GenR_SDLStatic_GuiRender, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiScale", GenR_SDLStatic_GuiScale, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiSetFont", GenR_SDLStatic_GuiSetFont, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiWantsInput", GenR_SDLStatic_GuiWantsInput, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "HMACSHA256", GenR_SDLStatic_HMACSHA256, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "LoadTiledMap", GenR_SDLStatic_LoadTiledMap, MRB_ARGS_ANY());
@@ -800,6 +859,9 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_const(mrb, mod, "SDLSTATIC_CHIP_NOISE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_CHIP_NOISE));
     mrb_define_const(mrb, mod, "SDLSTATIC_CHIP_NOISE_METALLIC", mrb_int_value(mrb, (mrb_int)SDLSTATIC_CHIP_NOISE_METALLIC));
     mrb_define_const(mrb, mod, "SDLSTATIC_CHIP_SINE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_CHIP_SINE));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_FONT_SMALL", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_FONT_SMALL));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_FONT_NORMAL", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_FONT_NORMAL));
+    mrb_define_const(mrb, mod, "SDLSTATIC_GUI_FONT_LARGE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_FONT_LARGE));
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_COLOR_WINDOW_BACKGROUND));
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_COLOR_TEXT", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_COLOR_TEXT));
     mrb_define_const(mrb, mod, "SDLSTATIC_GUI_COLOR_BUTTON", mrb_int_value(mrb, (mrb_int)SDLSTATIC_GUI_COLOR_BUTTON));

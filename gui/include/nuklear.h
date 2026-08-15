@@ -7660,6 +7660,19 @@ nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
             int padding = 0;
 
             NK_ASSERT(arg_type == NK_ARG_TYPE_DEFAULT);
+            /* SDLStatic local fix (deps/nuklear.md): round to the requested
+               precision before conversion so "%.0f" of 2.7 is "3", matching
+               printf, instead of truncating to "2". */
+            {
+                double round_scale = 1.0;
+                int round_digits = cur_precision;
+                while (round_digits-- > 0) round_scale *= 10.0;
+                if (value < 1.0e15 && value > -1.0e15) {
+                    const double scaled = value * round_scale;
+                    value = ((scaled < 0.0) ? -(double)(long)(-scaled + 0.5)
+                                            :  (double)(long)( scaled + 0.5)) / round_scale;
+                }
+            }
             NK_DTOA(number_buffer, value);
             num_len = nk_strlen(number_buffer);
 
@@ -7688,12 +7701,23 @@ nk_vsnprintf(char *buf, int buf_size, const char *fmt, va_list args)
                 buf[len++] = '+';
             else if ((flag & NK_ARG_FLAG_SPACE) && (value >= 0) && (len < buf_size))
                 buf[len++] = ' ';
+            /* SDLStatic local fix (deps/nuklear.md): the original tested
+               `frac_len >= cur_precision` before any fraction digit had been
+               seen, so a precision of 0 ended the loop after the very first
+               character — "%.0f" of 40.0 printed "4". Copy the whole integer
+               part, then at most cur_precision fraction digits. */
             while (*num_iter) {
-                if (dot) frac_len++;
+                if (*num_iter == '.') {
+                    if (cur_precision == 0) break; /* no fraction requested */
+                    dot = 1;
+                    if (len < buf_size)
+                        buf[len++] = *num_iter;
+                    num_iter++;
+                    continue;
+                }
                 if (len < buf_size)
                     buf[len++] = *num_iter;
-                if (*num_iter == '.') dot = 1;
-                if (frac_len >= cur_precision) break;
+                if (dot && ++frac_len >= cur_precision) break;
                 num_iter++;
             }
 
