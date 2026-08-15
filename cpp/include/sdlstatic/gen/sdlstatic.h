@@ -198,6 +198,18 @@ class GuiHandle {
   Status GuiImage(SDL_Texture *texture, SDLStatic_GuiImageMode mode) {
     return ::SDLStatic_GuiImage(value_, texture, mode) ? Status() : Status::FromSdl();
   }
+  Status GuiDrawTexture(SDL_Texture *texture, SDL_FRect rect, SDLStatic_GuiImageMode mode) {
+    return ::SDLStatic_GuiDrawTexture(value_, texture, rect, mode) ? Status() : Status::FromSdl();
+  }
+  Status GuiDrawTextureOverlay(SDL_Texture *texture, SDL_FRect rect, SDLStatic_GuiImageMode mode) {
+    return ::SDLStatic_GuiDrawTextureOverlay(value_, texture, rect, mode) ? Status() : Status::FromSdl();
+  }
+  int GuiDrawCommandCount() {
+    return ::SDLStatic_GuiDrawCommandCount(value_);
+  }
+  int GuiMemoryUsed() {
+    return ::SDLStatic_GuiMemoryUsed(value_);
+  }
   Status GuiSetFont(SDLStatic_GuiFontSize which) {
     return ::SDLStatic_GuiSetFont(value_, which) ? Status() : Status::FromSdl();
   }
@@ -356,6 +368,7 @@ inline constexpr auto& CountSignalConnections = ::SDLStatic_CountSignalConnectio
 inline constexpr auto& CreateChipSFX = ::SDLStatic_CreateChipSFX;
 inline constexpr auto& CreateChipTone = ::SDLStatic_CreateChipTone;
 inline constexpr auto& CreateChipTune = ::SDLStatic_CreateChipTune;
+inline constexpr auto& CreateGuiWithGlyphs = ::SDLStatic_CreateGuiWithGlyphs;
 inline constexpr auto& CreateSignalEmitter = ::SDLStatic_CreateSignalEmitter;
 inline constexpr auto& DecodeDataBase64 = ::SDLStatic_DecodeDataBase64;
 inline constexpr auto& DecompressData = ::SDLStatic_DecompressData;

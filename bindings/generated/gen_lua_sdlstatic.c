@@ -45,6 +45,16 @@ static void GenRead_SDL_Color(lua_State *L, int idx, SDL_Color *out)
     out->a = (Uint8)SDLStaticGen_LuaFieldInt(L, idx, "a");
 }
 
+static void GenRead_SDL_FRect(lua_State *L, int idx, SDL_FRect *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    out->x = (float)SDLStaticGen_LuaFieldNum(L, idx, "x");
+    out->y = (float)SDLStaticGen_LuaFieldNum(L, idx, "y");
+    out->w = (float)SDLStaticGen_LuaFieldNum(L, idx, "w");
+    out->h = (float)SDLStaticGen_LuaFieldNum(L, idx, "h");
+}
+
 static void GenDtor_SDLStatic_FreeTiledMap(void *p)
 {
     SDLStatic_TiledMap *typed = (SDLStatic_TiledMap *)p;
@@ -137,6 +147,19 @@ static int GenL_SDLStatic_CreateGui(lua_State *L)
     float a3 = (float)luaL_checknumber(L, 3);
     SDLStatic_Gui * rv = SDLStatic_CreateGui(a0, (const void *)a1, (size_t)len1, a3);
     SDLStaticGen_LuaPushOwned(L, (void *)rv, "SDLStatic_Gui", GenDtor_SDLStatic_DestroyGui);
+    return 1;
+}
+
+static int GenL_SDLStatic_CreateGuiWithGlyphs(lua_State *L)
+{
+    (void)L;
+    SDL_Renderer *a0 = (SDL_Renderer *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Renderer");
+    size_t len1 = 0;
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
+    float a3 = (float)luaL_checknumber(L, 3);
+    SDLStatic_GuiGlyphRange a4 = (SDLStatic_GuiGlyphRange)luaL_checkinteger(L, 4);
+    SDLStatic_Gui * rv = SDLStatic_CreateGuiWithGlyphs(a0, (const void *)a1, (size_t)len1, a3, a4);
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDLStatic_Gui");
     return 1;
 }
 
@@ -249,6 +272,41 @@ static int GenL_SDLStatic_GuiContext(lua_State *L)
     SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
     struct nk_context * rv = SDLStatic_GuiContext(a0);
     SDLStaticGen_LuaPushHandle(L, (void *)rv, "nk_context");
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiDrawCommandCount(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int rv = SDLStatic_GuiDrawCommandCount(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiDrawTexture(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDL_Texture *a1 = (SDL_Texture *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_Texture");
+    SDL_FRect a2;
+    GenRead_SDL_FRect(L, 3, &a2);
+    SDLStatic_GuiImageMode a3 = (SDLStatic_GuiImageMode)luaL_checkinteger(L, 4);
+    bool rv = SDLStatic_GuiDrawTexture(a0, a1, a2, a3);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiDrawTextureOverlay(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    SDL_Texture *a1 = (SDL_Texture *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_Texture");
+    SDL_FRect a2;
+    GenRead_SDL_FRect(L, 3, &a2);
+    SDLStatic_GuiImageMode a3 = (SDLStatic_GuiImageMode)luaL_checkinteger(L, 4);
+    bool rv = SDLStatic_GuiDrawTextureOverlay(a0, a1, a2, a3);
+    lua_pushboolean(L, (int)rv);
     return 1;
 }
 
@@ -383,6 +441,15 @@ static int GenL_SDLStatic_GuiKeyPressed(lua_State *L)
     int a1 = (int)luaL_checkinteger(L, 2);
     bool rv = SDLStatic_GuiKeyPressed(a0, a1);
     lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiMemoryUsed(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int rv = SDLStatic_GuiMemoryUsed(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
     return 1;
 }
 
@@ -913,7 +980,7 @@ static int GenL_SDLStatic_TiledTileWidth(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 87);
+    lua_createtable(L, 0, 92);
     lua_pushcfunction(L, GenL_SDLStatic_BidiBaseIsRTL);
     lua_setfield(L, -2, "BidiBaseIsRTL");
     lua_pushcfunction(L, GenL_SDLStatic_CompileRegex);
@@ -928,6 +995,8 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "CreateChipTune");
     lua_pushcfunction(L, GenL_SDLStatic_CreateGui);
     lua_setfield(L, -2, "CreateGui");
+    lua_pushcfunction(L, GenL_SDLStatic_CreateGuiWithGlyphs);
+    lua_setfield(L, -2, "CreateGuiWithGlyphs");
     lua_pushcfunction(L, GenL_SDLStatic_CreateSignalEmitter);
     lua_setfield(L, -2, "CreateSignalEmitter");
     lua_pushcfunction(L, GenL_SDLStatic_CryptoSelfTest);
@@ -954,6 +1023,12 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "FreeTiledMap");
     lua_pushcfunction(L, GenL_SDLStatic_GuiContext);
     lua_setfield(L, -2, "GuiContext");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiDrawCommandCount);
+    lua_setfield(L, -2, "GuiDrawCommandCount");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiDrawTexture);
+    lua_setfield(L, -2, "GuiDrawTexture");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiDrawTextureOverlay);
+    lua_setfield(L, -2, "GuiDrawTextureOverlay");
     lua_pushcfunction(L, GenL_SDLStatic_GuiFontHeight);
     lua_setfield(L, -2, "GuiFontHeight");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridBeginOwned);
@@ -984,6 +1059,8 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "GuiInputEnd");
     lua_pushcfunction(L, GenL_SDLStatic_GuiKeyPressed);
     lua_setfield(L, -2, "GuiKeyPressed");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiMemoryUsed);
+    lua_setfield(L, -2, "GuiMemoryUsed");
     lua_pushcfunction(L, GenL_SDLStatic_GuiOpenFileButton);
     lua_setfield(L, -2, "GuiOpenFileButton");
     lua_pushcfunction(L, GenL_SDLStatic_GuiPopFont);
@@ -1132,6 +1209,16 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "SDLSTATIC_GUI_FONT_NORMAL");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_FONT_LARGE);
     lua_setfield(L, -2, "SDLSTATIC_GUI_FONT_LARGE");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_GLYPHS_LATIN1);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_GLYPHS_LATIN1");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_GLYPHS_PUNCTUATION);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_GLYPHS_PUNCTUATION");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_GLYPHS_CYRILLIC);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_GLYPHS_CYRILLIC");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_GLYPHS_CHINESE);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_GLYPHS_CHINESE");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_GLYPHS_KOREAN);
+    lua_setfield(L, -2, "SDLSTATIC_GUI_GLYPHS_KOREAN");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_IMAGE_STRETCH);
     lua_setfield(L, -2, "SDLSTATIC_GUI_IMAGE_STRETCH");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_IMAGE_ZOOM);

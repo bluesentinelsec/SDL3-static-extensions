@@ -131,6 +131,68 @@ Load textures with [SDLStatic::Image](image.html) (`IMG_LoadTexture`), or
 from a mounted [VFS](vfs.html) archive. Modes that can overflow the slot are
 scissored to it, so an image never spills onto neighbouring widgets.
 
+### Drawing textures yourself
+
+`SDLStatic_GuiImage` takes a layout slot, which is right for a picture in a
+form and wrong for a game panel: an inventory slot draws a background, an
+icon and a stack count inside **one** rectangle, and the click is handled by
+an invisible button occupying that same slot. For those, measure the
+rectangle and draw into it:
+
+```c
+const struct nk_rect bounds = nk_widget_bounds(ctx);
+const SDL_FRect icon = {bounds.x + 6, bounds.y + 6, bounds.w - 12, bounds.h - 24};
+SDLStatic_GuiDrawTexture(gui, texture, icon, SDLSTATIC_GUI_IMAGE_ZOOM);
+nk_button_label(ctx, "");   /* the same slot, now handling input */
+```
+
+`SDLStatic_GuiDrawTexture` paints into the current window's canvas, so it is
+clipped and layered with that window, and it does not advance the layout.
+
+For something that must float above *every* panel — the icon under the
+cursor during a drag — use `SDLStatic_GuiDrawTextureOverlay`. It queues the
+draw and flushes it after the whole GUI has rendered, in call order.
+Nuklear's own overlay buffer cannot be used for this: it is re-initialised
+for the mouse cursor on every frame.
+
+```c
+if (dragging) {
+    const SDL_FRect at = {mouse_x - 24, mouse_y - 24, 48, 48};
+    SDLStatic_GuiDrawTextureOverlay(gui, icon, at, SDLSTATIC_GUI_IMAGE_ZOOM);
+}
+```
+
+The queue is emptied each frame, so call it every frame the ghost should be
+visible; up to `SDLSTATIC_GUI_MAX_OVERLAYS` draws per frame.
+
+### What the frame cost
+
+`SDLStatic_GuiDrawCommandCount(gui)` and `SDLStatic_GuiMemoryUsed(gui)`
+report the last rendered frame — the two numbers a debug overlay wants.
+Hiding a panel visibly drops both, which makes them useful for finding the
+panel that is quietly expensive.
+
+### Glyph ranges, and why an em dash renders as a box
+
+A font atlas is rasterised **once**, when the GUI is created, so the glyph
+range chosen there decides for the GUI's lifetime what text can be drawn.
+Nuklear's default stops at U+00FF, which is why an em dash, a curly quote
+or an arrow pasted into a label comes out as the missing-glyph box no
+matter which font you supply.
+
+```c
+gui = SDLStatic_CreateGuiWithGlyphs(renderer, font, font_len, 18.0f,
+                                    SDLSTATIC_GUI_GLYPHS_PUNCTUATION);
+```
+
+`SDLSTATIC_GUI_GLYPHS_PUNCTUATION` adds dashes, quotes, bullets, ellipsis,
+arrows and currency to Latin-1 — what UI text actually contains.
+`CYRILLIC`, `CHINESE` and `KOREAN` are also available, and are the only way
+to use the GUI for those scripts. Wider ranges cost atlas space and baking
+time, so pick the narrowest that covers your strings, and pair anything
+above Latin-1 with a font that actually has the glyphs: the built-in
+default font is ASCII.
+
 ### Tooltips
 
 `SDLStatic_GuiTooltip(gui, text)` shows hover text for the **next** widget
@@ -183,6 +245,33 @@ these buttons do not show hover or press shading on the web, and one of each
 is supported at a time — enough for a File menu, and all a modal picker can
 be. The overlay is hidden automatically on any frame that does not draw the
 button, so it never swallows clicks meant for other widgets.
+
+### Two things immediate mode will catch you with
+
+**A window's rectangle is read once.** `nk_begin` uses the rect you pass
+only when it *creates* the window; afterwards the window owns its geometry,
+which is exactly what makes panels movable and resizable. So panels do not
+re-flow when the SDL window is resized unless you push the new bounds in:
+
+```c
+if (width != last_width || height != last_height) {
+    nk_window_set_bounds(ctx, "Inventory", new_area);   /* only on resize */
+}
+```
+
+Doing it every frame instead would pin the window and the user could never
+move it.
+
+**`nk_item_is_any_active` is not "is a text field focused".** It is true
+whenever any panel is up, so gating keyboard navigation on it swallows every
+key forever. The flag you want is the `NK_EDIT_ACTIVE` bit that
+`nk_edit_string` returns for the field that has focus:
+
+```c
+const nk_flags state = nk_edit_string(ctx, NK_EDIT_FIELD, buf, &len, cap,
+                                      nk_filter_default);
+text_focused |= (state & NK_EDIT_ACTIVE) != 0;
+```
 
 ### Keyboard and theming from scripts
 

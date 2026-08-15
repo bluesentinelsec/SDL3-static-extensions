@@ -25,8 +25,8 @@ types). The full C API additionally stays reachable from C/C++.
 | libyaml | 48 | 0 | 0 | 48 | 2 | 46 |
 | mog HTTP/S | 69 | 54 | 0 | 12 | 67 | 2 |
 | cJSON | 78 | 57 | 0 | 20 | 70 | 8 |
-| SDLStatic modules | 97 | 54 | 12 | 28 | 87 | 10 |
-| **Total** | 2989 | 1072 | 236 | 1635 | 2385 | 604 |
+| SDLStatic modules | 102 | 58 | 12 | 29 | 92 | 10 |
+| **Total** | 2994 | 1076 | 236 | 1636 | 2390 | 604 |
 
 ## Script-surface skip reasons
 

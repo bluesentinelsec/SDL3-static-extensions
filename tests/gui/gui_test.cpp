@@ -863,4 +863,144 @@ TEST_F(GuiHarness, FileButtonsAreInertUntilClicked)
         << "a null buffer with a non-zero length is a caller bug";
 }
 
+
+// A font atlas is baked once, so the glyph range decides for the GUI's
+// lifetime what text can be drawn. Latin-1 — Nuklear's default — stops
+// short of the punctuation UI strings actually contain.
+TEST_F(GuiHarness, GlyphRangeDecidesWhatCanBeDrawn)
+{
+    size_t font_size = 0;
+    void *font = SDL_LoadFile(GUI_TEST_FONT, &font_size);
+    ASSERT_NE(font, nullptr) << SDL_GetError();
+
+    // An em dash, a curly quote, a bullet and an ellipsis: all outside
+    // Latin-1, all present in this font.
+    const char *text = "\xe2\x80\x94 \xe2\x80\x9c \xe2\x80\xa2 \xe2\x80\xa6";
+    const size_t bytes = static_cast<size_t>(kScreen) * kScreen * sizeof(Uint32);
+    std::vector<Uint32> latin1(static_cast<size_t>(kScreen) * kScreen);
+    std::vector<Uint32> punctuation(latin1.size());
+
+    auto render_into = [&](SDLStatic_GuiGlyphRange range, std::vector<Uint32> &out) {
+        SDLStatic_Gui *gui = SDLStatic_CreateGuiWithGlyphs(renderer_, font, font_size, 24.0f,
+                                                           range);
+        ASSERT_NE(gui, nullptr) << SDL_GetError();
+        struct nk_context *ctx = SDLStatic_GuiContext(gui);
+        BeginFrame();
+        SDLStatic_GuiInputBegin(gui);
+        SDLStatic_GuiInputEnd(gui);
+        if (nk_begin(ctx, "glyphs", nk_rect(0, 0, kScreen, kScreen), NK_WINDOW_NO_SCROLLBAR))
+        {
+            nk_layout_row_dynamic(ctx, 40.0f, 1);
+            nk_label(ctx, text, NK_TEXT_LEFT);
+        }
+        nk_end(ctx);
+        EXPECT_TRUE(SDLStatic_GuiRender(gui));
+        SDL_FlushRenderer(renderer_);
+        SDL_memcpy(out.data(), surface_->pixels, bytes);
+        SDLStatic_DestroyGui(gui);
+    };
+
+    render_into(SDLSTATIC_GUI_GLYPHS_LATIN1, latin1);
+    render_into(SDLSTATIC_GUI_GLYPHS_PUNCTUATION, punctuation);
+    EXPECT_NE(SDL_memcmp(latin1.data(), punctuation.data(), bytes), 0)
+        << "the same string must render differently once the glyphs are baked";
+
+    // The default entry point keeps its old behaviour exactly.
+    std::vector<Uint32> plain(latin1.size());
+    SDLStatic_Gui *gui = SDLStatic_CreateGui(renderer_, font, font_size, 24.0f);
+    ASSERT_NE(gui, nullptr);
+    SDLStatic_DestroyGui(gui);
+    SDL_free(font);
+}
+
+// The two draw entry points the inventory grid needed: one that paints at
+// an explicit rectangle inside a window, one that paints above every panel.
+TEST_F(GuiHarness, DrawTextureHonoursRectAndOverlayOrder)
+{
+    SDL_Surface *pixels = SDL_CreateSurface(8, 8, SDL_PIXELFORMAT_ARGB8888);
+    ASSERT_NE(pixels, nullptr);
+    SDL_FillSurfaceRect(pixels, nullptr, 0xFFFF0000u);
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer_, pixels);
+    ASSERT_NE(texture, nullptr) << SDL_GetError();
+    SDL_DestroySurface(pixels);
+
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+    BeginFrame();
+    SDLStatic_GuiInputBegin(gui_);
+    SDLStatic_GuiInputEnd(gui_);
+    const SDL_FRect where = {20.0f, 20.0f, 40.0f, 40.0f};
+    if (nk_begin(ctx, "canvas", nk_rect(0, 0, kScreen, kScreen), NK_WINDOW_NO_SCROLLBAR))
+    {
+        EXPECT_TRUE(SDLStatic_GuiDrawTexture(gui_, texture, where,
+                                             SDLSTATIC_GUI_IMAGE_STRETCH));
+    }
+    nk_end(ctx);
+    // Queued from outside any window, and still drawn — that is the point.
+    const SDL_FRect ghost = {120.0f, 120.0f, 30.0f, 30.0f};
+    EXPECT_TRUE(SDLStatic_GuiDrawTextureOverlay(gui_, texture, ghost,
+                                                SDLSTATIC_GUI_IMAGE_STRETCH));
+    EXPECT_TRUE(SDLStatic_GuiRender(gui_));
+    SDL_FlushRenderer(renderer_);
+
+    auto pixel_at = [&](int x, int y) {
+        const Uint32 *p = static_cast<const Uint32 *>(surface_->pixels);
+        return p[y * kScreen + x] & 0x00FFFFFFu;
+    };
+    EXPECT_EQ(pixel_at(40, 40), 0x00FF0000u) << "drawn where the rect asked";
+    // Outside the rect is the window's own background, not the texture:
+    // an explicit rectangle must not bleed into the rest of the panel.
+    EXPECT_NE(pixel_at(10, 10), 0x00FF0000u) << "and nowhere else";
+    EXPECT_EQ(pixel_at(130, 130), 0x00FF0000u) << "the overlay reached the renderer";
+
+    // Overlays last one frame; the next frame must be clean.
+    BeginFrame();
+    EXPECT_TRUE(SDLStatic_GuiRender(gui_));
+    SDL_FlushRenderer(renderer_);
+    EXPECT_EQ(pixel_at(130, 130), 0x00000000u) << "the queue is emptied each frame";
+
+    // Outside a window there is no canvas to draw into, and that is an
+    // error rather than a silent no-op.
+    EXPECT_FALSE(SDLStatic_GuiDrawTexture(gui_, texture, where, SDLSTATIC_GUI_IMAGE_STRETCH));
+    EXPECT_FALSE(SDLStatic_GuiDrawTexture(gui_, nullptr, where, SDLSTATIC_GUI_IMAGE_STRETCH));
+    EXPECT_FALSE(SDLStatic_GuiDrawTextureOverlay(nullptr, texture, where,
+                                                 SDLSTATIC_GUI_IMAGE_STRETCH));
+    SDL_DestroyTexture(texture);
+}
+
+// The debug-overlay counters: they must move with what was actually drawn.
+TEST_F(GuiHarness, CountersReportTheLastFrame)
+{
+    EXPECT_EQ(SDLStatic_GuiDrawCommandCount(gui_), 0) << "nothing rendered yet";
+    EXPECT_EQ(SDLStatic_GuiMemoryUsed(gui_), 0);
+    EXPECT_EQ(SDLStatic_GuiDrawCommandCount(nullptr), 0);
+    EXPECT_EQ(SDLStatic_GuiMemoryUsed(nullptr), 0);
+
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+    BeginFrame();
+    if (nk_begin(ctx, "busy", nk_rect(0, 0, 200, 200), NK_WINDOW_BORDER | NK_WINDOW_TITLE))
+    {
+        nk_layout_row_dynamic(ctx, 20.0f, 1);
+        for (int i = 0; i < 12; i++)
+        {
+            nk_button_label(ctx, "button");
+        }
+    }
+    nk_end(ctx);
+    ASSERT_TRUE(SDLStatic_GuiRender(gui_));
+    const int busy_memory = SDLStatic_GuiMemoryUsed(gui_);
+    EXPECT_GT(SDLStatic_GuiDrawCommandCount(gui_), 0);
+    EXPECT_GT(busy_memory, 0);
+
+    BeginFrame();
+    if (nk_begin(ctx, "busy", nk_rect(0, 0, 200, 200), NK_WINDOW_BORDER | NK_WINDOW_TITLE))
+    {
+        nk_layout_row_dynamic(ctx, 20.0f, 1);
+        nk_label(ctx, "quiet", NK_TEXT_LEFT);
+    }
+    nk_end(ctx);
+    ASSERT_TRUE(SDLStatic_GuiRender(gui_));
+    EXPECT_LT(SDLStatic_GuiMemoryUsed(gui_), busy_memory)
+        << "a simpler frame must cost less, or the counter is not measuring the frame";
+}
+
 } // namespace
