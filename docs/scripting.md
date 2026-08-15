@@ -101,6 +101,22 @@ Nuklear's constants keep their `NK_` spelling (`NK.NK_WINDOW_TITLE`)
 because its prefix is lowercase `nk_`. Each constant is emitted behind an
 `#ifdef`, so anything a platform doesn't define simply isn't registered.
 
+### The script signature is not always the C signature
+
+Check
+[`SCRIPT_API.md`](https://github.com/bluesentinelsec/SDL3-static-extensions/blob/main/bindings/generated/SCRIPT_API.md)
+— it lists every bound function with the signature the *script* sees.
+Three rules make it differ from C:
+
+- A `(const void *data, size_t len)` pair collapses into **one** string
+  argument, so everything after it shifts left:
+  `SDLStatic_CreateGui(renderer, data, len, font_size)` is
+  `SDLStaticC.CreateGui(renderer, data, font_size)`. Passing a spurious
+  length lands in `font_size` — the call still succeeds, just with the
+  wrong value.
+- Pure out-parameters are not arguments; they come back as extra returns.
+- In/out parameters are passed *and* returned.
+
 Functions that cannot cross a script boundary (callbacks, varargs,
 threading) are skipped **with the reason recorded** in
 [`COVERAGE.md`](https://github.com/bluesentinelsec/SDL3-static-extensions/blob/main/bindings/generated/COVERAGE.md).

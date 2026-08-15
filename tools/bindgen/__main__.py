@@ -68,6 +68,7 @@ def main() -> int:
     from .emit_lua import emit_lua
     from .emit_ruby import emit_ruby
     from .emit_report import emit_report
+    from .emit_script_api import emit_script_api
 
     target = args.repo
     if args.check:
@@ -87,6 +88,7 @@ def main() -> int:
     outcomes["lua"] = emit_lua(manifest, target)
     outcomes["ruby"] = emit_ruby(manifest, target)
     emit_report(manifest, outcomes, target)
+    emit_script_api(manifest, outcomes, target)
 
     if args.check:
 
