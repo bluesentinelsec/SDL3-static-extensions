@@ -268,6 +268,9 @@ if(SDLSTATIC_BUILD_PHYSICS)
 endif()
 
 if(SDLSTATIC_BUILD_GUI)
+  if(NOT SDLSTATIC_BUILD_EXTRAS)
+    message(FATAL_ERROR "SDLSTATIC_BUILD_GUI requires SDLSTATIC_BUILD_EXTRAS (file dialogs)")
+  endif()
   add_subdirectory(gui)
 endif()
 

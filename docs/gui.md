@@ -148,6 +148,42 @@ The dwell defaults to 1000 ms; `SDLStatic_GuiSetTooltipDelay(gui, ms)`
 changes it (0 shows immediately) and `SDLStatic_GuiTooltipDelay` reads it
 back. The call returns true on frames where the tooltip is displayed.
 
+### File buttons that work in every browser
+
+`SDLStatic_ShowOpenFileDialog` is enough on desktop, but on the web a picker
+or a download only opens from inside the *real* click handler. An SDL app
+sees a click one frame later, by which time Safari has withdrawn permission
+— Firefox is laxer, which is why a dialog can appear to work until someone
+tries it in Safari. The fix is to let the browser's own elements take the
+click, so the GUI offers two widgets that are ordinary buttons on desktop
+and transparent DOM overlays on the web:
+
+```c
+/* Open: the picker's result arrives through the usual dialog state machine. */
+SDLStatic_GuiOpenFileButton(gui, "Open", "Text files", "txt");
+if (SDLStatic_DialogStatus() == SDLSTATIC_DIALOG_ACCEPTED) {
+    load(SDLStatic_DialogPath());
+    SDLStatic_DialogReset();
+}
+
+/* Save: pass the document's current bytes every frame — the download link
+   has to hold them before the click, not after it. */
+if (SDLStatic_GuiSaveFileButton(gui, "Save", "untitled.txt", body, len)) {
+    printf("saved to %s\n", SDLStatic_GuiSavedPath(gui));
+}
+```
+
+The save button shows the native save dialog on desktop and writes the file
+itself once a path is chosen, which takes a few frames — keep calling it
+with the same arguments until it returns true. On the web the bytes are
+re-blobbed only when they change, so serialising each frame is cheap.
+
+Two consequences of the overlay: the browser click never reaches Nuklear, so
+these buttons do not show hover or press shading on the web, and one of each
+is supported at a time — enough for a File menu, and all a modal picker can
+be. The overlay is hidden automatically on any frame that does not draw the
+button, so it never swallows clicks meant for other widgets.
+
 ### Keyboard and theming from scripts
 
 `SDLStatic_GuiKeyPressed(gui, SDL_SCANCODE_ESCAPE)` reports keys seen

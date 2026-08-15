@@ -28,7 +28,12 @@ char *SDLStatic_NuklearDtoa(char *buffer, double value)
 #include <SDLStatic/nuklear.h>
 
 #include <SDLStatic/gui.h>
+#include <SDLStatic/dialog.h>
 #include <SDLStatic/gui_grid.h>
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h> /* the web file button is driven with EM_ASM */
+#endif
 
 typedef struct GuiVertex
 {
@@ -61,6 +66,10 @@ struct SDLStatic_Gui
     SDLStatic_GuiGrid grid;   /* the script-reachable grid */
     float grid_weights[SDLSTATIC_GUI_GRID_MAX_COLS];
     bool grid_active;
+    bool file_button_synced; /* a file-button overlay was placed this frame */
+    bool save_button_synced; /* a save-button overlay was placed this frame */
+    bool save_pending;       /* desktop: waiting on the native save dialog */
+    char *saved_path;        /* where the last save landed */
     Uint8 pressed[(SDL_SCANCODE_COUNT + 7) / 8]; /* keys down this frame */
 };
 
@@ -214,6 +223,7 @@ void SDLStatic_DestroyGui(SDLStatic_Gui *gui)
         SDL_DestroyTexture(gui->font_texture);
     }
     SDL_free(gui->font_copy);
+    SDL_free(gui->saved_path);
     SDL_free(gui);
 }
 
@@ -257,6 +267,268 @@ void SDLStatic_GuiSetTooltipDelay(SDLStatic_Gui *gui, int delay_ms)
 int SDLStatic_GuiTooltipDelay(SDLStatic_Gui *gui)
 {
     return (gui != NULL) ? gui->tip_delay_ms : 0;
+}
+
+#ifdef __EMSCRIPTEN__
+/* Keep a transparent <input type="file"> parked over the button's on-screen
+ * rectangle. Clicking it is a genuine user gesture on the element itself,
+ * which is the only thing Safari accepts. Coordinates arrive in render
+ * pixels and are converted to CSS pixels through the canvas's own scale. */
+static void WebSyncFileButton(struct nk_rect bounds, const char *filter_pattern)
+{
+    EM_ASM(
+        {
+            var canvas = Module.canvas;
+            if (!canvas) return;
+            var input = Module.__sdlstatic_file_button;
+            if (!input)
+            {
+                input = document.createElement('input');
+                input.type = 'file';
+                input.style.position = 'absolute';
+                input.style.opacity = '0';
+                input.style.zIndex = '10';
+                input.style.cursor = 'pointer';
+                input.addEventListener('change', function(event)
+                {
+                    var file = event.target.files && event.target.files[0];
+                    input.value = ''; /* allow re-picking the same file */
+                    if (!file)
+                    {
+                        Module.__sdlstatic_dialog = ({state : 'cancelled'});
+                        return;
+                    }
+                    var reader = new FileReader();
+                    reader.onload = function()
+                    {
+                        try
+                        {
+                            FS.mkdir('/dialog');
+                        }
+                        catch (e)
+                        { /* already exists */
+                        }
+                        var path = '/dialog/' + file.name;
+                        FS.writeFile(path, new Uint8Array(reader.result));
+                        Module.__sdlstatic_dialog = ({state : 'accepted', path : path});
+                    };
+                    reader.onerror = function()
+                    {
+                        Module.__sdlstatic_dialog = ({state : 'error'});
+                    };
+                    reader.readAsArrayBuffer(file);
+                });
+                input.addEventListener('cancel', function()
+                {
+                    Module.__sdlstatic_dialog = ({state : 'cancelled'});
+                });
+                document.body.appendChild(input);
+                Module.__sdlstatic_file_button = input;
+            }
+            if ($4)
+            {
+                var pattern = UTF8ToString($4);
+                if (pattern !== '*')
+                {
+                    input.accept = pattern.split(';')
+                                       .map(function(ext) { return '.' + ext.trim(); })
+                                       .join(',');
+                }
+            }
+            var rect = canvas.getBoundingClientRect();
+            var sx = canvas.width ? (rect.width / canvas.width) : 1;
+            var sy = canvas.height ? (rect.height / canvas.height) : 1;
+            input.style.display = 'block';
+            input.style.left = (rect.left + window.scrollX + $0 * sx) + 'px';
+            input.style.top = (rect.top + window.scrollY + $1 * sy) + 'px';
+            input.style.width = ($2 * sx) + 'px';
+            input.style.height = ($3 * sy) + 'px';
+        },
+        bounds.x, bounds.y, bounds.w, bounds.h, filter_pattern);
+}
+
+static void WebHideFileButton(void)
+{
+    EM_ASM({
+        var input = Module.__sdlstatic_file_button;
+        if (input) input.style.display = 'none';
+    });
+}
+
+/* The save overlay is an <a download> whose blob is refreshed only when the
+ * bytes change, so calling this every frame stays cheap. */
+static void WebSyncSaveButton(struct nk_rect bounds, const char *filename, const void *data,
+                              size_t len)
+{
+    EM_ASM(
+        {
+            var canvas = Module.canvas;
+            if (!canvas) return;
+            var link = Module.__sdlstatic_save_button;
+            if (!link)
+            {
+                link = document.createElement('a');
+                link.style.position = 'absolute';
+                link.style.opacity = '0';
+                link.style.zIndex = '10';
+                link.style.cursor = 'pointer';
+                link.textContent = ' ';
+                link.addEventListener('click', function() { Module.__sdlstatic_saved = 1; });
+                document.body.appendChild(link);
+                Module.__sdlstatic_save_button = link;
+            }
+            var name = UTF8ToString($4);
+            var bytes = HEAPU8.slice($5, $5 + $6);
+            var changed = link.download !== name || !link.__bytes ||
+                          link.__bytes.length !== bytes.length;
+            if (!changed)
+            {
+                for (var i = 0; i < bytes.length; i++)
+                {
+                    if (link.__bytes[i] !== bytes[i])
+                    {
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+            if (changed)
+            {
+                if (link.href) URL.revokeObjectURL(link.href);
+                link.__bytes = bytes;
+                link.download = name;
+                link.href =
+                    URL.createObjectURL(new Blob([bytes], ({type : 'application/octet-stream'})));
+            }
+            var rect = canvas.getBoundingClientRect();
+            var sx = canvas.width ? (rect.width / canvas.width) : 1;
+            var sy = canvas.height ? (rect.height / canvas.height) : 1;
+            link.style.display = 'block';
+            link.style.left = (rect.left + window.scrollX + $0 * sx) + 'px';
+            link.style.top = (rect.top + window.scrollY + $1 * sy) + 'px';
+            link.style.width = ($2 * sx) + 'px';
+            link.style.height = ($3 * sy) + 'px';
+        },
+        bounds.x, bounds.y, bounds.w, bounds.h, filename, data, (int)len);
+}
+
+static void WebHideSaveButton(void)
+{
+    EM_ASM({
+        var link = Module.__sdlstatic_save_button;
+        if (link) link.style.display = 'none';
+    });
+}
+
+/* Did the user click the download link since the last call? */
+static int WebTakeSaved(void)
+{
+    return EM_ASM_INT({
+        var fired = Module.__sdlstatic_saved ? 1 : 0;
+        Module.__sdlstatic_saved = 0;
+        return fired;
+    });
+}
+#endif /* __EMSCRIPTEN__ */
+
+bool SDLStatic_GuiOpenFileButton(SDLStatic_Gui *gui, const char *label,
+                                 const char *filter_name, const char *filter_pattern)
+{
+    if (gui == NULL || label == NULL)
+    {
+        SDL_InvalidParamError("gui/label");
+        return false;
+    }
+    struct nk_context *ctx = &gui->ctx;
+    const struct nk_rect bounds = nk_widget_bounds(ctx);
+    const bool clicked = nk_button_label(ctx, label) != 0;
+
+#ifdef __EMSCRIPTEN__
+    (void)clicked; /* the overlay receives the click, not the canvas */
+    (void)filter_name;
+    WebSyncFileButton(bounds, filter_pattern);
+    gui->file_button_synced = true;
+    return false;
+#else
+    if (clicked)
+    {
+        return SDLStatic_ShowOpenFileDialog(SDL_GetRenderWindow(gui->renderer), filter_name,
+                                            filter_pattern, NULL);
+    }
+    return false;
+#endif
+}
+
+static void SetSavedPath(SDLStatic_Gui *gui, const char *path)
+{
+    SDL_free(gui->saved_path);
+    gui->saved_path = (path != NULL) ? SDL_strdup(path) : NULL;
+}
+
+bool SDLStatic_GuiSaveFileButton(SDLStatic_Gui *gui, const char *label, const char *filename,
+                                 const void *data, size_t len)
+{
+    if (gui == NULL || label == NULL || filename == NULL || (data == NULL && len != 0))
+    {
+        SDL_InvalidParamError("gui/label/filename/data");
+        return false;
+    }
+    struct nk_context *ctx = &gui->ctx;
+    const struct nk_rect bounds = nk_widget_bounds(ctx);
+    const bool clicked = nk_button_label(ctx, label) != 0;
+
+#ifdef __EMSCRIPTEN__
+    (void)clicked; /* the overlay receives the click, not the canvas */
+    WebSyncSaveButton(bounds, filename, data, len);
+    gui->save_button_synced = true;
+    if (WebTakeSaved())
+    {
+        SetSavedPath(gui, filename);
+        return true;
+    }
+    return false;
+#else
+    if (clicked && !gui->save_pending)
+    {
+        if (SDLStatic_ShowSaveFileDialog(SDL_GetRenderWindow(gui->renderer), NULL, NULL,
+                                         filename))
+        {
+            gui->save_pending = true;
+        }
+    }
+    if (!gui->save_pending)
+    {
+        return false;
+    }
+    switch (SDLStatic_DialogStatus())
+    {
+    case SDLSTATIC_DIALOG_ACCEPTED:
+    {
+        /* Write what the caller passed this frame — the freshest bytes. */
+        const char *path = SDLStatic_DialogPath();
+        const bool ok = (path != NULL) && SDL_SaveFile(path, data, len);
+        if (ok)
+        {
+            SetSavedPath(gui, path);
+        }
+        gui->save_pending = false;
+        SDLStatic_DialogReset();
+        return ok;
+    }
+    case SDLSTATIC_DIALOG_CANCELLED:
+    case SDLSTATIC_DIALOG_ERROR:
+        gui->save_pending = false;
+        SDLStatic_DialogReset();
+        return false;
+    default:
+        return false;
+    }
+#endif
+}
+
+const char *SDLStatic_GuiSavedPath(SDLStatic_Gui *gui)
+{
+    return (gui != NULL) ? gui->saved_path : NULL;
 }
 
 bool SDLStatic_GuiTooltip(SDLStatic_Gui *gui, const char *text)
@@ -773,6 +1045,18 @@ bool SDLStatic_GuiRender(SDLStatic_Gui *gui)
     {
         return SDL_InvalidParamError("gui");
     }
+#ifdef __EMSCRIPTEN__
+    if (!gui->file_button_synced)
+    {
+        WebHideFileButton(); /* no file button this frame: stop intercepting */
+    }
+    if (!gui->save_button_synced)
+    {
+        WebHideSaveButton();
+    }
+    gui->file_button_synced = false;
+    gui->save_button_synced = false;
+#endif
     static const struct nk_draw_vertex_layout_element vertex_layout[] = {
         {NK_VERTEX_POSITION, NK_FORMAT_FLOAT, NK_OFFSETOF(GuiVertex, pos)},
         {NK_VERTEX_TEXCOORD, NK_FORMAT_FLOAT, NK_OFFSETOF(GuiVertex, uv)},

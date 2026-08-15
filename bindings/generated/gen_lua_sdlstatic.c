@@ -361,6 +361,18 @@ static int GenL_SDLStatic_GuiKeyPressed(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_GuiOpenFileButton(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checkstring(L, 3);
+    const char *a3 = lua_isnoneornil(L, 4) ? NULL : luaL_checkstring(L, 4);
+    bool rv = SDLStatic_GuiOpenFileButton(a0, a1, a2, a3);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_GuiPopFont(lua_State *L)
 {
     (void)L;
@@ -426,6 +438,28 @@ static int GenL_SDLStatic_GuiRender(lua_State *L)
     SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
     bool rv = SDLStatic_GuiRender(a0);
     lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiSaveFileButton(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checkstring(L, 3);
+    size_t len3 = 0;
+    const char *a3 = lua_isnoneornil(L, 4) ? NULL : luaL_checklstring(L, 4, &len3);
+    bool rv = SDLStatic_GuiSaveFileButton(a0, a1, a2, (const void *)a3, (size_t)len3);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiSavedPath(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    const char * rv = SDLStatic_GuiSavedPath(a0);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
     return 1;
 }
 
@@ -724,7 +758,7 @@ static int GenL_SDLStatic_TiledTileWidth(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 69);
+    lua_createtable(L, 0, 72);
     lua_pushcfunction(L, GenL_SDLStatic_BidiBaseIsRTL);
     lua_setfield(L, -2, "BidiBaseIsRTL");
     lua_pushcfunction(L, GenL_SDLStatic_CountSignalConnections);
@@ -791,6 +825,8 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "GuiInputEnd");
     lua_pushcfunction(L, GenL_SDLStatic_GuiKeyPressed);
     lua_setfield(L, -2, "GuiKeyPressed");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiOpenFileButton);
+    lua_setfield(L, -2, "GuiOpenFileButton");
     lua_pushcfunction(L, GenL_SDLStatic_GuiPopFont);
     lua_setfield(L, -2, "GuiPopFont");
     lua_pushcfunction(L, GenL_SDLStatic_GuiPopStyleColor);
@@ -805,6 +841,10 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "GuiPushStyleColor");
     lua_pushcfunction(L, GenL_SDLStatic_GuiRender);
     lua_setfield(L, -2, "GuiRender");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiSaveFileButton);
+    lua_setfield(L, -2, "GuiSaveFileButton");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiSavedPath);
+    lua_setfield(L, -2, "GuiSavedPath");
     lua_pushcfunction(L, GenL_SDLStatic_GuiScale);
     lua_setfield(L, -2, "GuiScale");
     lua_pushcfunction(L, GenL_SDLStatic_GuiSetFont);

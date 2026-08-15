@@ -2420,6 +2420,7 @@ returns as an array.
 | `SDLStaticC.GuiInputBegin(gui: SDLStatic_Gui)` | nil |
 | `SDLStaticC.GuiInputEnd(gui: SDLStatic_Gui)` | nil |
 | `SDLStaticC.GuiKeyPressed(gui: SDLStatic_Gui, scancode: integer)` | boolean |
+| `SDLStaticC.GuiOpenFileButton(gui: SDLStatic_Gui, label: string|nil, filter_name: string|nil, filter_pattern: string|nil)` | boolean |
 | `SDLStaticC.GuiPopFont(gui: SDLStatic_Gui, count: integer)` | nil |
 | `SDLStaticC.GuiPopStyleColor(gui: SDLStatic_Gui, count: integer)` | nil |
 | `SDLStaticC.GuiProcessEvent(gui: SDLStatic_Gui, event: SDL_Event)` | boolean |
@@ -2427,6 +2428,8 @@ returns as an array.
 | `SDLStaticC.GuiPushFont(gui: SDLStatic_Gui, which: integer)` | boolean |
 | `SDLStaticC.GuiPushStyleColor(gui: SDLStatic_Gui, which: integer, color: SDL_Color table)` | boolean |
 | `SDLStaticC.GuiRender(gui: SDLStatic_Gui)` | boolean |
+| `SDLStaticC.GuiSaveFileButton(gui: SDLStatic_Gui, label: string|nil, filename: string|nil, data: string|nil)` | boolean |
+| `SDLStaticC.GuiSavedPath(gui: SDLStatic_Gui)` | string|nil |
 | `SDLStaticC.GuiScale(gui: SDLStatic_Gui)` | number |
 | `SDLStaticC.GuiSetFont(gui: SDLStatic_Gui, which: integer)` | boolean |
 | `SDLStaticC.GuiSetTooltipDelay(gui: SDLStatic_Gui, delay_ms: integer)` | nil |

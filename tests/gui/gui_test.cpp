@@ -835,4 +835,29 @@ TEST_F(GuiHarness, ScaleDefaultsToOneWithoutAWindow)
     EXPECT_FLOAT_EQ(SDLStatic_GuiScale(nullptr), 1.0f);
 }
 
+// The file buttons are ordinary buttons on desktop: nothing happens until
+// they are clicked, and a save reports nowhere until one completes. (The
+// browser halves are DOM overlays and are exercised in a real engine.)
+TEST_F(GuiHarness, FileButtonsAreInertUntilClicked)
+{
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+    BeginFrame();
+    if (nk_begin(ctx, "files", nk_rect(10, 10, 300, 200), NK_WINDOW_NO_SCROLLBAR))
+    {
+        nk_layout_row_dynamic(ctx, 30.0f, 1);
+        EXPECT_FALSE(SDLStatic_GuiOpenFileButton(gui_, "Open", "Text files", "txt"));
+        EXPECT_FALSE(SDLStatic_GuiSaveFileButton(gui_, "Save", "untitled.txt", "hi", 2));
+    }
+    nk_end(ctx);
+    EXPECT_TRUE(SDLStatic_GuiRender(gui_));
+    EXPECT_EQ(SDLStatic_GuiSavedPath(gui_), nullptr) << "nothing has been saved";
+    EXPECT_EQ(SDLStatic_GuiSavedPath(nullptr), nullptr);
+
+    EXPECT_FALSE(SDLStatic_GuiOpenFileButton(nullptr, "Open", nullptr, nullptr));
+    EXPECT_FALSE(SDLStatic_GuiOpenFileButton(gui_, nullptr, nullptr, nullptr));
+    EXPECT_FALSE(SDLStatic_GuiSaveFileButton(gui_, "Save", nullptr, "hi", 2));
+    EXPECT_FALSE(SDLStatic_GuiSaveFileButton(gui_, "Save", "f.txt", nullptr, 4))
+        << "a null buffer with a non-zero length is a caller bug";
+}
+
 } // namespace

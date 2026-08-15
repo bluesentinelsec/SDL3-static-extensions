@@ -92,6 +92,52 @@ extern bool SDLStatic_GuiPumpEvents(SDLStatic_Gui *gui);
  *  quitting on Escape. */
 extern bool SDLStatic_GuiKeyPressed(SDLStatic_Gui *gui, int scancode);
 
+/** A Button that opens a native "open file" picker when clicked.
+ *
+ *  Use this instead of a plain button plus SDLStatic_ShowOpenFileDialog if
+ *  the program must work in a browser. Safari (and, in stricter modes,
+ *  other browsers) only opens a file picker from inside the real click
+ *  handler, but an SDL app processes clicks a frame later, by which time
+ *  the browser has withdrawn permission. On web this keeps a transparent
+ *  <input type="file"> positioned over the button so the user's click
+ *  lands on a real DOM element; on desktop it is an ordinary button that
+ *  starts the dialog. Collect the result with SDLStatic_DialogStatus, the
+ *  same way in both cases.
+ *
+ *  One such button is supported at a time — enough for a File menu, and
+ *  all a modal picker can be. Because the overlay swallows the click, the
+ *  button does not show Nuklear's hover/press shading on web.
+ *
+ *  \returns true when a dialog was started (desktop only; on web the
+ *  browser drives it). */
+extern bool SDLStatic_GuiOpenFileButton(SDLStatic_Gui *gui, const char *label,
+                                        const char *filter_name,
+                                        const char *filter_pattern);
+
+/** A "save file" button, the mirror image of SDLStatic_GuiOpenFileButton.
+ *
+ *  Browsers hand a file to the user by clicking a download link, and that
+ *  click — like opening a picker — only counts inside the real gesture, so
+ *  on web this parks a transparent <a download> over the button. The bytes
+ *  therefore have to be ready *before* the click: pass the document's
+ *  current contents every frame, not just when something changed. They are
+ *  only re-blobbed when they actually differ.
+ *
+ *  Desktop shows the native save dialog and writes the file once the user
+ *  has chosen a path, which takes a few frames; keep calling with the same
+ *  arguments until it returns true.
+ *
+ *  \param filename the name to suggest, e.g. "untitled.txt".
+ *  \param data,len the document's current bytes.
+ *  \returns true on the frame the file was written (desktop) or handed to
+ *  the browser (web). SDLStatic_GuiSavedPath then reports where. */
+extern bool SDLStatic_GuiSaveFileButton(SDLStatic_Gui *gui, const char *label,
+                                        const char *filename, const void *data, size_t len);
+
+/** Where SDLStatic_GuiSaveFileButton last saved: an absolute path on
+ *  desktop, the download's file name on web. NULL before the first save. */
+extern const char *SDLStatic_GuiSavedPath(SDLStatic_Gui *gui);
+
 /** Show `text` as a tooltip for the **next** widget, with desktop-style
  *  timing: it appears only after the pointer has rested on that widget for
  *  the tooltip delay, and disappears again the moment the pointer moves.

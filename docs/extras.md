@@ -102,6 +102,15 @@ SDL ships cocoa, windows, unix (portal) and android backends but none for
 Emscripten, so this module implements one over browser APIs. The state
 machine above is identical everywhere; two things differ by necessity:
 
+- **User activation** gates both halves. Browsers only open a picker or
+  start a download from inside the real click handler, and an SDL app
+  handles clicks a frame later — so calling these functions directly from a
+  Nuklear button works in Firefox (which allows a few seconds of grace) and
+  silently does nothing in Safari. For GUI apps use
+  `SDLStatic_GuiOpenFileButton` / `SDLStatic_GuiSaveFileButton`, which park
+  a transparent DOM element over the button so the user clicks the browser's
+  own element; see [gui.md](gui.md). The functions below remain the right
+  tool on desktop and for non-GUI callers.
 - **Opening** uses a hidden `<input type="file">`. The chosen file is copied
   into the Emscripten filesystem and reported as a normal path, so
   `SDL_LoadFile(SDLStatic_DialogPath())` works unchanged. Browsers report a

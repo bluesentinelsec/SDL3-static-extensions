@@ -168,6 +168,15 @@ class GuiHandle {
   Status GuiKeyPressed(int scancode) {
     return ::SDLStatic_GuiKeyPressed(value_, scancode) ? Status() : Status::FromSdl();
   }
+  Status GuiOpenFileButton(const char *label, const char *filter_name, const char *filter_pattern) {
+    return ::SDLStatic_GuiOpenFileButton(value_, label, filter_name, filter_pattern) ? Status() : Status::FromSdl();
+  }
+  Status GuiSaveFileButton(const char *label, const char *filename, const void *data, size_t len) {
+    return ::SDLStatic_GuiSaveFileButton(value_, label, filename, data, len) ? Status() : Status::FromSdl();
+  }
+  const char* GuiSavedPath() {
+    return ::SDLStatic_GuiSavedPath(value_);
+  }
   Status GuiTooltip(const char *text) {
     return ::SDLStatic_GuiTooltip(value_, text) ? Status() : Status::FromSdl();
   }

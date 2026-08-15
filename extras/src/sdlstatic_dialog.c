@@ -246,8 +246,13 @@ SDLStatic_DialogState SDLStatic_DialogStatus(void)
 {
 #ifdef __EMSCRIPTEN__
     /* The browser result lands in JS; fold it into the same state machine
-     * the native path uses so callers cannot tell the difference. */
-    if (SDL_GetAtomicInt(&g_state) == SDLSTATIC_DIALOG_PENDING)
+     * the native path uses so callers cannot tell the difference.
+     *
+     * IDLE is polled too, not just PENDING: SDLStatic_GuiOpenFileButton lets
+     * the user click a DOM <input> directly (the only thing Safari accepts),
+     * so a result can appear without this side ever opening a dialog. */
+    const int current = SDL_GetAtomicInt(&g_state);
+    if (current == SDLSTATIC_DIALOG_PENDING || current == SDLSTATIC_DIALOG_IDLE)
     {
         char path[1024];
         path[0] = '\0';

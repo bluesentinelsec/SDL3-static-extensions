@@ -510,6 +510,22 @@ static mrb_value GenR_SDLStatic_GuiKeyPressed(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_GuiOpenFileButton(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    const char *a2 = SDLStaticGen_RubyToStr(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    const char *a3 = SDLStaticGen_RubyToStr(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    bool rv = SDLStatic_GuiOpenFileButton(a0, a1, a2, a3);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
 static mrb_value GenR_SDLStatic_GuiPopFont(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -605,6 +621,36 @@ static mrb_value GenR_SDLStatic_GuiRender(mrb_state *mrb, mrb_value self)
     SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
     bool rv = SDLStatic_GuiRender(a0);
     return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiSaveFileButton(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    const char *a2 = SDLStaticGen_RubyToStr(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    size_t len3 = 0;
+    const char *a3 = SDLStaticGen_RubyToBlob(mrb, (argc > 3 ? argv[3] : mrb_nil_value()), &len3);
+    bool rv = SDLStatic_GuiSaveFileButton(a0, a1, a2, (const void *)a3, (size_t)len3);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiSavedPath(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
+    const char * rv = SDLStatic_GuiSavedPath(a0);
+    return (rv == NULL ? mrb_nil_value() : mrb_str_new_cstr(mrb, rv));
     }
 }
 
@@ -1063,6 +1109,7 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GuiInputBegin", GenR_SDLStatic_GuiInputBegin, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiInputEnd", GenR_SDLStatic_GuiInputEnd, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiKeyPressed", GenR_SDLStatic_GuiKeyPressed, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiOpenFileButton", GenR_SDLStatic_GuiOpenFileButton, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiPopFont", GenR_SDLStatic_GuiPopFont, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiPopStyleColor", GenR_SDLStatic_GuiPopStyleColor, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiProcessEvent", GenR_SDLStatic_GuiProcessEvent, MRB_ARGS_ANY());
@@ -1070,6 +1117,8 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GuiPushFont", GenR_SDLStatic_GuiPushFont, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiPushStyleColor", GenR_SDLStatic_GuiPushStyleColor, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiRender", GenR_SDLStatic_GuiRender, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiSaveFileButton", GenR_SDLStatic_GuiSaveFileButton, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiSavedPath", GenR_SDLStatic_GuiSavedPath, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiScale", GenR_SDLStatic_GuiScale, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiSetFont", GenR_SDLStatic_GuiSetFont, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiSetTooltipDelay", GenR_SDLStatic_GuiSetTooltipDelay, MRB_ARGS_ANY());
