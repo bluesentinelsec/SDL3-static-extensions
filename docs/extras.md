@@ -82,10 +82,30 @@ default:
 `SDLStatic_ShowSaveFileDialog` is the Save As half. One dialog is tracked
 at a time, which is all a modal picker can be.
 
-**Dialogs are a desktop feature.** SDL ships cocoa, windows, unix (portal)
-and android backends but none for Emscripten, so on web builds the status
-becomes `SDLSTATIC_DIALOG_ERROR` with `SDL_GetError()` explaining why —
-handle that state rather than assuming a path arrives.
+### On the web
+
+SDL ships cocoa, windows, unix (portal) and android backends but none for
+Emscripten, so this module implements one over browser APIs. The state
+machine above is identical everywhere; two things differ by necessity:
+
+- **Opening** uses a hidden `<input type="file">`. The chosen file is copied
+  into the Emscripten filesystem and reported as a normal path, so
+  `SDL_LoadFile(SDLStatic_DialogPath())` works unchanged. Browsers report a
+  chosen file but never a dismissal, so a cancelled picker simply leaves the
+  dialog `PENDING` — offer the user another way out rather than blocking on
+  it. The picker also needs user activation, so call it from a real click.
+- **Saving** has no picker at all, because a page cannot write to the user's
+  disk. The save dialog resolves immediately to a path in the virtual
+  filesystem; write your file there, then call
+  `SDLStatic_DialogDeliverSave(path)` to hand it to the user as a browser
+  download. On desktop that call is a no-op returning true, so one code path
+  serves both:
+
+```c
+if (SDL_SaveFile(path, data, size)) {
+    SDLStatic_DialogDeliverSave(path);   /* no-op on desktop */
+}
+```
 
 ## Signals — `<SDLStatic/signals.h>`
 

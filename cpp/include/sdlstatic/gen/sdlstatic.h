@@ -220,6 +220,9 @@ inline Status BidiBaseIsRTL(const char *utf8, int length) {
 inline Status CryptoSelfTest() {
   return ::SDLStatic_CryptoSelfTest() ? Status() : Status::FromSdl();
 }
+inline Status DialogDeliverSave(const char *path) {
+  return ::SDLStatic_DialogDeliverSave(path) ? Status() : Status::FromSdl();
+}
 inline Status DisconnectSignal(SDLStatic_SignalEmitter *emitter, Uint64 connection) {
   return ::SDLStatic_DisconnectSignal(emitter, connection) ? Status() : Status::FromSdl();
 }

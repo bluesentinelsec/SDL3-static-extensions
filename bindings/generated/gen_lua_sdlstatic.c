@@ -154,6 +154,15 @@ static int GenL_SDLStatic_DestroySignalEmitter(lua_State *L)
     return 0;
 }
 
+static int GenL_SDLStatic_DialogDeliverSave(lua_State *L)
+{
+    (void)L;
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checkstring(L, 1);
+    bool rv = SDLStatic_DialogDeliverSave(a0);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_DialogPath(lua_State *L)
 {
     (void)L;
@@ -704,7 +713,7 @@ static int GenL_SDLStatic_TiledTileWidth(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 67);
+    lua_createtable(L, 0, 68);
     lua_pushcfunction(L, GenL_SDLStatic_BidiBaseIsRTL);
     lua_setfield(L, -2, "BidiBaseIsRTL");
     lua_pushcfunction(L, GenL_SDLStatic_CountSignalConnections);
@@ -725,6 +734,8 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "DestroyGui");
     lua_pushcfunction(L, GenL_SDLStatic_DestroySignalEmitter);
     lua_setfield(L, -2, "DestroySignalEmitter");
+    lua_pushcfunction(L, GenL_SDLStatic_DialogDeliverSave);
+    lua_setfield(L, -2, "DialogDeliverSave");
     lua_pushcfunction(L, GenL_SDLStatic_DialogPath);
     lua_setfield(L, -2, "DialogPath");
     lua_pushcfunction(L, GenL_SDLStatic_DialogReset);

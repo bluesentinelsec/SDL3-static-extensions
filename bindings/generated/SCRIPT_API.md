@@ -2397,6 +2397,7 @@ returns as an array.
 | `SDLStaticC.CryptoSelfTest()` | boolean |
 | `SDLStaticC.DestroyGui(gui: SDLStatic_Gui)` | nil |
 | `SDLStaticC.DestroySignalEmitter(emitter: SDLStatic_SignalEmitter)` | nil |
+| `SDLStaticC.DialogDeliverSave(path: string|nil)` | boolean |
 | `SDLStaticC.DialogPath()` | string|nil |
 | `SDLStaticC.DialogReset()` | nil |
 | `SDLStaticC.DialogStatus()` | integer |

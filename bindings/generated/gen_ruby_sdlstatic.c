@@ -196,6 +196,19 @@ static mrb_value GenR_SDLStatic_DestroySignalEmitter(mrb_state *mrb, mrb_value s
     }
 }
 
+static mrb_value GenR_SDLStatic_DialogDeliverSave(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    const char *a0 = SDLStaticGen_RubyToStr(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    bool rv = SDLStatic_DialogDeliverSave(a0);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
 static mrb_value GenR_SDLStatic_DialogPath(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -1011,6 +1024,7 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "CryptoSelfTest", GenR_SDLStatic_CryptoSelfTest, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DestroyGui", GenR_SDLStatic_DestroyGui, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DestroySignalEmitter", GenR_SDLStatic_DestroySignalEmitter, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DialogDeliverSave", GenR_SDLStatic_DialogDeliverSave, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DialogPath", GenR_SDLStatic_DialogPath, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DialogReset", GenR_SDLStatic_DialogReset, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DialogStatus", GenR_SDLStatic_DialogStatus, MRB_ARGS_ANY());

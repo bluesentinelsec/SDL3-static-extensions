@@ -17,9 +17,16 @@
  *     }
  *
  * One dialog is tracked at a time (that is all a modal file picker can be).
- * Dialogs are a desktop feature: SDL has no Emscripten backend, so on web
- * builds the status becomes SDLSTATIC_DIALOG_ERROR with SDL_GetError()
- * explaining why — check for it rather than assuming success.
+ *
+ * Web builds: SDL ships no Emscripten dialog backend, so this implements
+ * one over browser APIs. Opening uses a hidden <input type="file">; the
+ * chosen file is copied into the Emscripten filesystem and its path is
+ * reported exactly like a native one, so app code is identical everywhere.
+ * Saving differs by necessity — a page cannot write to the user's disk, so
+ * there is no save picker: the save dialog resolves immediately to a path
+ * in the virtual filesystem, and SDLStatic_DialogDeliverSave hands the
+ * finished file to the user as a browser download. Calling it on desktop
+ * is a harmless no-op, so the same code works on both.
  */
 #ifndef SDLSTATIC_DIALOG_H
 #define SDLSTATIC_DIALOG_H
@@ -58,6 +65,15 @@ extern SDLStatic_DialogState SDLStatic_DialogStatus(void);
 /** The chosen path once the status is ACCEPTED, else NULL. Owned by the
  *  library and valid until the next dialog or SDLStatic_DialogReset. */
 extern const char *SDLStatic_DialogPath(void);
+
+/** Hand a file the app has just written to the user.
+ *
+ *  Desktop: nothing to do — the file is already where the user chose, so
+ *  this returns true immediately. Web: downloads it through the browser
+ *  using the file's base name, which is the only way a page can deliver a
+ *  file to the user's disk. Call it after saving whatever the save dialog
+ *  handed you, and the same code path works on every platform. */
+extern bool SDLStatic_DialogDeliverSave(const char *path);
 
 /** Return to IDLE and release the stored path. Call after handling a
  *  result so the next dialog starts clean. */

@@ -43,6 +43,10 @@ executable picks up a non-OS shared dependency.
   emscripten_set_element_css_size("#canvas", w, h);
   SDL_SetWindowSize(window, w, h);
   ```
+- **File dialogs on web:** SDL has no Emscripten dialog backend;
+  [`SDLStatic::Extras`](extras.html) supplies one over browser APIs. Opening
+  works through a file input; saving downloads the file, since a page cannot
+  write to disk.
 - **Android:** consumed as a Prefab AAR; the emulator CI job runs the
   test suite on-device.
 - **iOS:** ships as a static XCFramework (device arm64 + Simulator
