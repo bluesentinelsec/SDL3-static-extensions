@@ -1633,6 +1633,86 @@ int SDLStaticGen_OpenLua_ttf(lua_State *L)
     lua_setfield(L, -2, "IMAGE_COLOR");
     lua_pushinteger(L, (lua_Integer)TTF_IMAGE_SDF);
     lua_setfield(L, -2, "IMAGE_SDF");
+#ifdef TTF_STYLE_NORMAL
+    lua_pushinteger(L, (lua_Integer)(TTF_STYLE_NORMAL));
+    lua_setfield(L, -2, "STYLE_NORMAL");
+#endif
+#ifdef TTF_STYLE_BOLD
+    lua_pushinteger(L, (lua_Integer)(TTF_STYLE_BOLD));
+    lua_setfield(L, -2, "STYLE_BOLD");
+#endif
+#ifdef TTF_STYLE_ITALIC
+    lua_pushinteger(L, (lua_Integer)(TTF_STYLE_ITALIC));
+    lua_setfield(L, -2, "STYLE_ITALIC");
+#endif
+#ifdef TTF_STYLE_UNDERLINE
+    lua_pushinteger(L, (lua_Integer)(TTF_STYLE_UNDERLINE));
+    lua_setfield(L, -2, "STYLE_UNDERLINE");
+#endif
+#ifdef TTF_STYLE_STRIKETHROUGH
+    lua_pushinteger(L, (lua_Integer)(TTF_STYLE_STRIKETHROUGH));
+    lua_setfield(L, -2, "STYLE_STRIKETHROUGH");
+#endif
+#ifdef TTF_FONT_WEIGHT_THIN
+    lua_pushinteger(L, (lua_Integer)(TTF_FONT_WEIGHT_THIN));
+    lua_setfield(L, -2, "FONT_WEIGHT_THIN");
+#endif
+#ifdef TTF_FONT_WEIGHT_EXTRA_LIGHT
+    lua_pushinteger(L, (lua_Integer)(TTF_FONT_WEIGHT_EXTRA_LIGHT));
+    lua_setfield(L, -2, "FONT_WEIGHT_EXTRA_LIGHT");
+#endif
+#ifdef TTF_FONT_WEIGHT_LIGHT
+    lua_pushinteger(L, (lua_Integer)(TTF_FONT_WEIGHT_LIGHT));
+    lua_setfield(L, -2, "FONT_WEIGHT_LIGHT");
+#endif
+#ifdef TTF_FONT_WEIGHT_NORMAL
+    lua_pushinteger(L, (lua_Integer)(TTF_FONT_WEIGHT_NORMAL));
+    lua_setfield(L, -2, "FONT_WEIGHT_NORMAL");
+#endif
+#ifdef TTF_FONT_WEIGHT_MEDIUM
+    lua_pushinteger(L, (lua_Integer)(TTF_FONT_WEIGHT_MEDIUM));
+    lua_setfield(L, -2, "FONT_WEIGHT_MEDIUM");
+#endif
+#ifdef TTF_FONT_WEIGHT_SEMI_BOLD
+    lua_pushinteger(L, (lua_Integer)(TTF_FONT_WEIGHT_SEMI_BOLD));
+    lua_setfield(L, -2, "FONT_WEIGHT_SEMI_BOLD");
+#endif
+#ifdef TTF_FONT_WEIGHT_BOLD
+    lua_pushinteger(L, (lua_Integer)(TTF_FONT_WEIGHT_BOLD));
+    lua_setfield(L, -2, "FONT_WEIGHT_BOLD");
+#endif
+#ifdef TTF_FONT_WEIGHT_EXTRA_BOLD
+    lua_pushinteger(L, (lua_Integer)(TTF_FONT_WEIGHT_EXTRA_BOLD));
+    lua_setfield(L, -2, "FONT_WEIGHT_EXTRA_BOLD");
+#endif
+#ifdef TTF_FONT_WEIGHT_BLACK
+    lua_pushinteger(L, (lua_Integer)(TTF_FONT_WEIGHT_BLACK));
+    lua_setfield(L, -2, "FONT_WEIGHT_BLACK");
+#endif
+#ifdef TTF_FONT_WEIGHT_EXTRA_BLACK
+    lua_pushinteger(L, (lua_Integer)(TTF_FONT_WEIGHT_EXTRA_BLACK));
+    lua_setfield(L, -2, "FONT_WEIGHT_EXTRA_BLACK");
+#endif
+#ifdef TTF_SUBSTRING_DIRECTION_MASK
+    lua_pushinteger(L, (lua_Integer)(TTF_SUBSTRING_DIRECTION_MASK));
+    lua_setfield(L, -2, "SUBSTRING_DIRECTION_MASK");
+#endif
+#ifdef TTF_SUBSTRING_TEXT_START
+    lua_pushinteger(L, (lua_Integer)(TTF_SUBSTRING_TEXT_START));
+    lua_setfield(L, -2, "SUBSTRING_TEXT_START");
+#endif
+#ifdef TTF_SUBSTRING_LINE_START
+    lua_pushinteger(L, (lua_Integer)(TTF_SUBSTRING_LINE_START));
+    lua_setfield(L, -2, "SUBSTRING_LINE_START");
+#endif
+#ifdef TTF_SUBSTRING_LINE_END
+    lua_pushinteger(L, (lua_Integer)(TTF_SUBSTRING_LINE_END));
+    lua_setfield(L, -2, "SUBSTRING_LINE_END");
+#endif
+#ifdef TTF_SUBSTRING_TEXT_END
+    lua_pushinteger(L, (lua_Integer)(TTF_SUBSTRING_TEXT_END));
+    lua_setfield(L, -2, "SUBSTRING_TEXT_END");
+#endif
     lua_setglobal(L, "TTF");
     return 0;
 }

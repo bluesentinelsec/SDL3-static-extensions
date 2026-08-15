@@ -81,6 +81,26 @@ calling the explicit destroy function first is also safe (never a
 double-free). Out-parameters become extra return values; structs marshal
 as tables/hashes.
 
+### Constants, not magic numbers
+
+Enum values *and* integer `#define` constants are registered by name with
+the library prefix stripped, so scripts never hardcode numbers:
+
+```lua
+SDL.Init(SDL.INIT_VIDEO)
+SDL.CreateWindow("game", 1280, 720, SDL.WINDOW_FULLSCREEN | SDL.WINDOW_HIGH_PIXEL_DENSITY)
+if SDLStaticC.GuiKeyPressed(gui, SDL.SCANCODE_ESCAPE) then quit() end
+```
+
+```ruby
+SDL.Init(SDL::INIT_VIDEO)
+SDL.CreateWindow('game', 1280, 720, SDL::WINDOW_FULLSCREEN | SDL::WINDOW_HIGH_PIXEL_DENSITY)
+```
+
+Nuklear's constants keep their `NK_` spelling (`NK.NK_WINDOW_TITLE`)
+because its prefix is lowercase `nk_`. Each constant is emitted behind an
+`#ifdef`, so anything a platform doesn't define simply isn't registered.
+
 Functions that cannot cross a script boundary (callbacks, varargs,
 threading) are skipped **with the reason recorded** in
 [`COVERAGE.md`](https://github.com/bluesentinelsec/SDL3-static-extensions/blob/main/bindings/generated/COVERAGE.md).

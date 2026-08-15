@@ -432,6 +432,20 @@ def emit_lua(manifest: Manifest, repo: Path) -> dict[str, dict[str, ScriptPlan]]
                 seen_const.add(cname)
                 em.w(f"    lua_pushinteger(L, (lua_Integer){value});")
                 em.w(f"    lua_setfield(L, -2, \"{cname}\");")
+        # Integer #define constants (SDL_INIT_VIDEO, SDL_WINDOW_*, ...) so
+        # scripts never hardcode magic numbers. The C preprocessor evaluates
+        # them; we only reference the name.
+        for macro in library.macro_constants:
+            if lib.prefix and not macro.startswith(lib.prefix):
+                continue  # internal helper macros are not API
+            cname = macro[len(lib.prefix):] if macro.startswith(lib.prefix) else macro
+            if not cname or cname in seen_const or not (cname[0].isalpha() or cname[0] == "_"):
+                continue
+            seen_const.add(cname)
+            em.w(f"#ifdef {macro}")
+            em.w(f"    lua_pushinteger(L, (lua_Integer)({macro}));")
+            em.w(f"    lua_setfield(L, -2, \"{cname}\");")
+            em.w("#endif")
         em.w(f"    lua_setglobal(L, \"{lib.script_module}\");")
         em.w("    return 0;")
         em.w("}")
