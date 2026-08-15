@@ -13,6 +13,7 @@
 #include <SDLStatic/gpu_primitives.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
+#include <SDLStatic/regex.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/textfile.h>
 #include <SDLStatic/tiled.h>
@@ -56,6 +57,12 @@ static void GenDtor_SDLStatic_DestroyGui(void *p)
     SDLStatic_DestroyGui(typed);
 }
 
+static void GenDtor_SDLStatic_DestroyRegex(void *p)
+{
+    SDLStatic_Regex *typed = (SDLStatic_Regex *)p;
+    SDLStatic_DestroyRegex(typed);
+}
+
 static int GenL_SDLStatic_BidiBaseIsRTL(lua_State *L)
 {
     (void)L;
@@ -63,6 +70,16 @@ static int GenL_SDLStatic_BidiBaseIsRTL(lua_State *L)
     int a1 = (int)luaL_checkinteger(L, 2);
     bool rv = SDLStatic_BidiBaseIsRTL(a0, a1);
     lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_CompileRegex(lua_State *L)
+{
+    (void)L;
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checkstring(L, 1);
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    SDLStatic_Regex * rv = SDLStatic_CompileRegex(a0, a1);
+    SDLStaticGen_LuaPushOwned(L, (void *)rv, "SDLStatic_Regex", GenDtor_SDLStatic_DestroyRegex);
     return 1;
 }
 
@@ -144,6 +161,14 @@ static int GenL_SDLStatic_DestroyGui(lua_State *L)
     (void)L;
     SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaTakeHandle(L, 1, "SDLStatic_Gui");
     SDLStatic_DestroyGui(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_DestroyRegex(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaTakeHandle(L, 1, "SDLStatic_Regex");
+    SDLStatic_DestroyRegex(a0);
     return 0;
 }
 
@@ -591,6 +616,136 @@ static int GenL_SDLStatic_QuitDebugText(lua_State *L)
     return 0;
 }
 
+static int GenL_SDLStatic_RegexEscape(lua_State *L)
+{
+    (void)L;
+    const char *a0 = lua_isnoneornil(L, 1) ? NULL : luaL_checkstring(L, 1);
+    char * rv = SDLStatic_RegexEscape(a0);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    if (rv != NULL) { SDL_free(rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexFlags(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    const char * rv = SDLStatic_RegexFlags(a0);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexGroup(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    const char * rv = SDLStatic_RegexGroup(a0, a1);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexGroupBegin(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    int rv = SDLStatic_RegexGroupBegin(a0, a1);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexGroupCount(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    int rv = SDLStatic_RegexGroupCount(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexGroupEnd(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    int rv = SDLStatic_RegexGroupEnd(a0, a1);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexMatchAt(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    int a2 = (int)luaL_checkinteger(L, 3);
+    bool rv = SDLStatic_RegexMatchAt(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexNamedGroup(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    int rv = SDLStatic_RegexNamedGroup(a0, a1);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexNamedGroupCount(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    int rv = SDLStatic_RegexNamedGroupCount(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexNamedGroupName(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    const char * rv = SDLStatic_RegexNamedGroupName(a0, a1);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexPattern(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    const char * rv = SDLStatic_RegexPattern(a0);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexReplace(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checkstring(L, 3);
+    bool a3 = (bool)lua_toboolean(L, 4);
+    const char * rv = SDLStatic_RegexReplace(a0, a1, a2, a3);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_RegexSearch(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Regex");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    int a2 = (int)luaL_checkinteger(L, 3);
+    bool rv = SDLStatic_RegexSearch(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_RenderDebugText(lua_State *L)
 {
     (void)L;
@@ -758,9 +913,11 @@ static int GenL_SDLStatic_TiledTileWidth(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 72);
+    lua_createtable(L, 0, 87);
     lua_pushcfunction(L, GenL_SDLStatic_BidiBaseIsRTL);
     lua_setfield(L, -2, "BidiBaseIsRTL");
+    lua_pushcfunction(L, GenL_SDLStatic_CompileRegex);
+    lua_setfield(L, -2, "CompileRegex");
     lua_pushcfunction(L, GenL_SDLStatic_CountSignalConnections);
     lua_setfield(L, -2, "CountSignalConnections");
     lua_pushcfunction(L, GenL_SDLStatic_CreateChipSFX);
@@ -777,6 +934,8 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "CryptoSelfTest");
     lua_pushcfunction(L, GenL_SDLStatic_DestroyGui);
     lua_setfield(L, -2, "DestroyGui");
+    lua_pushcfunction(L, GenL_SDLStatic_DestroyRegex);
+    lua_setfield(L, -2, "DestroyRegex");
     lua_pushcfunction(L, GenL_SDLStatic_DestroySignalEmitter);
     lua_setfield(L, -2, "DestroySignalEmitter");
     lua_pushcfunction(L, GenL_SDLStatic_DialogDeliverSave);
@@ -871,6 +1030,32 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "OpenVFSRead");
     lua_pushcfunction(L, GenL_SDLStatic_QuitDebugText);
     lua_setfield(L, -2, "QuitDebugText");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexEscape);
+    lua_setfield(L, -2, "RegexEscape");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexFlags);
+    lua_setfield(L, -2, "RegexFlags");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexGroup);
+    lua_setfield(L, -2, "RegexGroup");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexGroupBegin);
+    lua_setfield(L, -2, "RegexGroupBegin");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexGroupCount);
+    lua_setfield(L, -2, "RegexGroupCount");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexGroupEnd);
+    lua_setfield(L, -2, "RegexGroupEnd");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexMatchAt);
+    lua_setfield(L, -2, "RegexMatchAt");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexNamedGroup);
+    lua_setfield(L, -2, "RegexNamedGroup");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexNamedGroupCount);
+    lua_setfield(L, -2, "RegexNamedGroupCount");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexNamedGroupName);
+    lua_setfield(L, -2, "RegexNamedGroupName");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexPattern);
+    lua_setfield(L, -2, "RegexPattern");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexReplace);
+    lua_setfield(L, -2, "RegexReplace");
+    lua_pushcfunction(L, GenL_SDLStatic_RegexSearch);
+    lua_setfield(L, -2, "RegexSearch");
     lua_pushcfunction(L, GenL_SDLStatic_RenderDebugText);
     lua_setfield(L, -2, "RenderDebugText");
     lua_pushcfunction(L, GenL_SDLStatic_SHA256);

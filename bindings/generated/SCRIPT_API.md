@@ -2388,6 +2388,7 @@ returns as an array.
 | Script call | Returns |
 |---|---|
 | `SDLStaticC.BidiBaseIsRTL(utf8: string|nil, length: integer)` | boolean |
+| `SDLStaticC.CompileRegex(pattern: string|nil, flags: string|nil)` | SDLStatic_Regex|nil |
 | `SDLStaticC.CountSignalConnections(emitter: SDLStatic_SignalEmitter, signal: string|nil)` | integer |
 | `SDLStaticC.CreateChipSFX(mixer: MIX_Mixer, which: integer)` | MIX_Audio|nil |
 | `SDLStaticC.CreateChipTone(mixer: MIX_Mixer, desc: SDLStatic_ChipToneDesc table)` | MIX_Audio|nil |
@@ -2396,6 +2397,7 @@ returns as an array.
 | `SDLStaticC.CreateSignalEmitter()` | SDLStatic_SignalEmitter|nil |
 | `SDLStaticC.CryptoSelfTest()` | boolean |
 | `SDLStaticC.DestroyGui(gui: SDLStatic_Gui)` | nil |
+| `SDLStaticC.DestroyRegex(regex: SDLStatic_Regex)` | nil |
 | `SDLStaticC.DestroySignalEmitter(emitter: SDLStatic_SignalEmitter)` | nil |
 | `SDLStaticC.DialogDeliverSave(path: string|nil)` | boolean |
 | `SDLStaticC.DialogPath()` | string|nil |
@@ -2443,6 +2445,19 @@ returns as an array.
 | `SDLStaticC.MountEncryptedArchiveFile(path: string|nil, password: string|nil, mountPoint: string|nil)` | boolean |
 | `SDLStaticC.OpenVFSRead(vfsPath: string|nil)` | SDL_IOStream|nil |
 | `SDLStaticC.QuitDebugText()` | nil |
+| `SDLStaticC.RegexEscape(text: string|nil)` | string|nil |
+| `SDLStaticC.RegexFlags(regex: SDLStatic_Regex)` | string|nil |
+| `SDLStaticC.RegexGroup(regex: SDLStatic_Regex, group: integer)` | string|nil |
+| `SDLStaticC.RegexGroupBegin(regex: SDLStatic_Regex, group: integer)` | integer |
+| `SDLStaticC.RegexGroupCount(regex: SDLStatic_Regex)` | integer |
+| `SDLStaticC.RegexGroupEnd(regex: SDLStatic_Regex, group: integer)` | integer |
+| `SDLStaticC.RegexMatchAt(regex: SDLStatic_Regex, text: string|nil, start: integer)` | boolean |
+| `SDLStaticC.RegexNamedGroup(regex: SDLStatic_Regex, name: string|nil)` | integer |
+| `SDLStaticC.RegexNamedGroupCount(regex: SDLStatic_Regex)` | integer |
+| `SDLStaticC.RegexNamedGroupName(regex: SDLStatic_Regex, index: integer)` | string|nil |
+| `SDLStaticC.RegexPattern(regex: SDLStatic_Regex)` | string|nil |
+| `SDLStaticC.RegexReplace(regex: SDLStatic_Regex, text: string|nil, replacement: string|nil, all: boolean)` | string|nil |
+| `SDLStaticC.RegexSearch(regex: SDLStatic_Regex, text: string|nil, start: integer)` | boolean |
 | `SDLStaticC.RenderDebugText(renderer: SDL_Renderer, x: number, y: number, text: string|nil)` | boolean |
 | `SDLStaticC.SHA256(data: string|nil, digest: integer)` | boolean, digest: integer |
 | `SDLStaticC.SetDebugTextSize(ptsize: number)` | nil |

@@ -14,6 +14,7 @@
 #include <SDLStatic/dialog.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
+#include <SDLStatic/regex.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/textfile.h>
 #include <SDLStatic/tiled.h>
@@ -223,6 +224,92 @@ class GuiHandle {
   bool engaged_ = false;
 };
 
+// RAII owner for SDLStatic_Regex (destroyed with SDLStatic_DestroyRegex).
+class RegexHandle {
+ public:
+  static Result<RegexHandle> CompileRegex(const char *pattern, const char *flags) {
+    SDLStatic_Regex* created_ = ::SDLStatic_CompileRegex(pattern, flags);
+    if (created_ == nullptr) {
+      return Status::FromSdl();
+    }
+    return RegexHandle(created_);
+  }
+
+  RegexHandle() = default;
+  ~RegexHandle() { reset(); }
+  RegexHandle(RegexHandle&& other) noexcept
+      : value_(other.value_), engaged_(other.engaged_) {
+    other.value_ = nullptr;
+    other.engaged_ = false;
+  }
+  RegexHandle& operator=(RegexHandle&& other) noexcept {
+    if (this != &other) {
+      reset();
+      value_ = other.value_;
+      engaged_ = other.engaged_;
+      other.value_ = nullptr;
+      other.engaged_ = false;
+    }
+    return *this;
+  }
+  RegexHandle(const RegexHandle&) = delete;
+  RegexHandle& operator=(const RegexHandle&) = delete;
+
+  SDLStatic_Regex* get() const { return value_; }
+  SDLStatic_Regex* release() {
+    SDLStatic_Regex* out = value_;
+    value_ = nullptr;
+    engaged_ = false;
+    return out;
+  }
+  void reset() {
+    if (value_ != nullptr) ::SDLStatic_DestroyRegex(value_);
+    value_ = nullptr;
+    engaged_ = false;
+  }
+
+  Status RegexSearch(const char *text, int start) {
+    return ::SDLStatic_RegexSearch(value_, text, start) ? Status() : Status::FromSdl();
+  }
+  Status RegexMatchAt(const char *text, int start) {
+    return ::SDLStatic_RegexMatchAt(value_, text, start) ? Status() : Status::FromSdl();
+  }
+  int RegexGroupCount() {
+    return ::SDLStatic_RegexGroupCount(value_);
+  }
+  const char* RegexGroup(int group) {
+    return ::SDLStatic_RegexGroup(value_, group);
+  }
+  int RegexGroupBegin(int group) {
+    return ::SDLStatic_RegexGroupBegin(value_, group);
+  }
+  int RegexGroupEnd(int group) {
+    return ::SDLStatic_RegexGroupEnd(value_, group);
+  }
+  int RegexNamedGroup(const char *name) {
+    return ::SDLStatic_RegexNamedGroup(value_, name);
+  }
+  int RegexNamedGroupCount() {
+    return ::SDLStatic_RegexNamedGroupCount(value_);
+  }
+  const char* RegexNamedGroupName(int index) {
+    return ::SDLStatic_RegexNamedGroupName(value_, index);
+  }
+  const char* RegexPattern() {
+    return ::SDLStatic_RegexPattern(value_);
+  }
+  const char* RegexFlags() {
+    return ::SDLStatic_RegexFlags(value_);
+  }
+  const char* RegexReplace(const char *text, const char *replacement, bool all) {
+    return ::SDLStatic_RegexReplace(value_, text, replacement, all);
+  }
+ private:
+  explicit RegexHandle(SDLStatic_Regex* value) : value_(value), engaged_(true) {}
+  SDLStatic_Regex* value_{};
+  bool engaged_ = false;
+};
+
 // bool-returning C functions surfaced as Status.
 inline Status BidiBaseIsRTL(const char *utf8, int length) {
   return ::SDLStatic_BidiBaseIsRTL(utf8, length) ? Status() : Status::FromSdl();
@@ -288,6 +375,7 @@ inline constexpr auto& LoadTextFile = ::SDLStatic_LoadTextFile;
 inline constexpr auto& LoadVFSFile = ::SDLStatic_LoadVFSFile;
 inline constexpr auto& OpenVFSRead = ::SDLStatic_OpenVFSRead;
 inline constexpr auto& QuitDebugText = ::SDLStatic_QuitDebugText;
+inline constexpr auto& RegexEscape = ::SDLStatic_RegexEscape;
 inline constexpr auto& SetDebugTextSize = ::SDLStatic_SetDebugTextSize;
 
 }  // namespace ext

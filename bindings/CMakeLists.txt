@@ -38,6 +38,8 @@ add_library(SDLStatic_Bindings STATIC
   src/sdlstatic_bindings_ruby.c
   src/gen_support_lua.c
   src/gen_support_ruby.c
+  src/sdlstatic_regexp_ruby.c
+  src/sdlstatic_regex_lua.c
   ${SDLSTATIC_GEN_SOURCES}
 )
 
@@ -62,6 +64,9 @@ target_link_libraries(SDLStatic_Bindings PUBLIC
   SDLStatic::TTF SDLStatic::Formats SDLStatic::GUI
   SDL3::SDL3
 )
+if(SDLSTATIC_BUILD_REGEX)
+  target_link_libraries(SDLStatic_Bindings PUBLIC SDLStatic::Regex)
+endif()
 if(SDLSTATIC_BUILD_NET)
   target_link_libraries(SDLStatic_Bindings PUBLIC SDLStatic::Net)
 endif()

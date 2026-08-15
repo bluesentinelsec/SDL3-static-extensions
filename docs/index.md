@@ -58,6 +58,7 @@ browser WebAssembly, and all of it is exercised by CI on every platform.
 | Physics | [Physics](physics.html) | Box2D v3 |
 | GUI | [GUI](gui.html) | Nuklear + SDL3 backend + weighted grid layout |
 | Tile maps | [Tiled](tiled.html) | cute_tiled (.tmj) with VFS loading |
+| Regular expressions | [Regex](regex.html) | Oniguruma, Ruby syntax, all four languages |
 | Virtual filesystem | [VFS](vfs.html) | PhysFS, encrypted-zip mounting, asset packing |
 | Crypto, compression, base64, signals | [Extras](extras.html) | original code + sdefl/sinfl |
 | JSON, TOML, YAML | [Formats](formats.html) | cJSON, tomlc99, libyaml |
@@ -65,7 +66,7 @@ browser WebAssembly, and all of it is exercised by CI on every platform.
 
 ## Proof it works
 
-The test suite runs 259 tests across six CI platforms plus an iOS
+The test suite runs 285 tests across six CI platforms plus an iOS
 XCFramework build, with a dedicated AddressSanitizer + UBSan job. The
 repository includes four complete Pong implementations — one each in C,
 C++, Lua, and Ruby — built purely against the public APIs.

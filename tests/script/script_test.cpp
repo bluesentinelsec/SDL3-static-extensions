@@ -256,4 +256,91 @@ TEST(BindingsLua, BodyPinsWorldSoGcOrderIsAlwaysSafe)
     lua_close(L);
 }
 
+
+// mruby has no regex engine of its own; SDLStatic::Regex supplies one and
+// the Ruby layer turns it into the real class, so /re/ literals, $1 and $~
+// — which mruby's compiler already emits code for — start working.
+TEST(BindingsRuby, RegexpLiteralsAndStringMethods)
+{
+    mrb_state *mrb = SDLStatic_CreateRubyState();
+    ASSERT_NE(mrb, nullptr);
+    ASSERT_TRUE(SDLStatic_OpenRubyBindings(mrb));
+    const char *script =
+        "m = 'on 2026-08-14'.match(/(?<year>\\d{4})-(?<mon>\\d{2})/)\n"
+        "raise 'whole' unless m[0] == '2026-08'\n"
+        "raise 'group' unless m[1] == '2026'\n"
+        "raise 'name' unless m['year'] == '2026'\n"
+        "raise 'backref' unless $1 == '2026'\n"
+        "raise 'matchdata' unless $~[2] == '08'\n"
+        "raise 'named_captures' unless m.named_captures == {'year' => '2026', 'mon' => '08'}\n"
+        "raise 'offsets' unless m.begin(0) == 3 && m.end(0) == 10\n"
+        "raise 'literal index' unless 'version: 42'[/(\\d+)/, 1] == '42'\n"
+        "raise 'gsub' unless 'a1b2'.gsub(/\\d/, '#') == 'a#b#'\n"
+        "raise 'sub' unless 'a1b2'.sub(/\\d/, '#') == 'a#b2'\n"
+        "raise 'block' unless 'a1b2'.gsub(/\\d/) { |d| (d.to_i * 2).to_s } == 'a2b4'\n"
+        "raise 'backrefs' unless 'bob@ex'.sub(/(\\w+)@(\\w+)/, '\\2/\\1') == 'ex/bob'\n"
+        "raise 'scan' unless 'a1b22'.scan(/\\d+/) == ['1', '22']\n"
+        "raise 'split' unless 'a1b22c'.split(/\\d+/) == ['a', 'b', 'c']\n"
+        "raise 'match op' unless ('hello' =~ /l+/) == 2\n"
+        "raise 'pre/post' unless $~.pre_match == 'he' && $~.post_match == 'o'\n"
+        "raise 'case' unless (case 'abc1' when /\\d/ then true end)\n"
+        "raise 'escape' unless Regexp.escape('1+1?') == '1\\\\+1\\\\?'\n"
+        "raise 'ignorecase' unless 'HELLO' =~ /hello/i\n"
+        "raise 'no match' unless 'xyz'.match(/\\d/).nil?\n"
+        "raise 'source' unless /ab+/i.source == 'ab+' && /ab+/i.options == 1\n"
+        "raise 'union' unless Regexp.union('a', 'b').match('b')\n"
+        "raise 'utf8' unless 'caf\xc3\xa9 au lait'.match(/\\w+/)[0] == 'caf\xc3\xa9'\n"
+        /* Plain-string arguments must keep mruby's own behaviour: the
+           extensions delegate rather than replace. */
+        "raise 'plain split' unless 'a,b,c'.split(',') == ['a', 'b', 'c']\n"
+        "raise 'plain gsub' unless 'aaa'.gsub('a', 'b') == 'bbb'\n"
+        "raise 'plain index' unless 'abc'.index('c') == 2\n"
+        "raise 'plain slice' unless 'abc'[1, 2] == 'bc'\n"
+        "begin\n"
+        "  Regexp.new('(unclosed')\n"
+        "  raise 'bad pattern must raise'\n"
+        "rescue RegexpError\n"
+        "end\n"
+        "GC.start\n";
+    mrb_load_string(mrb, script);
+    ASSERT_EQ(mrb->exc, nullptr)
+        << mrb_str_to_cstr(mrb, mrb_obj_as_string(mrb, mrb_obj_value(mrb->exc)));
+    mrb_close(mrb);
+}
+
+// Lua has patterns, not regular expressions; the Regex module adds them.
+TEST(BindingsLua, RegexModuleMatchesReplacesAndIterates)
+{
+    lua_State *L = SDLStatic_CreateLuaState();
+    ASSERT_NE(L, nullptr);
+    ASSERT_TRUE(SDLStatic_OpenLuaBindings(L));
+    const char *script =
+        "local re = Regex.new('(\\\\w+)@(\\\\w+)')\n"
+        "local m = re:match('mail bob@example now')\n"
+        "assert(m[0] == 'bob@example' and m[1] == 'bob' and m[2] == 'example')\n"
+        "assert(m.start == 5 and m.stop == 16)\n"
+        "assert(Regex.new('(?<y>\\\\d{4})'):match('in 2026').named.y == '2026')\n"
+        "assert(re:gsub('bob@a and amy@b', '\\\\2/\\\\1') == 'a/bob and b/amy')\n"
+        "assert(re:gsub('bob@a and amy@b', '\\\\2/\\\\1', true) == 'a/bob and amy@b')\n"
+        "local digits = Regex.new('\\\\d+')\n"
+        "assert(digits:gsub('a1b22', function(mm) return '<' .. mm[0] .. '>' end) == 'a<1>b<22>')\n"
+        "local seen = {}\n"
+        "for mm in digits:gmatch('a1b22c333') do seen[#seen + 1] = mm[0] end\n"
+        "assert(table.concat(seen, ',') == '1,22,333')\n"
+        "assert(table.concat(Regex.new('\\\\s*,\\\\s*'):split('a , b,c'), '|') == 'a|b|c')\n"
+        "assert(Regex.new('^\\\\d+$'):test('123') and not Regex.new('^\\\\d+$'):test('12a'))\n"
+        "assert(Regex.escape('1+1?') == '1\\\\+1\\\\?')\n"
+        "assert(Regex.new('hello', 'i'):test('HELLO'))\n"
+        "assert(Regex.new('\\\\d'):match('a1b2', 3)[0] == '2')\n"
+        "assert(digits:match('none') == nil)\n"
+        "local bad, err = Regex.new('(unclosed')\n"
+        "assert(bad == nil and err:find('regex') ~= nil)\n"
+        /* Lua's own patterns must be untouched by the addition. */
+        "assert(('a1b2'):gsub('%d', '#') == 'a#b#')\n"
+        "re = nil; digits = nil\n"
+        "collectgarbage('collect'); collectgarbage('collect')\n";
+    ASSERT_EQ(luaL_dostring(L, script), LUA_OK) << lua_tostring(L, -1);
+    lua_close(L);
+}
+
 } // namespace

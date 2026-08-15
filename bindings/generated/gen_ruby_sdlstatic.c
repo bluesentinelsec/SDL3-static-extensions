@@ -13,6 +13,7 @@
 #include <SDLStatic/gpu_primitives.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
+#include <SDLStatic/regex.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/textfile.h>
 #include <SDLStatic/tiled.h>
@@ -56,6 +57,12 @@ static void GenDtor_SDLStatic_DestroyGui(void *p)
     SDLStatic_DestroyGui(typed);
 }
 
+static void GenDtor_SDLStatic_DestroyRegex(void *p)
+{
+    SDLStatic_Regex *typed = (SDLStatic_Regex *)p;
+    SDLStatic_DestroyRegex(typed);
+}
+
 static mrb_value GenR_SDLStatic_BidiBaseIsRTL(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -67,6 +74,20 @@ static mrb_value GenR_SDLStatic_BidiBaseIsRTL(mrb_state *mrb, mrb_value self)
     int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
     bool rv = SDLStatic_BidiBaseIsRTL(a0, a1);
     return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_CompileRegex(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    const char *a0 = SDLStaticGen_RubyToStr(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_Regex * rv = SDLStatic_CompileRegex(a0, a1);
+    return SDLStaticGen_RubyPushOwned(mrb, (void *)rv, "SDLStatic_Regex", GenDtor_SDLStatic_DestroyRegex);
     }
 }
 
@@ -180,6 +201,19 @@ static mrb_value GenR_SDLStatic_DestroyGui(mrb_state *mrb, mrb_value self)
     {
     SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_RubyTakeHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Gui");
     SDLStatic_DestroyGui(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_DestroyRegex(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_RubyTakeHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Regex");
+    SDLStatic_DestroyRegex(a0);
     return mrb_nil_value();
     }
 }
@@ -839,6 +873,189 @@ static mrb_value GenR_SDLStatic_QuitDebugText(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_RegexEscape(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    const char *a0 = SDLStaticGen_RubyToStr(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    char * rv = SDLStatic_RegexEscape(a0);
+    mrb_value rstr = rv == NULL ? mrb_nil_value() : mrb_str_new_cstr(mrb, rv);
+    if (rv != NULL) { SDL_free(rv); }
+    return rstr;
+    }
+}
+
+static mrb_value GenR_SDLStatic_RegexFlags(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Regex");
+    const char * rv = SDLStatic_RegexFlags(a0);
+    return (rv == NULL ? mrb_nil_value() : mrb_str_new_cstr(mrb, rv));
+    }
+}
+
+static mrb_value GenR_SDLStatic_RegexGroup(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Regex");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    const char * rv = SDLStatic_RegexGroup(a0, a1);
+    return (rv == NULL ? mrb_nil_value() : mrb_str_new_cstr(mrb, rv));
+    }
+}
+
+static mrb_value GenR_SDLStatic_RegexGroupBegin(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Regex");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    int rv = SDLStatic_RegexGroupBegin(a0, a1);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_RegexGroupCount(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Regex");
+    int rv = SDLStatic_RegexGroupCount(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_RegexGroupEnd(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Regex");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    int rv = SDLStatic_RegexGroupEnd(a0, a1);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_RegexMatchAt(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Regex");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    int a2 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    bool rv = SDLStatic_RegexMatchAt(a0, a1, a2);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_RegexNamedGroup(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Regex");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    int rv = SDLStatic_RegexNamedGroup(a0, a1);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_RegexNamedGroupCount(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Regex");
+    int rv = SDLStatic_RegexNamedGroupCount(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_RegexNamedGroupName(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Regex");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    const char * rv = SDLStatic_RegexNamedGroupName(a0, a1);
+    return (rv == NULL ? mrb_nil_value() : mrb_str_new_cstr(mrb, rv));
+    }
+}
+
+static mrb_value GenR_SDLStatic_RegexPattern(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Regex");
+    const char * rv = SDLStatic_RegexPattern(a0);
+    return (rv == NULL ? mrb_nil_value() : mrb_str_new_cstr(mrb, rv));
+    }
+}
+
+static mrb_value GenR_SDLStatic_RegexReplace(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Regex");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    const char *a2 = SDLStaticGen_RubyToStr(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    bool a3 = (bool)SDLStaticGen_RubyToBool((argc > 3 ? argv[3] : mrb_nil_value()));
+    const char * rv = SDLStatic_RegexReplace(a0, a1, a2, a3);
+    return (rv == NULL ? mrb_nil_value() : mrb_str_new_cstr(mrb, rv));
+    }
+}
+
+static mrb_value GenR_SDLStatic_RegexSearch(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Regex *a0 = (SDLStatic_Regex *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Regex");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    int a2 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    bool rv = SDLStatic_RegexSearch(a0, a1, a2);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
 static mrb_value GenR_SDLStatic_RenderDebugText(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -1077,6 +1294,7 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     SDLStaticGen_RubyEnsureHandleClass(mrb);
     mod = mrb_define_module(mrb, "SDLStaticC");
     mrb_define_module_function(mrb, mod, "BidiBaseIsRTL", GenR_SDLStatic_BidiBaseIsRTL, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "CompileRegex", GenR_SDLStatic_CompileRegex, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CountSignalConnections", GenR_SDLStatic_CountSignalConnections, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateChipSFX", GenR_SDLStatic_CreateChipSFX, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateChipTone", GenR_SDLStatic_CreateChipTone, MRB_ARGS_ANY());
@@ -1085,6 +1303,7 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "CreateSignalEmitter", GenR_SDLStatic_CreateSignalEmitter, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CryptoSelfTest", GenR_SDLStatic_CryptoSelfTest, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DestroyGui", GenR_SDLStatic_DestroyGui, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DestroyRegex", GenR_SDLStatic_DestroyRegex, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DestroySignalEmitter", GenR_SDLStatic_DestroySignalEmitter, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DialogDeliverSave", GenR_SDLStatic_DialogDeliverSave, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DialogPath", GenR_SDLStatic_DialogPath, MRB_ARGS_ANY());
@@ -1132,6 +1351,19 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "MountEncryptedArchiveFile", GenR_SDLStatic_MountEncryptedArchiveFile, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "OpenVFSRead", GenR_SDLStatic_OpenVFSRead, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "QuitDebugText", GenR_SDLStatic_QuitDebugText, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RegexEscape", GenR_SDLStatic_RegexEscape, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RegexFlags", GenR_SDLStatic_RegexFlags, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RegexGroup", GenR_SDLStatic_RegexGroup, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RegexGroupBegin", GenR_SDLStatic_RegexGroupBegin, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RegexGroupCount", GenR_SDLStatic_RegexGroupCount, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RegexGroupEnd", GenR_SDLStatic_RegexGroupEnd, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RegexMatchAt", GenR_SDLStatic_RegexMatchAt, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RegexNamedGroup", GenR_SDLStatic_RegexNamedGroup, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RegexNamedGroupCount", GenR_SDLStatic_RegexNamedGroupCount, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RegexNamedGroupName", GenR_SDLStatic_RegexNamedGroupName, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RegexPattern", GenR_SDLStatic_RegexPattern, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RegexReplace", GenR_SDLStatic_RegexReplace, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RegexSearch", GenR_SDLStatic_RegexSearch, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "RenderDebugText", GenR_SDLStatic_RenderDebugText, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SHA256", GenR_SDLStatic_SHA256, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetDebugTextSize", GenR_SDLStatic_SetDebugTextSize, MRB_ARGS_ANY());

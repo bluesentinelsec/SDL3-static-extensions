@@ -121,6 +121,31 @@ Functions that cannot cross a script boundary (callbacks, varargs,
 threading) are skipped **with the reason recorded** in
 [`COVERAGE.md`](https://github.com/bluesentinelsec/SDL3-static-extensions/blob/main/bindings/generated/COVERAGE.md).
 
+## Regular expressions
+
+Neither language brings usable regular expressions of its own: mruby ships
+no engine at all, so `Regexp` simply does not exist in stock mruby, and
+Lua has patterns, which have no alternation, quantified groups or
+lookaround. [`SDLStatic::Regex`](regex.html) supplies one engine for both.
+
+In Ruby it arrives as the real class, so literals, `$1` and `$~` work —
+mruby's compiler already emits code for them, it was only the class that
+was missing:
+
+```ruby
+"on 2026-08-14".match(/(?<year>\d{4})/)["year"]   # => "2026"
+"a1b2".gsub(/\d/) { |d| d.to_i * 2 }              # => "a2b4"
+```
+
+In Lua it is an added `Regex` module; Lua's own patterns are untouched:
+
+```lua
+for m in Regex.new("\\d+"):gmatch("a1b22") do print(m[0]) end
+```
+
+Both are linked in by `SDLStatic::Bindings`, so nothing extra is needed.
+See [Regex](regex.html) for the full surface and its limits.
+
 ## The REPL
 
 `tools/repl` builds an interactive shell for both languages with all

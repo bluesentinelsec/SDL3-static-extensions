@@ -23,6 +23,7 @@ which record every vendored version, checksum, deletion, and local fix.
 | `SDLStatic::Physics` | [Physics](physics.html) | Box2D v3 rigid-body physics |
 | `SDLStatic::GUI` | [GUI](gui.html) | Nuklear immediate-mode GUI, SDL3 backend, grid layout |
 | `SDLStatic::Tiled` | [Tiled](tiled.html) | Tiled map (.tmj) parsing, VFS-aware |
+| `SDLStatic::Regex` | [Regex](regex.html) | regular expressions (Oniguruma), Ruby syntax, `Regexp` for mruby |
 | `SDLStatic::VFS` | [VFS](vfs.html) | PhysFS virtual filesystem, encrypted-zip mounting, asset packing |
 | `SDLStatic::Extras` | [Extras](extras.html) | password crypto, DEFLATE compression, base64, signals/events |
 | `SDLStatic::Formats` | [Formats](formats.html) | JSON (cJSON), TOML (tomlc99), YAML (libyaml) |
