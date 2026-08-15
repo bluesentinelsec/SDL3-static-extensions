@@ -547,7 +547,10 @@ TEST_F(GuiHarness, FontSizesAreSelectableAtRuntime)
     ASSERT_TRUE(SDLStatic_GuiSetFont(gui_, SDLSTATIC_GUI_FONT_NORMAL));
 
     // Bad input and over-pop are safe.
-    EXPECT_FALSE(SDLStatic_GuiSetFont(gui_, static_cast<SDLStatic_GuiFontSize>(99)));
+    // 3 is one past LARGE and still inside the enum's value range, so the
+    // cast is well defined — GCC rejects casting a far-out value like 99 to
+    // a three-value enum under -Wconversion.
+    EXPECT_FALSE(SDLStatic_GuiSetFont(gui_, static_cast<SDLStatic_GuiFontSize>(3)));
     EXPECT_FALSE(SDLStatic_GuiSetFont(nullptr, SDLSTATIC_GUI_FONT_NORMAL));
     EXPECT_FALSE(SDLStatic_GuiPushFont(nullptr, SDLSTATIC_GUI_FONT_LARGE));
     SDLStatic_GuiPopFont(gui_, 5);
