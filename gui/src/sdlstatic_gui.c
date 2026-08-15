@@ -51,6 +51,13 @@ struct SDLStatic_Gui
     int style_depth;
     struct nk_font *fonts[3]; /* small / normal / large, baked together */
     int font_depth;           /* nk_style_push_font nesting */
+    /* Tooltip dwell tracking: which widget the pointer is resting on, when
+     * it arrived, and where the pointer was, so movement re-arms the timer. */
+    struct nk_rect tip_rect;
+    Uint64 tip_since_ms;
+    float tip_mouse_x, tip_mouse_y;
+    int tip_delay_ms;
+    bool tip_tracking;
     SDLStatic_GuiGrid grid;   /* the script-reachable grid */
     float grid_weights[SDLSTATIC_GUI_GRID_MAX_COLS];
     bool grid_active;
@@ -125,6 +132,7 @@ SDLStatic_Gui *SDLStatic_CreateGui(SDL_Renderer *renderer, const void *font_data
     }
     gui->renderer = renderer;
     gui->scale = scale;
+    gui->tip_delay_ms = 1000; /* desktop-style hover dwell */
 
     if (!nk_init_default(&gui->ctx, NULL))
     {
@@ -236,6 +244,64 @@ void SDLStatic_GuiInputEnd(SDLStatic_Gui *gui)
 bool SDLStatic_GuiWantsInput(SDLStatic_Gui *gui)
 {
     return (gui != NULL) && nk_item_is_any_active(&gui->ctx);
+}
+
+void SDLStatic_GuiSetTooltipDelay(SDLStatic_Gui *gui, int delay_ms)
+{
+    if (gui != NULL)
+    {
+        gui->tip_delay_ms = (delay_ms < 0) ? 0 : delay_ms;
+    }
+}
+
+int SDLStatic_GuiTooltipDelay(SDLStatic_Gui *gui)
+{
+    return (gui != NULL) ? gui->tip_delay_ms : 0;
+}
+
+bool SDLStatic_GuiTooltip(SDLStatic_Gui *gui, const char *text)
+{
+    if (gui == NULL || text == NULL)
+    {
+        return false;
+    }
+    struct nk_context *ctx = &gui->ctx;
+    const struct nk_rect bounds = nk_widget_bounds(ctx);
+    if (!nk_input_is_mouse_hovering_rect(&ctx->input, bounds))
+    {
+        return false;
+    }
+
+    const float mx = ctx->input.mouse.pos.x;
+    const float my = ctx->input.mouse.pos.y;
+    const Uint64 now = SDL_GetTicks();
+
+    /* A different widget, or a pointer that actually moved, restarts the
+     * dwell. The threshold ignores sub-pixel jitter but not real motion. */
+    const float move_threshold = 2.0f * gui->scale;
+    const bool same_widget = gui->tip_tracking && bounds.x == gui->tip_rect.x &&
+                             bounds.y == gui->tip_rect.y && bounds.w == gui->tip_rect.w &&
+                             bounds.h == gui->tip_rect.h;
+    const bool moved = !gui->tip_tracking ||
+                       SDL_fabsf(mx - gui->tip_mouse_x) > move_threshold ||
+                       SDL_fabsf(my - gui->tip_mouse_y) > move_threshold;
+
+    if (!same_widget || moved)
+    {
+        gui->tip_tracking = true;
+        gui->tip_rect = bounds;
+        gui->tip_mouse_x = mx;
+        gui->tip_mouse_y = my;
+        gui->tip_since_ms = now;
+        return false; /* re-armed: hidden until the pointer rests again */
+    }
+
+    if ((now - gui->tip_since_ms) < (Uint64)gui->tip_delay_ms)
+    {
+        return false; /* still counting down */
+    }
+    nk_tooltip(ctx, text);
+    return true;
 }
 
 bool SDLStatic_GuiGridWeight(SDLStatic_Gui *gui, int column, float weight)

@@ -131,6 +131,23 @@ Load textures with [SDLStatic::Image](image.html) (`IMG_LoadTexture`), or
 from a mounted [VFS](vfs.html) archive. Modes that can overflow the slot are
 scissored to it, so an image never spills onto neighbouring widgets.
 
+### Tooltips
+
+`SDLStatic_GuiTooltip(gui, text)` shows hover text for the **next** widget
+with desktop timing: it appears only after the pointer has rested on that
+widget, and hides again the moment the pointer moves. Nuklear's own
+`nk_tooltip` draws immediately and stays up for as long as the pointer is
+inside the widget, which is not how tooltips behave.
+
+```c
+SDLStatic_GuiTooltip(gui, "Create a new document");
+nk_button_label(ctx, "New");
+```
+
+The dwell defaults to 1000 ms; `SDLStatic_GuiSetTooltipDelay(gui, ms)`
+changes it (0 shows immediately) and `SDLStatic_GuiTooltipDelay` reads it
+back. The call returns true on frames where the tooltip is displayed.
+
 ### Keyboard and theming from scripts
 
 `SDLStatic_GuiKeyPressed(gui, SDL_SCANCODE_ESCAPE)` reports keys seen

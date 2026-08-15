@@ -2397,6 +2397,9 @@ returns as an array.
 | `SDLStaticC.CryptoSelfTest()` | boolean |
 | `SDLStaticC.DestroyGui(gui: SDLStatic_Gui)` | nil |
 | `SDLStaticC.DestroySignalEmitter(emitter: SDLStatic_SignalEmitter)` | nil |
+| `SDLStaticC.DialogPath()` | string|nil |
+| `SDLStaticC.DialogReset()` | nil |
+| `SDLStaticC.DialogStatus()` | integer |
 | `SDLStaticC.DisconnectSignal(emitter: SDLStatic_SignalEmitter, connection: integer)` | boolean |
 | `SDLStaticC.EncodeDataBase64(data: string|nil, outputSize: integer)` | string|nil, outputSize: integer |
 | `SDLStaticC.FreeTiledMap(map: SDLStatic_TiledMap)` | nil |
@@ -2425,6 +2428,9 @@ returns as an array.
 | `SDLStaticC.GuiRender(gui: SDLStatic_Gui)` | boolean |
 | `SDLStaticC.GuiScale(gui: SDLStatic_Gui)` | number |
 | `SDLStaticC.GuiSetFont(gui: SDLStatic_Gui, which: integer)` | boolean |
+| `SDLStaticC.GuiSetTooltipDelay(gui: SDLStatic_Gui, delay_ms: integer)` | nil |
+| `SDLStaticC.GuiTooltip(gui: SDLStatic_Gui, text: string|nil)` | boolean |
+| `SDLStaticC.GuiTooltipDelay(gui: SDLStatic_Gui)` | integer |
 | `SDLStaticC.GuiWantsInput(gui: SDLStatic_Gui)` | boolean |
 | `SDLStaticC.HMACSHA256(key: string|nil, data: string|nil, digest: integer)` | boolean, digest: integer |
 | `SDLStaticC.LoadTiledMap(path: string|nil)` | SDLStatic_TiledMap|nil |
@@ -2435,6 +2441,8 @@ returns as an array.
 | `SDLStaticC.RenderDebugText(renderer: SDL_Renderer, x: number, y: number, text: string|nil)` | boolean |
 | `SDLStaticC.SHA256(data: string|nil, digest: integer)` | boolean, digest: integer |
 | `SDLStaticC.SetDebugTextSize(ptsize: number)` | nil |
+| `SDLStaticC.ShowOpenFileDialog(window: SDL_Window, filter_name: string|nil, filter_pattern: string|nil, default_location: string|nil)` | boolean |
+| `SDLStaticC.ShowSaveFileDialog(window: SDL_Window, filter_name: string|nil, filter_pattern: string|nil, default_location: string|nil)` | boolean |
 | `SDLStaticC.TiledLayerCount(map: SDLStatic_TiledMap)` | integer |
 | `SDLStaticC.TiledLayerName(map: SDLStatic_TiledMap, idx: integer)` | string|nil |
 | `SDLStaticC.TiledLayerType(map: SDLStatic_TiledMap, idx: integer)` | string|nil |

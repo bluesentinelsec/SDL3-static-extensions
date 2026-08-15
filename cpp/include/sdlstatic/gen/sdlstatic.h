@@ -11,6 +11,7 @@
 #include <SDLStatic/compress.h>
 #include <SDLStatic/crypto.h>
 #include <SDLStatic/debug_text.h>
+#include <SDLStatic/dialog.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/signals.h>
@@ -166,6 +167,13 @@ class GuiHandle {
   Status GuiKeyPressed(int scancode) {
     return ::SDLStatic_GuiKeyPressed(value_, scancode) ? Status() : Status::FromSdl();
   }
+  Status GuiTooltip(const char *text) {
+    return ::SDLStatic_GuiTooltip(value_, text) ? Status() : Status::FromSdl();
+  }
+  void GuiSetTooltipDelay(int delay_ms) { ::SDLStatic_GuiSetTooltipDelay(value_, delay_ms); }
+  int GuiTooltipDelay() {
+    return ::SDLStatic_GuiTooltipDelay(value_);
+  }
   Status GuiGridWeight(int column, float weight) {
     return ::SDLStatic_GuiGridWeight(value_, column, weight) ? Status() : Status::FromSdl();
   }
@@ -233,6 +241,12 @@ inline Status RenderDebugText(SDL_Renderer *renderer, float x, float y, const ch
 inline Status SHA256(const void *data, size_t dataSize, Uint8 digest[32]) {
   return ::SDLStatic_SHA256(data, dataSize, digest) ? Status() : Status::FromSdl();
 }
+inline Status ShowOpenFileDialog(SDL_Window *window, const char *filter_name, const char *filter_pattern, const char *default_location) {
+  return ::SDLStatic_ShowOpenFileDialog(window, filter_name, filter_pattern, default_location) ? Status() : Status::FromSdl();
+}
+inline Status ShowSaveFileDialog(SDL_Window *window, const char *filter_name, const char *filter_pattern, const char *default_location) {
+  return ::SDLStatic_ShowSaveFileDialog(window, filter_name, filter_pattern, default_location) ? Status() : Status::FromSdl();
+}
 
 // Everything else, aliased into the namespace unchanged.
 inline constexpr auto& BidiItemize = ::SDLStatic_BidiItemize;
@@ -247,6 +261,9 @@ inline constexpr auto& DecodeDataBase64 = ::SDLStatic_DecodeDataBase64;
 inline constexpr auto& DecompressData = ::SDLStatic_DecompressData;
 inline constexpr auto& DecryptData = ::SDLStatic_DecryptData;
 inline constexpr auto& DestroySignalEmitter = ::SDLStatic_DestroySignalEmitter;
+inline constexpr auto& DialogPath = ::SDLStatic_DialogPath;
+inline constexpr auto& DialogReset = ::SDLStatic_DialogReset;
+inline constexpr auto& DialogStatus = ::SDLStatic_DialogStatus;
 inline constexpr auto& EmitSignal = ::SDLStatic_EmitSignal;
 inline constexpr auto& EncodeDataBase64 = ::SDLStatic_EncodeDataBase64;
 inline constexpr auto& EncryptData = ::SDLStatic_EncryptData;

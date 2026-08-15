@@ -54,6 +54,39 @@ unsigned char *data2 = SDLStatic_DecodeDataBase64(text, &outSize);
 
 RFC 4648, strict decoding (whitespace skipped, anything else rejected).
 
+## File dialogs — `<SDLStatic/dialog.h>`
+
+Native open/save dialogs, polled rather than called back. SDL delivers the
+chosen file through a callback and takes an array of filters — neither
+crosses a Lua/Ruby binding boundary, and a callback is awkward inside an
+immediate-mode frame loop even in C:
+
+```c
+if (nk_button_label(ctx, "Open")) {
+    SDLStatic_ShowOpenFileDialog(window, "Text files", "txt", NULL);
+}
+switch (SDLStatic_DialogStatus()) {
+case SDLSTATIC_DIALOG_ACCEPTED:
+    load(SDLStatic_DialogPath());
+    SDLStatic_DialogReset();
+    break;
+case SDLSTATIC_DIALOG_CANCELLED:
+case SDLSTATIC_DIALOG_ERROR:
+    SDLStatic_DialogReset();
+    break;
+default:
+    break;  /* PENDING: the dialog is still open */
+}
+```
+
+`SDLStatic_ShowSaveFileDialog` is the Save As half. One dialog is tracked
+at a time, which is all a modal picker can be.
+
+**Dialogs are a desktop feature.** SDL ships cocoa, windows, unix (portal)
+and android backends but none for Emscripten, so on web builds the status
+becomes `SDLSTATIC_DIALOG_ERROR` with `SDL_GetError()` explaining why —
+handle that state rather than assuming a path arrives.
+
 ## Signals — `<SDLStatic/signals.h>`
 
 Godot-style events:

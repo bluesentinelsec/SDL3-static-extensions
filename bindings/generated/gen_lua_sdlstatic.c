@@ -9,6 +9,7 @@
 #include <SDLStatic/compress.h>
 #include <SDLStatic/crypto.h>
 #include <SDLStatic/debug_text.h>
+#include <SDLStatic/dialog.h>
 #include <SDLStatic/gpu_primitives.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
@@ -151,6 +152,29 @@ static int GenL_SDLStatic_DestroySignalEmitter(lua_State *L)
     SDLStatic_SignalEmitter *a0 = (SDLStatic_SignalEmitter *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_SignalEmitter");
     SDLStatic_DestroySignalEmitter(a0);
     return 0;
+}
+
+static int GenL_SDLStatic_DialogPath(lua_State *L)
+{
+    (void)L;
+    const char * rv = SDLStatic_DialogPath();
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_DialogReset(lua_State *L)
+{
+    (void)L;
+    SDLStatic_DialogReset();
+    return 0;
+}
+
+static int GenL_SDLStatic_DialogStatus(lua_State *L)
+{
+    (void)L;
+    SDLStatic_DialogState rv = SDLStatic_DialogStatus();
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
 }
 
 static int GenL_SDLStatic_DisconnectSignal(lua_State *L)
@@ -414,6 +438,34 @@ static int GenL_SDLStatic_GuiSetFont(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_GuiSetTooltipDelay(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    SDLStatic_GuiSetTooltipDelay(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_GuiTooltip(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    bool rv = SDLStatic_GuiTooltip(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiTooltipDelay(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Gui *a0 = (SDLStatic_Gui *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Gui");
+    int rv = SDLStatic_GuiTooltipDelay(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_GuiWantsInput(lua_State *L)
 {
     (void)L;
@@ -515,6 +567,30 @@ static int GenL_SDLStatic_SetDebugTextSize(lua_State *L)
     float a0 = (float)luaL_checknumber(L, 1);
     SDLStatic_SetDebugTextSize(a0);
     return 0;
+}
+
+static int GenL_SDLStatic_ShowOpenFileDialog(lua_State *L)
+{
+    (void)L;
+    SDL_Window *a0 = (SDL_Window *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Window");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checkstring(L, 3);
+    const char *a3 = lua_isnoneornil(L, 4) ? NULL : luaL_checkstring(L, 4);
+    bool rv = SDLStatic_ShowOpenFileDialog(a0, a1, a2, a3);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_ShowSaveFileDialog(lua_State *L)
+{
+    (void)L;
+    SDL_Window *a0 = (SDL_Window *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Window");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    const char *a2 = lua_isnoneornil(L, 3) ? NULL : luaL_checkstring(L, 3);
+    const char *a3 = lua_isnoneornil(L, 4) ? NULL : luaL_checkstring(L, 4);
+    bool rv = SDLStatic_ShowSaveFileDialog(a0, a1, a2, a3);
+    lua_pushboolean(L, (int)rv);
+    return 1;
 }
 
 static int GenL_SDLStatic_TiledLayerCount(lua_State *L)
@@ -628,7 +704,7 @@ static int GenL_SDLStatic_TiledTileWidth(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 59);
+    lua_createtable(L, 0, 67);
     lua_pushcfunction(L, GenL_SDLStatic_BidiBaseIsRTL);
     lua_setfield(L, -2, "BidiBaseIsRTL");
     lua_pushcfunction(L, GenL_SDLStatic_CountSignalConnections);
@@ -649,6 +725,12 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "DestroyGui");
     lua_pushcfunction(L, GenL_SDLStatic_DestroySignalEmitter);
     lua_setfield(L, -2, "DestroySignalEmitter");
+    lua_pushcfunction(L, GenL_SDLStatic_DialogPath);
+    lua_setfield(L, -2, "DialogPath");
+    lua_pushcfunction(L, GenL_SDLStatic_DialogReset);
+    lua_setfield(L, -2, "DialogReset");
+    lua_pushcfunction(L, GenL_SDLStatic_DialogStatus);
+    lua_setfield(L, -2, "DialogStatus");
     lua_pushcfunction(L, GenL_SDLStatic_DisconnectSignal);
     lua_setfield(L, -2, "DisconnectSignal");
     lua_pushcfunction(L, GenL_SDLStatic_EncodeDataBase64);
@@ -705,6 +787,12 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "GuiScale");
     lua_pushcfunction(L, GenL_SDLStatic_GuiSetFont);
     lua_setfield(L, -2, "GuiSetFont");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiSetTooltipDelay);
+    lua_setfield(L, -2, "GuiSetTooltipDelay");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiTooltip);
+    lua_setfield(L, -2, "GuiTooltip");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiTooltipDelay);
+    lua_setfield(L, -2, "GuiTooltipDelay");
     lua_pushcfunction(L, GenL_SDLStatic_GuiWantsInput);
     lua_setfield(L, -2, "GuiWantsInput");
     lua_pushcfunction(L, GenL_SDLStatic_HMACSHA256);
@@ -725,6 +813,10 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "SHA256");
     lua_pushcfunction(L, GenL_SDLStatic_SetDebugTextSize);
     lua_setfield(L, -2, "SetDebugTextSize");
+    lua_pushcfunction(L, GenL_SDLStatic_ShowOpenFileDialog);
+    lua_setfield(L, -2, "ShowOpenFileDialog");
+    lua_pushcfunction(L, GenL_SDLStatic_ShowSaveFileDialog);
+    lua_setfield(L, -2, "ShowSaveFileDialog");
     lua_pushcfunction(L, GenL_SDLStatic_TiledLayerCount);
     lua_setfield(L, -2, "TiledLayerCount");
     lua_pushcfunction(L, GenL_SDLStatic_TiledLayerName);
@@ -775,6 +867,16 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "SDLSTATIC_CHIP_NOISE_METALLIC");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_CHIP_SINE);
     lua_setfield(L, -2, "SDLSTATIC_CHIP_SINE");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_DIALOG_IDLE);
+    lua_setfield(L, -2, "SDLSTATIC_DIALOG_IDLE");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_DIALOG_PENDING);
+    lua_setfield(L, -2, "SDLSTATIC_DIALOG_PENDING");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_DIALOG_ACCEPTED);
+    lua_setfield(L, -2, "SDLSTATIC_DIALOG_ACCEPTED");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_DIALOG_CANCELLED);
+    lua_setfield(L, -2, "SDLSTATIC_DIALOG_CANCELLED");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_DIALOG_ERROR);
+    lua_setfield(L, -2, "SDLSTATIC_DIALOG_ERROR");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_FONT_SMALL);
     lua_setfield(L, -2, "SDLSTATIC_GUI_FONT_SMALL");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_GUI_FONT_NORMAL);

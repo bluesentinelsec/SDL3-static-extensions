@@ -92,6 +92,28 @@ extern bool SDLStatic_GuiPumpEvents(SDLStatic_Gui *gui);
  *  quitting on Escape. */
 extern bool SDLStatic_GuiKeyPressed(SDLStatic_Gui *gui, int scancode);
 
+/** Show `text` as a tooltip for the **next** widget, with desktop-style
+ *  timing: it appears only after the pointer has rested on that widget for
+ *  the tooltip delay, and disappears again the moment the pointer moves.
+ *  (Nuklear's own nk_tooltip draws immediately and stays up for as long as
+ *  the pointer is inside the widget, which is not how tooltips behave.)
+ *
+ *  Call it immediately before declaring the widget, like
+ *  nk_widget_is_hovered:
+ *
+ *      SDLStatic_GuiTooltip(gui, "Create a new document");
+ *      nk_button_label(ctx, "New");
+ *
+ *  \returns true on the frames where the tooltip is actually displayed. */
+extern bool SDLStatic_GuiTooltip(SDLStatic_Gui *gui, const char *text);
+
+/** Milliseconds the pointer must rest before SDLStatic_GuiTooltip shows
+ *  (default 1000). 0 shows immediately. */
+extern void SDLStatic_GuiSetTooltipDelay(SDLStatic_Gui *gui, int delay_ms);
+
+/** The current tooltip delay in milliseconds. */
+extern int SDLStatic_GuiTooltipDelay(SDLStatic_Gui *gui);
+
 /* --- grid layout for scripts -------------------------------------------
  * <SDLStatic/gui_grid.h> is the full helper, but it takes a caller-owned
  * SDLStatic_GuiGrid and a float array of column weights — neither of which

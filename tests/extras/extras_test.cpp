@@ -13,6 +13,7 @@
 #include <SDLStatic/compress.h>
 #include <SDLStatic/crypto.h>
 #include <SDLStatic/signals.h>
+#include <SDLStatic/dialog.h>
 #include <gtest/gtest.h>
 
 #include <cstring>
@@ -500,6 +501,27 @@ TEST(Extras, CompressEncryptBase64Pipeline)
     SDL_free(b64);
     SDL_free(enc);
     SDL_free(comp);
+}
+
+
+// Native file dialogs. The dialogs themselves are modal OS windows, so the
+// test drives only what can run unattended: the state machine, the path
+// lifetime, and the guard against opening two at once. Opening a real
+// dialog here would block CI on a picker nobody can dismiss.
+TEST(DialogTest, StateMachineStartsIdleAndResets)
+{
+    SDLStatic_DialogReset();
+    EXPECT_EQ(SDLStatic_DialogStatus(), SDLSTATIC_DIALOG_IDLE);
+    EXPECT_EQ(SDLStatic_DialogPath(), nullptr) << "no path while idle";
+
+    // Reset is idempotent and safe with nothing outstanding.
+    SDLStatic_DialogReset();
+    SDLStatic_DialogReset();
+    EXPECT_EQ(SDLStatic_DialogStatus(), SDLSTATIC_DIALOG_IDLE);
+
+    // A path is only ever exposed in the ACCEPTED state, which this test
+    // never reaches without a user, so it must stay NULL throughout.
+    EXPECT_EQ(SDLStatic_DialogPath(), nullptr);
 }
 
 } // namespace

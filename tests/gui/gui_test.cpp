@@ -761,6 +761,72 @@ TEST_F(GuiHarness, OwnedGridMatchesCallerOwnedGrid)
     SDLStatic_GuiGridEndOwned(nullptr);  // safe no-op
 }
 
+// Tooltip timing: Nuklear's nk_tooltip draws immediately and stays up as
+// long as the pointer is inside the widget. SDLStatic_GuiTooltip adds the
+// desktop behaviour — appear after a dwell, hide as soon as the pointer
+// moves.
+TEST_F(GuiHarness, TooltipWaitsForHoverDwellAndHidesOnMotion)
+{
+    ASSERT_TRUE(SDL_InitSubSystem(SDL_INIT_EVENTS)) << SDL_GetError();
+    struct nk_context *ctx = SDLStatic_GuiContext(gui_);
+
+    // Drive one frame with the pointer at (x, y); returns whether the
+    // tooltip was displayed for the button occupying the top-left row.
+    auto frame_at = [&](float x, float y) {
+        SDL_Event motion;
+        SDL_zero(motion);
+        motion.type = SDL_EVENT_MOUSE_MOTION;
+        motion.motion.x = x;
+        motion.motion.y = y;
+        SDL_PushEvent(&motion);
+        SDLStatic_GuiPumpEvents(gui_);
+
+        bool shown = false;
+        if (nk_begin(ctx, "tips", nk_rect(0, 0, 200, 120), 0))
+        {
+            nk_layout_row_dynamic(ctx, 40, 1);
+            shown = SDLStatic_GuiTooltip(gui_, "hover text");
+            nk_button_label(ctx, "Hover me");
+        }
+        nk_end(ctx);
+        SDLStatic_GuiRender(gui_);  // ends the frame
+        return shown;
+    };
+
+    EXPECT_EQ(SDLStatic_GuiTooltipDelay(gui_), 1000) << "desktop-style default";
+
+    // Pointer away from the widget: never shown.
+    EXPECT_FALSE(frame_at(180.0f, 110.0f));
+
+    // Arrive on the widget: the dwell has only just started, so not yet.
+    EXPECT_FALSE(frame_at(50.0f, 30.0f));
+    EXPECT_FALSE(frame_at(50.0f, 30.0f)) << "still counting down";
+
+    // With no delay it appears as soon as the pointer is resting.
+    SDLStatic_GuiSetTooltipDelay(gui_, 0);
+    EXPECT_TRUE(frame_at(50.0f, 30.0f));
+
+    // Moving the pointer re-arms it, even within the same widget.
+    EXPECT_FALSE(frame_at(70.0f, 34.0f)) << "motion hides the tooltip";
+    EXPECT_TRUE(frame_at(70.0f, 34.0f)) << "resting again shows it";
+
+    // A long delay keeps it hidden no matter how many frames pass.
+    SDLStatic_GuiSetTooltipDelay(gui_, 60000);
+    EXPECT_FALSE(frame_at(90.0f, 34.0f));
+    for (int i = 0; i < 5; i++)
+    {
+        EXPECT_FALSE(frame_at(90.0f, 34.0f));
+    }
+
+    SDLStatic_GuiSetTooltipDelay(gui_, -5);
+    EXPECT_EQ(SDLStatic_GuiTooltipDelay(gui_), 0) << "negative clamps to 0";
+    EXPECT_FALSE(SDLStatic_GuiTooltip(nullptr, "x"));
+    EXPECT_FALSE(SDLStatic_GuiTooltip(gui_, nullptr));
+    SDLStatic_GuiSetTooltipDelay(nullptr, 100);  // safe no-op
+
+    SDL_QuitSubSystem(SDL_INIT_EVENTS);
+}
+
 // A windowless (software) renderer stays at 1.0 so headless tests and
 // non-Retina displays are unaffected by the high-DPI path.
 TEST_F(GuiHarness, ScaleDefaultsToOneWithoutAWindow)
