@@ -43,9 +43,19 @@ def escape(line: str) -> str:
     return line.replace("\\", "\\\\").replace('"', '\\"')
 
 
+def read_lines(path: Path) -> list[str]:
+    # Bytes, not text: a Windows checkout may have CRLF line endings, and
+    # the committed header has to compare equal on every platform.
+    text = path.read_bytes().replace(b"\r\n", b"\n").decode("utf-8")
+    return text.split("\n")
+
+
 def emit(name: str, path: Path) -> str:
     out = [f"static const char {name}[] =\n"]
-    for line in path.read_text(encoding="utf-8").splitlines():
+    lines = read_lines(path)
+    if lines and lines[-1] == "":
+        lines.pop()  # trailing newline, not a blank line
+    for line in lines:
         out.append(f'    "{escape(line)}\\n"\n')
     out.append("    ;\n")
     return "".join(out)
@@ -57,7 +67,9 @@ def build() -> str:
         if path.suffix not in (".vert", ".frag"):
             continue
         name = "k" + "".join(p.title() for p in path.stem.split("_")) + path.suffix.title()[1:]
-        parts.append(f"/* {path.relative_to(REPO)} */\n")
+        # as_posix(): a Windows path renders with backslashes, which would
+        # make the committed header differ there and nowhere else.
+        parts.append(f"/* {path.relative_to(REPO).as_posix()} */\n")
         parts.append(emit(name, path))
         parts.append("\n")
     parts.append(FOOTER)
@@ -66,14 +78,17 @@ def build() -> str:
 
 def main() -> int:
     text = build()
+    fresh = text.encode("utf-8")
     if "--check" in sys.argv:
-        current = OUTPUT.read_text(encoding="utf-8") if OUTPUT.exists() else ""
-        if current != text:
+        current = OUTPUT.read_bytes().replace(b"\r\n", b"\n") if OUTPUT.exists() else b""
+        if current != fresh:
             print("light_shaders.h is stale; run scripts/embed_shaders.py", file=sys.stderr)
             return 1
         print("light_shaders.h is up to date")
         return 0
-    OUTPUT.write_text(text, encoding="utf-8")
+    # newline="" so the LF above survives on Windows too.
+    with OUTPUT.open("w", encoding="utf-8", newline="") as handle:
+        handle.write(text)
     print(f"wrote {OUTPUT.relative_to(REPO)}")
     return 0
 
