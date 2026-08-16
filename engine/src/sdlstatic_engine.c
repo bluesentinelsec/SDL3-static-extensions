@@ -1,0 +1,622 @@
+/*
+ * sdlstatic_engine.c — the frame loop.
+ * Original SDLStatic code (zlib). See SDLStatic/engine.h.
+ *
+ * The whole file is in service of one property: a steady motion should
+ * advance by the same distance every time the display refreshes. Four
+ * things are needed for that, and each is marked where it happens:
+ *
+ *   [1] clamp    a stall is not a slow frame; drop the time
+ *   [2] smooth   snap the measured delta onto the display's cadence
+ *   [3] step     advance the simulation in exact, equal steps
+ *   [4] alpha    render *between* steps, so the display rate and the
+ *                simulation rate need not agree
+ */
+#include <SDLStatic/engine.h>
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
+#define NS_PER_SECOND 1000000000ull
+
+struct SDLStatic_Engine
+{
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    bool owns_window;
+
+    int design_width, design_height;
+    SDL_FColor clear_color;
+
+    /* Timing. All internal time is nanoseconds; the API speaks seconds. */
+    Uint64 step_ns;         /* one simulation step */
+    Uint64 accumulator_ns;  /* unsimulated time carried between frames */
+    Uint64 last_ns;         /* clock reading at the start of the last frame */
+    Uint64 refresh_ns;      /* display period, 0 if unknown */
+    Uint64 max_frame_ns;    /* longer than this is a stall */
+    Uint64 manual_ns;       /* the injected clock, when manual */
+    bool manual_clock;
+
+    int tick_rate;
+    int max_steps;
+    int max_fps;          /* 0 = follow the display, <0 = no limiter */
+    Uint64 frame_start_ns; /* for the limiter */
+    SDLStatic_EngineInterpolation interpolation;
+    float time_scale;
+
+    float delta_seconds;
+    float alpha;
+    int steps_last_frame;
+    int overload_frames;
+    Uint64 frame_count;
+
+    /* A short moving average, so a debug overlay does not flicker. */
+    float fps;
+    float fps_accumulator;
+    int fps_frames;
+
+    bool running;
+    const SDLStatic_GameHooks *hooks;
+    void *user;
+};
+
+/* --- clock -------------------------------------------------------------- */
+
+static Uint64 Now(const SDLStatic_Engine *engine)
+{
+    return engine->manual_clock ? engine->manual_ns : SDL_GetTicksNS();
+}
+
+void SDLStatic_EngineAdvance(SDLStatic_Engine *engine, Uint64 nanoseconds)
+{
+    if (engine != NULL && engine->manual_clock)
+    {
+        engine->manual_ns += nanoseconds;
+    }
+}
+
+void SDLStatic_EngineSetRefreshRate(SDLStatic_Engine *engine, float hz)
+{
+    if (engine == NULL)
+    {
+        return;
+    }
+    engine->refresh_ns = (hz > 1.0f) ? (Uint64)((double)NS_PER_SECOND / (double)hz) : 0;
+}
+
+/* [2] Snap a measured frame time onto the display's cadence.
+ *
+ * This is the piece hand-rolled loops usually miss, and the one that
+ * removes most visible judder. Frame times cluster around multiples of the
+ * refresh period but never land on them exactly; the noise is measurement
+ * and scheduling, not real variation in how much time the game should
+ * advance. So if a delta is within a small tolerance of k refreshes, treat
+ * it as exactly k refreshes.
+ *
+ * The tolerance is deliberately generous (15%) and the snap only applies to
+ * whole multiples: a genuinely slow frame (say 1.6 refreshes) is left
+ * alone, because that one really is late. */
+static Uint64 SmoothDelta(const SDLStatic_Engine *engine, Uint64 raw)
+{
+    if (engine->refresh_ns == 0)
+    {
+        return raw;
+    }
+    const double periods = (double)raw / (double)engine->refresh_ns;
+    const double nearest = SDL_round(periods);
+    if (nearest >= 1.0 && SDL_fabs(periods - nearest) < 0.15)
+    {
+        return (Uint64)(nearest * (double)engine->refresh_ns);
+    }
+    return raw;
+}
+
+/* --- lifecycle ---------------------------------------------------------- */
+
+static SDL_RendererLogicalPresentation PresentationMode(SDLStatic_EnginePresentation mode)
+{
+    switch (mode)
+    {
+    case SDLSTATIC_PRESENT_OVERSCAN:
+        return SDL_LOGICAL_PRESENTATION_OVERSCAN;
+    case SDLSTATIC_PRESENT_INTEGER:
+        return SDL_LOGICAL_PRESENTATION_INTEGER_SCALE;
+    case SDLSTATIC_PRESENT_STRETCH:
+        return SDL_LOGICAL_PRESENTATION_STRETCH;
+    case SDLSTATIC_PRESENT_NATIVE:
+        return SDL_LOGICAL_PRESENTATION_DISABLED;
+    case SDLSTATIC_PRESENT_LETTERBOX:
+    default:
+        return SDL_LOGICAL_PRESENTATION_LETTERBOX;
+    }
+}
+
+/* The display's refresh rate, so the smoothing above has something to snap
+ * to. Unknown is fine — smoothing then does nothing. */
+static void DetectRefreshRate(SDLStatic_Engine *engine)
+{
+    if (engine->window == NULL)
+    {
+        return;
+    }
+    const SDL_DisplayID display = SDL_GetDisplayForWindow(engine->window);
+    const SDL_DisplayMode *mode = SDL_GetCurrentDisplayMode(display);
+    if (mode != NULL && mode->refresh_rate > 1.0f)
+    {
+        SDLStatic_EngineSetRefreshRate(engine, mode->refresh_rate);
+    }
+}
+
+SDLStatic_Engine *SDLStatic_CreateEngine(const SDLStatic_EngineConfig *config)
+{
+    SDLStatic_EngineConfig defaults;
+    SDL_zero(defaults);
+    if (config == NULL)
+    {
+        config = &defaults;
+    }
+
+    SDLStatic_Engine *engine = (SDLStatic_Engine *)SDL_calloc(1, sizeof(*engine));
+    if (engine == NULL)
+    {
+        return NULL;
+    }
+
+    engine->tick_rate = (config->tick_rate > 0) ? SDL_clamp(config->tick_rate, 10, 480) : 60;
+    engine->step_ns = NS_PER_SECOND / (Uint64)engine->tick_rate;
+    engine->max_steps = (config->max_steps_per_frame > 0) ? config->max_steps_per_frame : 5;
+    const float max_frame = (config->max_frame_seconds > 0.0f) ? config->max_frame_seconds
+                                                               : 0.25f;
+    engine->max_frame_ns = (Uint64)((double)max_frame * (double)NS_PER_SECOND);
+    engine->interpolation = config->interpolation;
+    engine->max_fps = config->max_fps;
+    engine->time_scale = 1.0f;
+    engine->manual_clock = config->manual_clock;
+    engine->design_width = (config->design_width > 0) ? config->design_width : 3840;
+    engine->design_height = (config->design_height > 0) ? config->design_height : 2160;
+    engine->clear_color = (SDL_FColor){0.06f, 0.07f, 0.09f, 1.0f};
+    engine->running = true;
+
+    if (config->headless)
+    {
+        /* No window: a software renderer over a surface the size of the
+           design space, which is what tests and tools want. */
+        SDL_Surface *surface = SDL_CreateSurface(engine->design_width, engine->design_height,
+                                                 SDL_PIXELFORMAT_ARGB8888);
+        if (surface == NULL)
+        {
+            SDL_free(engine);
+            return NULL;
+        }
+        engine->renderer = SDL_CreateSoftwareRenderer(surface);
+        if (engine->renderer == NULL)
+        {
+            SDL_DestroySurface(surface);
+            SDL_free(engine);
+            return NULL;
+        }
+        /* The renderer owns the surface's lifetime from here; SDL frees it
+           with the renderer. */
+        engine->owns_window = false;
+    }
+    else
+    {
+        SDL_WindowFlags flags = 0;
+        if (!config->fixed_size)
+        {
+            flags |= SDL_WINDOW_RESIZABLE;
+        }
+        if (!config->low_dpi)
+        {
+            flags |= SDL_WINDOW_HIGH_PIXEL_DENSITY;
+        }
+        if (config->fullscreen)
+        {
+            flags |= SDL_WINDOW_FULLSCREEN;
+        }
+        const int width = (config->window_width > 0) ? config->window_width : 1280;
+        const int height = (config->window_height > 0) ? config->window_height : 720;
+        if (!SDL_CreateWindowAndRenderer((config->title != NULL) ? config->title : "SDLStatic",
+                                         width, height, flags, &engine->window,
+                                         &engine->renderer))
+        {
+            SDL_free(engine);
+            return NULL;
+        }
+        engine->owns_window = true;
+        /* Vsync unless asked otherwise: it costs nothing, it stops the loop
+           free-running at four figures, and it quantises the frame delta
+           for the smoothing above. */
+        SDL_SetRenderVSync(engine->renderer, config->no_vsync ? 0 : 1);
+        DetectRefreshRate(engine);
+    }
+
+    /* Design coordinates: the game is written once, at one size, and SDL
+       scales it to whatever the display is. */
+    SDL_SetRenderLogicalPresentation(engine->renderer, engine->design_width,
+                                     engine->design_height,
+                                     PresentationMode(config->presentation));
+
+    engine->last_ns = Now(engine);
+    return engine;
+}
+
+void SDLStatic_DestroyEngine(SDLStatic_Engine *engine)
+{
+    if (engine == NULL)
+    {
+        return;
+    }
+    if (engine->renderer != NULL)
+    {
+        SDL_DestroyRenderer(engine->renderer);
+    }
+    if (engine->window != NULL)
+    {
+        SDL_DestroyWindow(engine->window);
+    }
+    SDL_free(engine);
+}
+
+/* --- the frame ---------------------------------------------------------- */
+
+static void PumpEvents(SDLStatic_Engine *engine)
+{
+    SDL_Event event;
+    while (SDL_PollEvent(&event))
+    {
+        if (event.type == SDL_EVENT_QUIT)
+        {
+            engine->running = false;
+        }
+        else if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && engine->window != NULL &&
+                 event.window.windowID == SDL_GetWindowID(engine->window))
+        {
+            engine->running = false;
+        }
+        else if (event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED)
+        {
+            /* The design space does not change with the window; the
+               presentation absorbs it. The hook exists for games that lay
+               out UI against the real aspect ratio. */
+            if (engine->hooks != NULL && engine->hooks->resize != NULL)
+            {
+                engine->hooks->resize(engine->user, event.window.data1, event.window.data2);
+            }
+            DetectRefreshRate(engine); /* a move between displays changes it */
+        }
+        if (engine->hooks != NULL && engine->hooks->event != NULL)
+        {
+            engine->hooks->event(engine->user, &event);
+        }
+    }
+}
+
+/* Sleep out the rest of the frame.
+ *
+ * Vsync is supposed to do this, and usually does — but an occluded window,
+ * a driver that ignores the request, or a headless run will all present
+ * immediately, and then the loop spins as fast as the CPU allows. That
+ * wastes power and, on a laptop, is audible. Sleeping to the target frame
+ * period costs nothing when vsync is already pacing us (the remainder is
+ * zero) and saves the machine when it is not. */
+static void LimitFrameRate(SDLStatic_Engine *engine)
+{
+    if (engine->manual_clock || engine->max_fps < 0)
+    {
+        return; /* tests drive their own clock; negative disables it */
+    }
+    Uint64 period_ns = 0;
+    if (engine->max_fps > 0)
+    {
+        period_ns = NS_PER_SECOND / (Uint64)engine->max_fps;
+    }
+    else if (engine->refresh_ns > 0)
+    {
+        period_ns = engine->refresh_ns;
+    }
+    else
+    {
+        return; /* nothing sensible to limit to */
+    }
+
+    const Uint64 elapsed = SDL_GetTicksNS() - engine->frame_start_ns;
+    if (elapsed < period_ns)
+    {
+        SDL_DelayPrecise(period_ns - elapsed);
+    }
+}
+
+bool SDLStatic_EngineTick(SDLStatic_Engine *engine)
+{
+    if (engine == NULL)
+    {
+        SDL_InvalidParamError("engine");
+        return false;
+    }
+    engine->frame_start_ns = SDL_GetTicksNS();
+
+    PumpEvents(engine);
+
+    /* Measured before any waiting, so the vsync block at the end of the
+       previous frame is not folded into this frame's step. */
+    const Uint64 now = Now(engine);
+    Uint64 raw = (now > engine->last_ns) ? (now - engine->last_ns) : 0;
+    engine->last_ns = now;
+
+    if (raw > engine->max_frame_ns)
+    {
+        raw = engine->max_frame_ns; /* [1] a stall: drop the excess */
+    }
+    const Uint64 delta_ns = SmoothDelta(engine, raw); /* [2] */
+    engine->delta_seconds = (float)((double)delta_ns / (double)NS_PER_SECOND);
+
+    /* [3] Exact, equal simulation steps. */
+    engine->accumulator_ns += (Uint64)((double)delta_ns * (double)engine->time_scale);
+    int steps = 0;
+    while (engine->accumulator_ns >= engine->step_ns && steps < engine->max_steps)
+    {
+        if (engine->hooks != NULL && engine->hooks->fixed_update != NULL)
+        {
+            engine->hooks->fixed_update(engine->user, SDLStatic_EngineStep(engine));
+        }
+        engine->accumulator_ns -= engine->step_ns;
+        steps++;
+    }
+    engine->steps_last_frame = steps;
+    if (steps == engine->max_steps && engine->accumulator_ns >= engine->step_ns)
+    {
+        /* The machine cannot keep up. Dropping the debt keeps the game
+           responsive-but-slow instead of spiralling: catching up would make
+           the next frame later still. */
+        engine->accumulator_ns = 0;
+        engine->overload_frames++;
+    }
+
+    /* [4] Where this frame sits between the last two simulation states. */
+    switch (engine->interpolation)
+    {
+    case SDLSTATIC_INTERPOLATE_NONE:
+        engine->alpha = 1.0f;
+        break;
+    case SDLSTATIC_INTERPOLATE_EXTRAPOLATE:
+        engine->alpha = 1.0f + (float)((double)engine->accumulator_ns /
+                                       (double)engine->step_ns);
+        break;
+    case SDLSTATIC_INTERPOLATE_LERP:
+    default:
+        engine->alpha = (float)((double)engine->accumulator_ns / (double)engine->step_ns);
+        break;
+    }
+
+    if (engine->hooks != NULL && engine->hooks->update != NULL)
+    {
+        engine->hooks->update(engine->user, engine->delta_seconds);
+    }
+
+    SDL_SetRenderDrawColorFloat(engine->renderer, engine->clear_color.r, engine->clear_color.g,
+                                engine->clear_color.b, engine->clear_color.a);
+    SDL_SetRenderDrawBlendMode(engine->renderer, SDL_BLENDMODE_NONE);
+    SDL_RenderClear(engine->renderer);
+    if (engine->hooks != NULL && engine->hooks->render != NULL)
+    {
+        engine->hooks->render(engine->user, engine->alpha);
+    }
+    SDL_RenderPresent(engine->renderer);
+
+    LimitFrameRate(engine);
+
+    engine->frame_count++;
+    engine->fps_accumulator += engine->delta_seconds;
+    engine->fps_frames++;
+    if (engine->fps_accumulator >= 0.25f)
+    {
+        engine->fps = (float)engine->fps_frames / engine->fps_accumulator;
+        engine->fps_accumulator = 0.0f;
+        engine->fps_frames = 0;
+    }
+    return engine->running;
+}
+
+#ifdef __EMSCRIPTEN__
+static void EmscriptenFrame(void *user)
+{
+    SDLStatic_Engine *engine = (SDLStatic_Engine *)user;
+    if (!SDLStatic_EngineTick(engine))
+    {
+        if (engine->hooks != NULL && engine->hooks->unload != NULL)
+        {
+            engine->hooks->unload(engine->user);
+        }
+        emscripten_cancel_main_loop();
+    }
+}
+#endif
+
+bool SDLStatic_RunGame(SDLStatic_Engine *engine, const SDLStatic_GameHooks *hooks, void *user)
+{
+    if (engine == NULL || hooks == NULL)
+    {
+        return SDL_InvalidParamError("engine/hooks");
+    }
+    engine->hooks = hooks;
+    engine->user = user;
+    engine->last_ns = Now(engine);
+
+    if (hooks->load != NULL && !hooks->load(user))
+    {
+        return false; /* the game has already set the error */
+    }
+
+#ifdef __EMSCRIPTEN__
+    /* The browser owns the loop, so this returns immediately and `unload`
+       runs when the game asks to quit. */
+    emscripten_set_main_loop_arg(EmscriptenFrame, engine, 0, 0);
+    return true;
+#else
+    while (SDLStatic_EngineTick(engine))
+    {
+    }
+    if (hooks->unload != NULL)
+    {
+        hooks->unload(user);
+    }
+    return true;
+#endif
+}
+
+void SDLStatic_EngineQuit(SDLStatic_Engine *engine)
+{
+    if (engine != NULL)
+    {
+        engine->running = false;
+    }
+}
+
+/* --- accessors ---------------------------------------------------------- */
+
+float SDLStatic_EngineDelta(SDLStatic_Engine *engine)
+{
+    return (engine != NULL) ? engine->delta_seconds : 0.0f;
+}
+
+float SDLStatic_EngineAlpha(SDLStatic_Engine *engine)
+{
+    return (engine != NULL) ? engine->alpha : 0.0f;
+}
+
+float SDLStatic_EngineStep(SDLStatic_Engine *engine)
+{
+    if (engine == NULL)
+    {
+        return 0.0f;
+    }
+    return (float)((double)engine->step_ns / (double)NS_PER_SECOND);
+}
+
+int SDLStatic_EngineStepsLastFrame(SDLStatic_Engine *engine)
+{
+    return (engine != NULL) ? engine->steps_last_frame : 0;
+}
+
+int SDLStatic_EngineOverloadFrames(SDLStatic_Engine *engine)
+{
+    return (engine != NULL) ? engine->overload_frames : 0;
+}
+
+Uint64 SDLStatic_EngineFrameCount(SDLStatic_Engine *engine)
+{
+    return (engine != NULL) ? engine->frame_count : 0;
+}
+
+float SDLStatic_EngineFps(SDLStatic_Engine *engine)
+{
+    return (engine != NULL) ? engine->fps : 0.0f;
+}
+
+void SDLStatic_EngineSetMaxFps(SDLStatic_Engine *engine, int max_fps)
+{
+    if (engine != NULL)
+    {
+        engine->max_fps = max_fps;
+    }
+}
+
+int SDLStatic_EngineMaxFps(SDLStatic_Engine *engine)
+{
+    return (engine != NULL) ? engine->max_fps : 0;
+}
+
+void SDLStatic_EngineSetTimeScale(SDLStatic_Engine *engine, float scale)
+{
+    if (engine != NULL)
+    {
+        engine->time_scale = SDL_max(0.0f, scale);
+    }
+}
+
+float SDLStatic_EngineTimeScale(SDLStatic_Engine *engine)
+{
+    return (engine != NULL) ? engine->time_scale : 0.0f;
+}
+
+bool SDLStatic_EngineSetTickRate(SDLStatic_Engine *engine, int ticks_per_second)
+{
+    if (engine == NULL)
+    {
+        return SDL_InvalidParamError("engine");
+    }
+    const int rate = SDL_clamp(ticks_per_second, 10, 480);
+    const Uint64 step = NS_PER_SECOND / (Uint64)rate;
+    /* Carry the accumulated time across as a fraction of a step, so
+       changing the rate from an options menu does not stutter. */
+    const double fraction = (engine->step_ns > 0)
+                                ? (double)engine->accumulator_ns / (double)engine->step_ns
+                                : 0.0;
+    engine->tick_rate = rate;
+    engine->step_ns = step;
+    engine->accumulator_ns = (Uint64)(fraction * (double)step);
+    return true;
+}
+
+int SDLStatic_EngineTickRate(SDLStatic_Engine *engine)
+{
+    return (engine != NULL) ? engine->tick_rate : 0;
+}
+
+SDL_Renderer *SDLStatic_EngineRenderer(SDLStatic_Engine *engine)
+{
+    return (engine != NULL) ? engine->renderer : NULL;
+}
+
+SDL_Window *SDLStatic_EngineWindow(SDLStatic_Engine *engine)
+{
+    return (engine != NULL) ? engine->window : NULL;
+}
+
+void SDLStatic_EngineDesignSize(SDLStatic_Engine *engine, int *width, int *height)
+{
+    if (engine == NULL)
+    {
+        return;
+    }
+    if (width != NULL)
+    {
+        *width = engine->design_width;
+    }
+    if (height != NULL)
+    {
+        *height = engine->design_height;
+    }
+}
+
+void SDLStatic_EngineSetClearColor(SDLStatic_Engine *engine, SDL_FColor color)
+{
+    if (engine != NULL)
+    {
+        engine->clear_color = color;
+    }
+}
+
+void SDLStatic_EngineWindowToDesign(SDLStatic_Engine *engine, float window_x, float window_y,
+                                    float *design_x, float *design_y)
+{
+    if (engine == NULL)
+    {
+        return;
+    }
+    float x = window_x;
+    float y = window_y;
+    /* SDL knows the letterbox offset and scale it chose, so ask it rather
+       than recomputing and getting it subtly wrong. */
+    SDL_RenderCoordinatesFromWindow(engine->renderer, window_x, window_y, &x, &y);
+    if (design_x != NULL)
+    {
+        *design_x = x;
+    }
+    if (design_y != NULL)
+    {
+        *design_y = y;
+    }
+}
