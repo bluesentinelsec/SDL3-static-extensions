@@ -45,14 +45,35 @@ extern "C" {
 
 typedef struct SDLStatic_Engine SDLStatic_Engine;
 
-/** How the design resolution is fitted to the window. */
+/**
+ * How the design resolution is fitted to the window.
+ *
+ * All of these scale the *coordinates* — SDL applies a transform, it does
+ * not render offscreen and resample — so a game authored at 4K costs a
+ * 1080p machine nothing extra. What differs is what happens when the
+ * window's aspect ratio is not the design's.
+ */
 typedef enum SDLStatic_EnginePresentation
 {
-    SDLSTATIC_PRESENT_LETTERBOX = 0, /**< fit, preserving aspect (the default) */
-    SDLSTATIC_PRESENT_OVERSCAN,      /**< fill, cropping the overflow */
-    SDLSTATIC_PRESENT_INTEGER,       /**< whole-number scale, for pixel art */
-    SDLSTATIC_PRESENT_STRETCH,       /**< fill, ignoring aspect ratio */
-    SDLSTATIC_PRESENT_NATIVE         /**< no scaling: coordinates are pixels */
+    /** Keep the design's shorter axis and let the other grow or shrink with
+     *  the window, so an ultrawide monitor **sees more world** instead of
+     *  black bars. No bars, no cropping, no distortion — the trade is that
+     *  the visible area is not fixed, so UI must anchor to
+     *  SDLStatic_EngineSafeRect rather than to hard-coded corners.
+     *
+     *  This is the default because it is what a modern 2D game wants; it is
+     *  what Godot calls "expand". */
+    SDLSTATIC_PRESENT_EXPAND = 0,
+    /** Fit the whole design space, preserving aspect, with bars where the
+     *  window is a different shape. Nothing moves, ever — the right choice
+     *  when a screen has been composed exactly. */
+    SDLSTATIC_PRESENT_LETTERBOX,
+    SDLSTATIC_PRESENT_OVERSCAN, /**< fill, cropping the overflow */
+    /** Whole-number scale, for pixel art. Also switches texture filtering to
+     *  nearest, because a fractional scale is what makes pixel art shimmer. */
+    SDLSTATIC_PRESENT_INTEGER,
+    SDLSTATIC_PRESENT_STRETCH, /**< fill, ignoring aspect ratio */
+    SDLSTATIC_PRESENT_NATIVE   /**< no scaling: coordinates are pixels */
 } SDLStatic_EnginePresentation;
 
 /** How rendering positions things between two simulation steps. */
@@ -75,8 +96,14 @@ typedef struct SDLStatic_EngineConfig
     const char *title;   /**< window title; "SDLStatic" if NULL */
     int window_width;    /**< window size in pixels; 1280x720 if zero */
     int window_height;
-    int design_width;  /**< the coordinate space the game is written in;
-                            3840x2160 if zero */
+    /** The coordinate space the game is written in — its *reference*
+     *  resolution, not the resolution it renders at. 1920x1080 if zero.
+     *
+     *  Pick the aspect and the convenient number, not the target hardware:
+     *  a game written at 1920x1080 renders natively at 4K, because the
+     *  scale is applied to coordinates rather than to a rendered image. Art
+     *  is a separate question — see SDLStatic_EngineAssetScale. */
+    int design_width;
     int design_height;
     SDLStatic_EnginePresentation presentation;
     bool fullscreen;
@@ -215,8 +242,47 @@ extern int SDLStatic_EngineTickRate(SDLStatic_Engine *engine);
 extern SDL_Renderer *SDLStatic_EngineRenderer(SDLStatic_Engine *engine);
 extern SDL_Window *SDLStatic_EngineWindow(SDLStatic_Engine *engine);
 
-/** The design coordinate space the game draws in — not the pixel size. */
+/** The design (reference) space the game was configured with. */
 extern void SDLStatic_EngineDesignSize(SDLStatic_Engine *engine, int *width, int *height);
+
+/** The design-space rectangle actually visible in the window.
+ *
+ *  Equal to the design size for every mode except EXPAND, where the window's
+ *  aspect ratio widens or heightens it — a 21:9 monitor showing a 16:9
+ *  design gets a wider view rather than bars. Origin is 0,0 in EXPAND and
+ *  LETTERBOX; OVERSCAN crops, so its origin is negative.
+ *
+ *  This is the rectangle to lay a camera or a full-screen backdrop out
+ *  against. */
+extern SDL_FRect SDLStatic_EngineViewRect(SDLStatic_Engine *engine);
+
+/** The part of the view guaranteed to be visible on every aspect ratio —
+ *  the design rectangle, centred in the view.
+ *
+ *  Anchor UI to this, not to the view: a button at the right edge of the
+ *  *view* sits off in the periphery on an ultrawide, while the safe rect is
+ *  where the game was actually composed. Consoles call the same idea a
+ *  title-safe area. */
+extern SDL_FRect SDLStatic_EngineSafeRect(SDLStatic_Engine *engine);
+
+/** The window's real size in pixels — the framebuffer, not the design
+ *  space, and not points on a high-DPI display. */
+extern void SDLStatic_EnginePixelSize(SDLStatic_Engine *engine, int *width, int *height);
+
+/** How many pixels one design unit covers right now.
+ *
+ *  1.0 when the window matches the design space, 2.0 for a 1920-wide design
+ *  on a 4K display. Line widths and other things that should stay
+ *  pixel-crisp can divide by it. */
+extern float SDLStatic_EngineRenderScale(SDLStatic_Engine *engine);
+
+/** Which art set to load: 1 below a 1.5x render scale, 2 below 3x, then 4.
+ *
+ *  The scaling above is free because it applies to coordinates, but *art* is
+ *  not: a 1x sprite stretched onto a 4K display is soft, and a 4K sprite
+ *  squeezed onto a laptop wastes memory and shimmers under minification.
+ *  Games that ship more than one set of art choose with this. */
+extern int SDLStatic_EngineAssetScale(SDLStatic_Engine *engine);
 
 /** Colour the frame is cleared to before `render`. Defaults to near-black. */
 extern void SDLStatic_EngineSetClearColor(SDLStatic_Engine *engine, SDL_FColor color);

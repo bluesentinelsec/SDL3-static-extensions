@@ -135,26 +135,84 @@ if (SDLStatic_EngineOverloadFrames(engine) > last_seen) {
 Dropping the debt makes a struggling game *slow*, which is survivable, in
 place of *spiralling*, which is not.
 
-## The drawing surface
+## Coordinate spaces
 
-The game draws in **design coordinates**, not pixels. The engine sets a
-logical presentation size — 3840×2160 by default — and SDL scales it to
-whatever the display is, letterboxed:
+Three spaces, and it is worth being exact about which is which:
+
+| Space | What it is | Who decides it |
+|---|---|---|
+| **World** | where things are in the level — a dungeon 20,000 units across | your game |
+| **Design** | the fixed virtual screen you compose into, e.g. 1920×1080 | `config.design_width/height` |
+| **Pixel** | the actual framebuffer of the window | the display |
+
+A **camera** maps world → design; the engine maps design → pixels. The
+engine currently has no camera, so a game that draws directly in design
+coordinates is effectively saying "the world is exactly one screen" — fine
+for menus, not for a level. The camera arrives with the rendering
+subsystem; when it does, nothing on this page changes.
+
+### Design → pixels costs nothing
+
+SDL applies logical presentation as a **coordinate transform**, not an
+offscreen render target: a rectangle at (100, 100) in a 1920-wide design
+space is rasterised directly at (50, 50) on a 960-wide window. So there is
+no supersampling, no resample blur, and no penalty for authoring at a
+different resolution from the one you display at.
+
+That is why the reference resolution should be chosen for convenience —
+pick 1920×1080 and the numbers stay readable — and **not** for the target
+hardware. A 1920×1080 design renders natively at 4K.
+
+*Art* is the separate question. Scaling coordinates is free; scaling
+*images* is not, because a 1× sprite stretched to 4K is soft and a 4×
+sprite minified to a laptop shimmers. `SDLStatic_EngineAssetScale` returns
+1, 2 or 4 so a game that ships more than one art set can pick:
 
 ```c
-SDLStatic_EngineConfig config = {0};
-config.design_width = 3840;   /* write the game once, at one size */
-config.design_height = 2160;
-config.presentation = SDLSTATIC_PRESENT_LETTERBOX;
+char path[256];
+SDL_snprintf(path, sizeof(path), "sprites/player@%dx.png",
+             SDLStatic_EngineAssetScale(engine));
 ```
 
-A sprite at (1920, 1080) is centred on a 4K monitor, a 1080p laptop and a
-phone. `SDLSTATIC_PRESENT_INTEGER` is there for pixel art, which wants
-whole-number scaling or it shimmers; `SDLSTATIC_PRESENT_NATIVE` turns the
-whole thing off and gives you pixels.
+### Fitting a design space to a window that is the wrong shape
 
-Because SDL owns the letterbox, mouse and touch positions arrive in *window*
-coordinates and must be converted:
+This is the only genuinely hard part, and the mode decides it:
+
+| Mode | On a window with a different aspect ratio |
+|---|---|
+| **`EXPAND`** (default) | Keeps the design's shorter axis and lets the other grow — an ultrawide **sees more world**. No bars, no cropping, no distortion. |
+| `LETTERBOX` | Keeps the whole design space visible and adds bars. Nothing ever moves. |
+| `OVERSCAN` | Fills the window by cropping the overflow. |
+| `INTEGER` | Whole-number scaling for pixel art; also switches texture filtering to nearest, since fractional scaling is what makes pixel art shimmer. |
+| `STRETCH` | Fills by distorting. Rarely what anyone wants. |
+| `NATIVE` | No scaling: design units *are* pixels. |
+
+`EXPAND` is the default because it is what a modern 2D game wants, and it
+is what Godot calls the same thing. The trade is that the visible rectangle
+is no longer fixed, which is what the next two calls are for:
+
+```c
+const SDL_FRect view = SDLStatic_EngineViewRect(engine);  /* all that is visible */
+const SDL_FRect safe = SDLStatic_EngineSafeRect(engine);  /* where you composed */
+
+DrawBackdrop(view);                       /* fill everything, edge to edge */
+DrawHealthBar(safe.x + 40, safe.y + 40);  /* anchor UI to the safe area */
+```
+
+The **view rect** is everything on screen — wider than the design on an
+ultrawide. The **safe rect** is the design rectangle centred inside it: the
+part guaranteed visible on every aspect ratio, and where the game was
+actually composed. Anchor UI to the safe rect and a button never drifts off
+into the periphery on a 21:9 monitor; fill the view rect with backdrops and
+there is never a gap at the edge. Consoles call the same idea title-safe.
+
+In `EXPAND` the view is recomputed whenever the window's pixel size
+changes, so dragging a window between a laptop screen and an ultrawide is
+handled without the game hearing about it.
+
+### Mouse and touch
+
+SDL reports events in *window* coordinates, so they need converting:
 
 ```c
 float x, y;

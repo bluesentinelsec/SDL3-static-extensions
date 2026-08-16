@@ -362,6 +362,132 @@ TEST_F(EngineHarness, DesignSpaceIsIndependentOfTheSurface)
     EXPECT_NEAR(y, 180.0f, 1.0f);
 }
 
+// Presentation. A game is written once at a reference resolution and has to
+// look right on a 16:9 laptop, a 16:10 monitor and an ultrawide — these
+// check what each mode does about the difference.
+class PresentationHarness : public ::testing::Test
+{
+  protected:
+    void SetUp() override { ASSERT_TRUE(SDL_Init(0)) << SDL_GetError(); }
+    void TearDown() override { SDL_Quit(); }
+
+    // A headless engine whose "display" is `w`x`h` pixels.
+    SDLStatic_Engine *Make(int w, int h, SDLStatic_EnginePresentation mode)
+    {
+        SDLStatic_EngineConfig config{};
+        config.headless = true;
+        config.manual_clock = true;
+        config.design_width = 1920;
+        config.design_height = 1080;
+        config.window_width = w;
+        config.window_height = h;
+        config.presentation = mode;
+        return SDLStatic_CreateEngine(&config);
+    }
+};
+
+// An ultrawide window in EXPAND sees *more world*, not black bars.
+TEST_F(PresentationHarness, ExpandWidensTheViewOnAWiderDisplay)
+{
+    SDLStatic_Engine *engine = Make(2560, 1080, SDLSTATIC_PRESENT_EXPAND); // 21:9
+    ASSERT_NE(engine, nullptr) << SDL_GetError();
+
+    const SDL_FRect view = SDLStatic_EngineViewRect(engine);
+    EXPECT_NEAR(view.h, 1080.0f, 1.0f) << "the design height is kept";
+    EXPECT_NEAR(view.w, 2560.0f, 2.0f) << "and the width follows the window";
+    EXPECT_GT(view.w, 1920.0f) << "so an ultrawide sees more, not bars";
+
+    // The safe rect stays the design rectangle, centred — where the game
+    // was actually composed.
+    const SDL_FRect safe = SDLStatic_EngineSafeRect(engine);
+    EXPECT_NEAR(safe.w, 1920.0f, 1.0f);
+    EXPECT_NEAR(safe.h, 1080.0f, 1.0f);
+    EXPECT_NEAR(safe.x, (view.w - 1920.0f) * 0.5f, 1.0f) << "centred in the view";
+    EXPECT_GE(safe.x, 0.0f);
+    SDLStatic_DestroyEngine(engine);
+}
+
+// A taller window in EXPAND gains height instead.
+TEST_F(PresentationHarness, ExpandHeightensTheViewOnATallerDisplay)
+{
+    SDLStatic_Engine *engine = Make(1600, 1200, SDLSTATIC_PRESENT_EXPAND); // 4:3
+    ASSERT_NE(engine, nullptr);
+    const SDL_FRect view = SDLStatic_EngineViewRect(engine);
+    EXPECT_NEAR(view.w, 1920.0f, 1.0f) << "the design width is kept";
+    EXPECT_GT(view.h, 1080.0f) << "and the height grows";
+    SDLStatic_DestroyEngine(engine);
+}
+
+// Letterbox is the opposite promise: the view never changes, and the bars
+// are the price.
+TEST_F(PresentationHarness, LetterboxKeepsTheViewFixed)
+{
+    SDLStatic_Engine *engine = Make(2560, 1080, SDLSTATIC_PRESENT_LETTERBOX);
+    ASSERT_NE(engine, nullptr);
+    const SDL_FRect view = SDLStatic_EngineViewRect(engine);
+    EXPECT_NEAR(view.w, 1920.0f, 1.0f);
+    EXPECT_NEAR(view.h, 1080.0f, 1.0f);
+
+    // With nothing to reconcile, the safe rect is the whole view.
+    const SDL_FRect safe = SDLStatic_EngineSafeRect(engine);
+    EXPECT_NEAR(safe.x, 0.0f, 1.0f);
+    EXPECT_NEAR(safe.w, view.w, 1.0f);
+    SDLStatic_DestroyEngine(engine);
+}
+
+// Scale factors: what a game needs to pick art and keep hairlines crisp.
+TEST_F(PresentationHarness, ScaleReportsPixelsPerDesignUnit)
+{
+    struct Case
+    {
+        int w, h;
+        float scale;
+        int asset;
+    };
+    // 1080p is 1:1 with the design; 4K is 2x; a small window is below 1.
+    const Case cases[] = {{1920, 1080, 1.0f, 1}, {3840, 2160, 2.0f, 2}, {960, 540, 0.5f, 1}};
+    for (const Case &c : cases)
+    {
+        SDLStatic_Engine *engine = Make(c.w, c.h, SDLSTATIC_PRESENT_LETTERBOX);
+        ASSERT_NE(engine, nullptr);
+        EXPECT_NEAR(SDLStatic_EngineRenderScale(engine), c.scale, 0.01f)
+            << c.w << "x" << c.h;
+        EXPECT_EQ(SDLStatic_EngineAssetScale(engine), c.asset) << c.w << "x" << c.h;
+
+        int pixel_w = 0;
+        int pixel_h = 0;
+        SDLStatic_EnginePixelSize(engine, &pixel_w, &pixel_h);
+        EXPECT_EQ(pixel_w, c.w);
+        EXPECT_EQ(pixel_h, c.h);
+        SDLStatic_DestroyEngine(engine);
+    }
+}
+
+// In EXPAND the scale is uniform on both axes — the view was chosen to make
+// it so, which is why nothing is ever distorted.
+TEST_F(PresentationHarness, ExpandKeepsPixelsSquare)
+{
+    SDLStatic_Engine *engine = Make(2560, 1080, SDLSTATIC_PRESENT_EXPAND);
+    ASSERT_NE(engine, nullptr);
+    const SDL_FRect view = SDLStatic_EngineViewRect(engine);
+    const float sx = 2560.0f / view.w;
+    const float sy = 1080.0f / view.h;
+    EXPECT_NEAR(sx, sy, 0.01f) << "square pixels, or circles come out as ovals";
+    SDLStatic_DestroyEngine(engine);
+}
+
+// Native means "coordinates are pixels", which some tools want.
+TEST_F(PresentationHarness, NativeMakesDesignUnitsPixels)
+{
+    SDLStatic_Engine *engine = Make(1024, 768, SDLSTATIC_PRESENT_NATIVE);
+    ASSERT_NE(engine, nullptr);
+    const SDL_FRect view = SDLStatic_EngineViewRect(engine);
+    EXPECT_NEAR(view.w, 1024.0f, 1.0f);
+    EXPECT_NEAR(view.h, 768.0f, 1.0f);
+    EXPECT_NEAR(SDLStatic_EngineRenderScale(engine), 1.0f, 0.01f);
+    SDLStatic_DestroyEngine(engine);
+}
+
 // The frame limiter. Vsync is supposed to pace the loop, but an occluded
 // window or an indifferent driver will present immediately and let it spin
 // at thousands of frames a second. This runs on the real clock — hence the
@@ -418,6 +544,11 @@ TEST_F(EngineHarness, NullsAreHandled)
     EXPECT_FLOAT_EQ(SDLStatic_EngineFps(nullptr), 0.0f);
     SDLStatic_EngineSetMaxFps(nullptr, 60);
     EXPECT_EQ(SDLStatic_EngineMaxFps(nullptr), 0);
+    EXPECT_FLOAT_EQ(SDLStatic_EngineViewRect(nullptr).w, 0.0f);
+    EXPECT_FLOAT_EQ(SDLStatic_EngineSafeRect(nullptr).w, 0.0f);
+    SDLStatic_EnginePixelSize(nullptr, nullptr, nullptr);
+    EXPECT_FLOAT_EQ(SDLStatic_EngineRenderScale(nullptr), 1.0f);
+    EXPECT_EQ(SDLStatic_EngineAssetScale(nullptr), 1);
     EXPECT_FLOAT_EQ(SDLStatic_EngineTimeScale(nullptr), 0.0f);
     EXPECT_FALSE(SDLStatic_EngineSetTickRate(nullptr, 60));
     EXPECT_EQ(SDLStatic_EngineTickRate(nullptr), 0);

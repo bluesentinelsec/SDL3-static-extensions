@@ -20,7 +20,9 @@ struct SDLStatic_Engine
     SDL_Renderer *renderer;
     SDL_Surface *headless_surface; /* owned by us: see DestroyEngine */
 
-    int design_width, design_height;
+    int design_width, design_height;   /* the reference space */
+    float view_width, view_height;     /* what is actually visible */
+    SDLStatic_EnginePresentation presentation;
     SDL_FColor clear_color;
 
     /* Timing. All internal time is nanoseconds; the API speaks seconds. */

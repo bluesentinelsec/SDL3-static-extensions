@@ -85,10 +85,65 @@ static SDL_RendererLogicalPresentation PresentationMode(SDLStatic_EnginePresenta
         return SDL_LOGICAL_PRESENTATION_STRETCH;
     case SDLSTATIC_PRESENT_NATIVE:
         return SDL_LOGICAL_PRESENTATION_DISABLED;
+    case SDLSTATIC_PRESENT_EXPAND:
+        /* EXPAND is letterbox with a logical size chosen to match the
+           window's aspect exactly, so there is never anything to bar. */
+        return SDL_LOGICAL_PRESENTATION_LETTERBOX;
     case SDLSTATIC_PRESENT_LETTERBOX:
     default:
         return SDL_LOGICAL_PRESENTATION_LETTERBOX;
     }
+}
+
+/* Work out the visible design rectangle and hand it to SDL.
+ *
+ * Called on creation and whenever the window's pixel size changes, because
+ * in EXPAND the visible width follows the window's aspect ratio — that is
+ * the whole point of the mode. */
+static void ApplyPresentation(SDLStatic_Engine *engine)
+{
+    int pixel_w = 0;
+    int pixel_h = 0;
+    if (!SDL_GetCurrentRenderOutputSize(engine->renderer, &pixel_w, &pixel_h) || pixel_w <= 0 ||
+        pixel_h <= 0)
+    {
+        return;
+    }
+
+    engine->view_width = (float)engine->design_width;
+    engine->view_height = (float)engine->design_height;
+
+    if (engine->presentation == SDLSTATIC_PRESENT_EXPAND)
+    {
+        const float design_aspect = (float)engine->design_width / (float)engine->design_height;
+        const float window_aspect = (float)pixel_w / (float)pixel_h;
+        if (window_aspect > design_aspect)
+        {
+            /* Wider than designed: keep the height, show more world either
+               side. An ultrawide gains view instead of gaining bars. */
+            engine->view_width = (float)engine->design_height * window_aspect;
+        }
+        else
+        {
+            engine->view_height = (float)engine->design_width / window_aspect;
+        }
+    }
+    else if (engine->presentation == SDLSTATIC_PRESENT_NATIVE)
+    {
+        engine->view_width = (float)pixel_w;
+        engine->view_height = (float)pixel_h;
+    }
+
+    SDL_SetRenderLogicalPresentation(engine->renderer, (int)(engine->view_width + 0.5f),
+                                     (int)(engine->view_height + 0.5f),
+                                     PresentationMode(engine->presentation));
+
+    /* Pixel art wants nearest, everything else wants linear. Setting it as
+       the renderer's default means a game never has to remember. */
+    SDL_SetDefaultTextureScaleMode(engine->renderer,
+                                   (engine->presentation == SDLSTATIC_PRESENT_INTEGER)
+                                       ? SDL_SCALEMODE_NEAREST
+                                       : SDL_SCALEMODE_LINEAR);
 }
 
 /* The display's refresh rate, so the smoothing above has something to snap
@@ -132,8 +187,9 @@ SDLStatic_Engine *SDLStatic_CreateEngine(const SDLStatic_EngineConfig *config)
     engine->max_fps = config->max_fps;
     engine->time_scale = 1.0f;
     engine->manual_clock = config->manual_clock;
-    engine->design_width = (config->design_width > 0) ? config->design_width : 3840;
-    engine->design_height = (config->design_height > 0) ? config->design_height : 2160;
+    engine->design_width = (config->design_width > 0) ? config->design_width : 1920;
+    engine->design_height = (config->design_height > 0) ? config->design_height : 1080;
+    engine->presentation = config->presentation;
     engine->clear_color = (SDL_FColor){0.06f, 0.07f, 0.09f, 1.0f};
     engine->running = true;
 
@@ -141,7 +197,14 @@ SDLStatic_Engine *SDLStatic_CreateEngine(const SDLStatic_EngineConfig *config)
     {
         /* No window: a software renderer over a surface the size of the
            design space, which is what tests and tools want. */
-        SDL_Surface *surface = SDL_CreateSurface(engine->design_width, engine->design_height,
+        /* The surface stands in for the window, so a test can ask for a
+           16:10 or ultrawide "display" and check what the design space
+           does about it. */
+        const int surface_w = (config->window_width > 0) ? config->window_width
+                                                         : engine->design_width;
+        const int surface_h = (config->window_height > 0) ? config->window_height
+                                                          : engine->design_height;
+        SDL_Surface *surface = SDL_CreateSurface(surface_w, surface_h,
                                                  SDL_PIXELFORMAT_ARGB8888);
         if (surface == NULL)
         {
@@ -192,9 +255,7 @@ SDLStatic_Engine *SDLStatic_CreateEngine(const SDLStatic_EngineConfig *config)
 
     /* Design coordinates: the game is written once, at one size, and SDL
        scales it to whatever the display is. */
-    SDL_SetRenderLogicalPresentation(engine->renderer, engine->design_width,
-                                     engine->design_height,
-                                     PresentationMode(config->presentation));
+    ApplyPresentation(engine);
 
     engine->last_ns = Now(engine);
     return engine;
@@ -242,6 +303,9 @@ static void PumpEvents(SDLStatic_Engine *engine)
         }
         else if (event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED)
         {
+            /* In EXPAND the visible design rect follows the window, so the
+               presentation has to be recomputed before anything draws. */
+            ApplyPresentation(engine);
             /* The design space does not change with the window; the
                presentation absorbs it. The hook exists for games that lay
                out UI against the real aspect ratio. */
@@ -563,6 +627,101 @@ void SDLStatic_EngineDesignSize(SDLStatic_Engine *engine, int *width, int *heigh
     {
         *height = engine->design_height;
     }
+}
+
+SDL_FRect SDLStatic_EngineViewRect(SDLStatic_Engine *engine)
+{
+    SDL_FRect rect = {0.0f, 0.0f, 0.0f, 0.0f};
+    if (engine == NULL)
+    {
+        return rect;
+    }
+    rect.w = engine->view_width;
+    rect.h = engine->view_height;
+    if (engine->presentation == SDLSTATIC_PRESENT_OVERSCAN)
+    {
+        /* Overscan crops: the visible rect is the design space, but part of
+           it is off-screen, so report where the design space sits. */
+        rect.x = 0.0f;
+        rect.y = 0.0f;
+    }
+    return rect;
+}
+
+SDL_FRect SDLStatic_EngineSafeRect(SDLStatic_Engine *engine)
+{
+    SDL_FRect rect = {0.0f, 0.0f, 0.0f, 0.0f};
+    if (engine == NULL)
+    {
+        return rect;
+    }
+    /* The design rectangle, centred in whatever the view turned out to be. */
+    rect.w = (float)engine->design_width;
+    rect.h = (float)engine->design_height;
+    rect.x = (engine->view_width - rect.w) * 0.5f;
+    rect.y = (engine->view_height - rect.h) * 0.5f;
+    if (rect.w > engine->view_width)
+    {
+        rect.x = 0.0f;
+        rect.w = engine->view_width;
+    }
+    if (rect.h > engine->view_height)
+    {
+        rect.y = 0.0f;
+        rect.h = engine->view_height;
+    }
+    return rect;
+}
+
+void SDLStatic_EnginePixelSize(SDLStatic_Engine *engine, int *width, int *height)
+{
+    int w = 0;
+    int h = 0;
+    if (engine != NULL)
+    {
+        SDL_GetCurrentRenderOutputSize(engine->renderer, &w, &h);
+    }
+    if (width != NULL)
+    {
+        *width = w;
+    }
+    if (height != NULL)
+    {
+        *height = h;
+    }
+}
+
+float SDLStatic_EngineRenderScale(SDLStatic_Engine *engine)
+{
+    if (engine == NULL || engine->view_width <= 0.0f)
+    {
+        return 1.0f;
+    }
+    int pixel_w = 0;
+    int pixel_h = 0;
+    SDL_GetCurrentRenderOutputSize(engine->renderer, &pixel_w, &pixel_h);
+    if (pixel_w <= 0 || pixel_h <= 0)
+    {
+        return 1.0f;
+    }
+    /* The smaller of the two, which is the one the fit is limited by. */
+    const float sx = (float)pixel_w / engine->view_width;
+    const float sy = (float)pixel_h / engine->view_height;
+    return SDL_min(sx, sy);
+}
+
+int SDLStatic_EngineAssetScale(SDLStatic_Engine *engine)
+{
+    const float scale = SDLStatic_EngineRenderScale(engine);
+    if (scale >= 3.0f)
+    {
+        return 4;
+    }
+    if (scale >= 1.5f)
+    {
+        return 2;
+    }
+    return 1;
 }
 
 void SDLStatic_EngineSetClearColor(SDLStatic_Engine *engine, SDL_FColor color)
