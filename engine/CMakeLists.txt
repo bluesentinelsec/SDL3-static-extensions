@@ -6,6 +6,7 @@
 #   <SDLStatic/engine_graphics.h>  graphics settings, config.toml and the CLI
 #   <SDLStatic/engine_camera.h>    2D camera, scrolling and split screen
 #   <SDLStatic/engine_media.h>     mounting the game's assets
+#   <SDLStatic/engine_actor.h>     actors: identity, hierarchy, messages
 #
 # Original code (zlib), plain C over SDL3. The loop is a fixed simulation
 # tick with interpolated rendering — the arrangement that makes motion look
@@ -21,6 +22,7 @@ add_library(SDLStatic_Engine STATIC
   src/sdlstatic_engine_postfx.c
   src/sdlstatic_engine_camera.c
   src/sdlstatic_engine_media.c
+  src/sdlstatic_engine_actor.c
 )
 add_library(SDLStatic::Engine ALIAS SDLStatic_Engine)
 

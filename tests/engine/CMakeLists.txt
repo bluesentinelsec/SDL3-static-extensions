@@ -3,6 +3,7 @@ add_executable(SDL3_static_extensions_engine_test
   scene_test.cpp
   graphics_test.cpp
   camera_test.cpp
+  actor_test.cpp
 )
 target_link_libraries(SDL3_static_extensions_engine_test
   PRIVATE

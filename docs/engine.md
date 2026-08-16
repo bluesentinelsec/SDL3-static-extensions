@@ -21,8 +21,8 @@ target_link_libraries(your_game PRIVATE SDLStatic::Engine)
 ```
 
 This page covers the loop and time, presentation and scaling, scenes,
-graphics settings, and the camera. Actors, input, assets, physics and the
-lighting integration follow.
+graphics settings, the camera and actors. Engine-owned rendering, input,
+assets, physics and the lighting integration follow.
 
 ## The loop
 
@@ -806,3 +806,143 @@ display, and the mode is restored.
 A saved display index is clamped to what exists at launch, so unplugging the
 monitor a game was saved on does not leave it running invisibly on a display
 that is no longer there.
+
+## Actors
+
+An actor is a thing in the world with a position and a lifetime. The engine
+owns the structure — identity, parenting, transforms, when things are
+created and destroyed — and the game owns the meaning. The engine never
+learns what a goblin is. `<SDLStatic/engine_actor.h>`.
+
+```c
+typedef struct { int health; } Goblin;
+
+static bool GoblinSpawn(SDLStatic_Actor *actor) {
+    Goblin *g = SDLStatic_ActorState(actor);
+    g->health = 20;
+    return true;
+}
+
+static void GoblinThink(SDLStatic_Actor *actor, float step) {
+    SDLStatic_ActorMove(actor, 40.0f * step, 0.0f);
+}
+
+SDLStatic_ActorDef def = {0};
+def.type = "goblin";
+def.state_size = sizeof(Goblin);
+def.spawn = GoblinSpawn;
+def.fixed_update = GoblinThink;
+def.x = 400.0f;
+
+SDLStatic_ActorId id = SDLStatic_ActorSpawn(engine, &def);
+```
+
+`state_size` is all it takes: the engine allocates the bytes, zeroes them,
+and frees them when the actor goes away, so an actor's data has the actor's
+lifetime and nothing has to remember.
+
+### Handles, not pointers
+
+`SDLStatic_ActorId` is a 48-bit handle — a 24-bit slot index and a 24-bit
+generation. It is not a pointer, and that is the single most important
+decision in this subsystem.
+
+A game stores `SDLStatic_ActorId target` on an enemy. The player dies. With
+a pointer, the enemy's next dereference reads whatever was allocated in the
+player's place: usually another actor, so the enemy quietly starts chasing a
+door. With a handle, the slot's generation has advanced, so
+`SDLStatic_ActorGet` returns NULL and the enemy finds out its target is
+gone — which is the thing it needed to know.
+
+```c
+SDLStatic_Actor *victim = SDLStatic_ActorGet(engine, target);
+if (victim == NULL) { GoIdle(self); return; }
+```
+
+### Deferred creation and destruction
+
+Spawn and destroy both take effect **at the end of the frame**, so the set
+of actors cannot change underneath code that is walking it. That removes the
+most common crash in a system like this — an actor killing another during an
+update it is inside — as a category rather than case by case.
+
+The handle from `SDLStatic_ActorSpawn` is valid immediately: you may store
+it, parent to it and set it up. The actor does not receive updates or appear
+in queries until the frame it was created in has finished, so a spawner
+cannot accidentally run its own children in the same tick that made them.
+
+Destroying a parent destroys its children, which is what "part of" is
+supposed to mean, and destroying something twice is not an error — two
+things killing the same target in one frame is normal, and making it an
+error would only mean every caller writes the same guard.
+
+### Hierarchy
+
+```c
+SDLStatic_ActorSetParent(sword, knight_id);   /* keeps its world position */
+```
+
+Transforms compose through parents, so moving, rotating or scaling a parent
+carries its children. Reparenting preserves the actor's *world* position —
+"pick this up" should not teleport it — and a change that would make a cycle
+is refused, because an actor that is its own ancestor turns every transform
+walk into an infinite loop.
+
+### Interpolation, once
+
+The engine snapshots every actor's transform before each fixed step, so the
+loop's interpolation contract is handled for the whole world rather than by
+every actor keeping its own `previous_x`:
+
+```c
+static void Render(void *user, float alpha) {
+    SDLStatic_ActorTransform t = SDLStatic_ActorRenderTransform(actor, alpha);
+    DrawSprite(t.x, t.y, t.rotation);
+}
+```
+
+Use `SDLStatic_ActorTeleport` for a jump. A teleport that goes through
+`SetPosition` is interpolated, and the actor smears across the screen from
+somewhere it never was.
+
+### Queries
+
+```c
+SDLStatic_ActorId enemies[64];
+int n = SDLStatic_ActorQuery(engine, NULL, kTagEnemy, enemies, 64);
+```
+
+Filter by type, by tags, or both. Tags are a 32-bit mask the game assigns
+meaning to, so "every enemy" is one bit test per actor rather than a string
+comparison. Queries write into a caller's array rather than allocating,
+because they run every frame — a query that allocates is a query you end up
+caching by hand.
+
+`SDLStatic_ActorFindByName` is for the one actor a level needs to address
+directly: the boss, the exit door.
+
+### Messages
+
+```c
+SDLStatic_ActorMessage hit = {0};
+hit.id = MSG_DAMAGE;
+hit.sender = SDLStatic_ActorGetId(self);
+hit.a = 7.0f;
+SDLStatic_ActorSend(engine, target, &hit);
+```
+
+Messages are queued and delivered after all updates and before the frame is
+drawn, so a message sent this frame is handled this frame and the frame is
+drawn from a settled world. They are copied, and carry no pointers — a
+message that carried one would outlive what it pointed at about as often as
+not.
+
+Delivery is not a call through. "Damage this, which kills it, which spawns
+three of those, one of which damages me" would otherwise recurse arbitrarily
+deep inside a single update. Messages sent *while* the queue is draining are
+delivered next frame instead, which bounds the work in a frame: two actors
+answering each other forever become visibly slow rather than a stack
+overflow.
+
+A target that dies between the send and the delivery simply does not receive
+it, which is what "it is gone" should mean.

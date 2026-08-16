@@ -365,6 +365,8 @@ void SDLStatic_DestroyEngine(SDLStatic_Engine *engine)
     /* Scenes first, so they see exit and unload while the renderer they
        may want to use is still alive. */
     SDLStatic_SceneShutdown(engine);
+    /* Actors after scenes: a scene's unload may still want to reach them. */
+    SDLStatic_ActorWorldDestroy(engine);
     /* GL objects before the renderer that owns the context they live in. */
     SDLStatic_EnginePostFXDestroy(engine);
     SDLStatic_EngineDestroyFrameTarget(engine);
@@ -493,6 +495,9 @@ bool SDLStatic_EngineTick(SDLStatic_Engine *engine)
         /* Hooks run around the scene stack, never instead of it: a game can
            use both, which is how a debug overlay coexists with scenes. */
         SDLStatic_SceneDispatchFixedUpdate(engine, step);
+        /* Actors last in the step, so a scene has already set up whatever
+           it wanted to before its actors act on it. */
+        SDLStatic_ActorDispatchFixedUpdate(engine, step);
         engine->accumulator_ns -= engine->step_ns;
         steps++;
     }
@@ -527,6 +532,12 @@ bool SDLStatic_EngineTick(SDLStatic_Engine *engine)
         engine->hooks->update(engine->user, engine->delta_seconds);
     }
     SDLStatic_SceneDispatchUpdate(engine, engine->delta_seconds);
+    SDLStatic_ActorDispatchUpdate(engine, engine->delta_seconds);
+
+    /* Messages after every update and before anything is drawn, so a
+       message sent this frame is handled this frame and the frame is drawn
+       from a settled world rather than a half-updated one. */
+    SDLStatic_ActorDeliverMessages(engine);
 
     /* Redirect into the offscreen frame if the settings call for one. No-op
        at render scale 1.0 with every effect off, which is the common case. */
@@ -557,6 +568,10 @@ bool SDLStatic_EngineTick(SDLStatic_Engine *engine)
     SDL_RenderPresent(engine->renderer);
 
     LimitFrameRate(engine);
+
+    /* The end of the frame: the one moment at which the set of actors may
+       safely change, which is why spawn and destroy are deferred to it. */
+    SDLStatic_ActorApplyPending(engine);
 
     engine->frame_count++;
     engine->fps_accumulator += engine->delta_seconds;

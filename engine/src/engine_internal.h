@@ -17,6 +17,7 @@
 #define NS_PER_SECOND 1000000000ull
 
 struct SDLStatic_PostFX;
+struct SDLStatic_ActorWorld;
 
 struct SDLStatic_Engine
 {
@@ -76,7 +77,28 @@ struct SDLStatic_Engine
 
     SDLStatic_MediaSource media_source;
     char media_path[512];
+
+    /* Allocated on first spawn, so a game that never uses actors pays
+       nothing for them. */
+    struct SDLStatic_ActorWorld *actors;
 };
+
+/* --- actors, driven by the loop ------------------------------------------ */
+
+/** Snapshot transforms for interpolation, then run one simulation step. */
+extern void SDLStatic_ActorDispatchFixedUpdate(SDLStatic_Engine *engine, float step);
+
+/** Per-frame cosmetic update. */
+extern void SDLStatic_ActorDispatchUpdate(SDLStatic_Engine *engine, float dt);
+
+/** Drain the message queue, once, after the updates. */
+extern void SDLStatic_ActorDeliverMessages(SDLStatic_Engine *engine);
+
+/** Admit spawned actors and free destroyed ones, at the end of the frame. */
+extern void SDLStatic_ActorApplyPending(SDLStatic_Engine *engine);
+
+/** Free the world with the engine. */
+extern void SDLStatic_ActorWorldDestroy(SDLStatic_Engine *engine);
 
 /* --- media --------------------------------------------------------------- */
 
