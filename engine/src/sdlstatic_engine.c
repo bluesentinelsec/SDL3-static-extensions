@@ -198,6 +198,14 @@ SDLStatic_Engine *SDLStatic_CreateEngine(const SDLStatic_EngineConfig *config)
     engine->clear_color = (SDL_FColor){0.06f, 0.07f, 0.09f, 1.0f};
     engine->running = true;
 
+    /* Assets first: the settings below may want the config.toml the game
+       shipped inside its archive, and it has to be mounted to be read. */
+    if (!config->no_auto_mount)
+    {
+        SDLStatic_EngineMountMedia(engine, config->media_path, config->argc, config->argv);
+        SDLStatic_EngineInstallConfigReader();
+    }
+
     /* Settings, if the game resolved any. They carry the presentation mode,
        vsync and the frame cap, so they win over the plain config fields —
        otherwise a player's config.toml would be overridden by whatever the
@@ -266,17 +274,41 @@ SDLStatic_Engine *SDLStatic_CreateEngine(const SDLStatic_EngineConfig *config)
         {
             flags |= SDL_WINDOW_FULLSCREEN;
         }
-        const int width = (config->window_width > 0) ? config->window_width : 1280;
-        const int height = (config->window_height > 0) ? config->window_height : 720;
-
-        /* The post-processing effects are OpenGL shaders, so a game that
-           wants them has to have an OpenGL renderer. Asking through the hint
-           rather than by name keeps the fallback: if GL is unavailable SDL
-           still gives us *a* renderer, and the effects report themselves
-           unavailable instead of the game failing to start. */
-        if (config->prefer_opengl)
+        /* Settings win over the plain config fields, so a player's saved
+           window size and monitor are honoured at creation rather than
+           applied as a visible jump a frame later. */
+        int width = (config->window_width > 0) ? config->window_width : 1280;
+        int height = (config->window_height > 0) ? config->window_height : 720;
+        if (engine->graphics.window_width > 0 && engine->graphics.window_height > 0)
         {
+            width = engine->graphics.window_width;
+            height = engine->graphics.window_height;
+        }
+        if (engine->graphics.window_mode != SDLSTATIC_WINDOW_WINDOWED)
+        {
+            flags |= SDL_WINDOW_FULLSCREEN;
+        }
+
+        /* OpenGL by default, everywhere. The post-processing chain and the
+           lighting module are GLSL, and under Metal or Direct3D they cannot
+           run at all — so a native backend would mean the same game looking
+           different on macOS from how it looks on Linux, for no reason the
+           player can see.
+
+           The hint is a preference, not a demand: if a machine genuinely
+           has no GL, SDL still returns a renderer and only the shader
+           effects go missing. Better than refusing to start. */
+        switch (config->backend)
+        {
+        case SDLSTATIC_BACKEND_NATIVE:
+            break; /* whatever SDL would have picked */
+        case SDLSTATIC_BACKEND_SOFTWARE:
+            SDL_SetHint(SDL_HINT_RENDER_DRIVER, "software");
+            break;
+        case SDLSTATIC_BACKEND_OPENGL:
+        default:
             SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl,opengles2,opengles");
+            break;
         }
 
         if (!SDL_CreateWindowAndRenderer((config->title != NULL) ? config->title : "SDLStatic",
@@ -297,6 +329,21 @@ SDLStatic_Engine *SDLStatic_CreateEngine(const SDLStatic_EngineConfig *config)
        scales it to whatever the display is. */
     ApplyPresentation(engine);
     SDLStatic_EngineApplyFilter(engine);
+    if (engine->window != NULL)
+    {
+        /* A saved monitor index may name a display that has since been
+           unplugged. Clamping here rather than trusting the file is what
+           stops a game opening invisibly on a monitor that is not there. */
+        const int displays = SDLStatic_EngineDisplayCount();
+        if (engine->graphics.display >= displays)
+        {
+            engine->graphics.display = 0;
+        }
+        if (engine->graphics.display > 0)
+        {
+            SDLStatic_EngineSetDisplay(engine, engine->graphics.display);
+        }
+    }
     if (config->graphics != NULL && engine->window != NULL)
     {
         /* Window mode is the one setting that cannot be folded into window

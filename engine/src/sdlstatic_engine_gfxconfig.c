@@ -408,6 +408,9 @@ bool SDLStatic_GraphicsLoadTomlString(SDLStatic_GraphicsSettings *s, const char 
     ReadBool(display, root, "vsync", &s->vsync);
     ReadInt(display, root, "max_fps", &s->max_fps);
     ReadEnum(display, root, "window_mode", ParseWindowModeV, &s->window_mode);
+    ReadInt(display, root, "window_width", &s->window_width);
+    ReadInt(display, root, "window_height", &s->window_height);
+    ReadInt(display, root, "display", &s->display);
     ReadEnum(display, root, "presentation", ParsePresentationV, &s->presentation);
     ReadFloat(display, root, "render_scale", &s->render_scale);
     ReadEnum(display, root, "filter", ParseFilterV, &s->filter);
@@ -519,6 +522,23 @@ int SDLStatic_GraphicsLoadArgs(SDLStatic_GraphicsSettings *s, int argc, char *co
     }
     int changed = 0;
 
+    /* The escape hatches go first and replace the whole struct, so
+       `--with-safe-mode --bloom=0.5` means safe mode with bloom rather than
+       depending on which order they were typed in. */
+    for (int i = 1; i < argc; ++i)
+    {
+        if (SDL_strcmp(argv[i], "--with-safe-mode") == 0)
+        {
+            *s = SDLStatic_GraphicsSafeMode();
+            changed++;
+        }
+        else if (SDL_strcmp(argv[i], "--with-default-settings") == 0)
+        {
+            *s = SDLStatic_GraphicsDefaults();
+            changed++;
+        }
+    }
+
     for (int i = 1; i < argc; ++i)
     {
         const char *arg = argv[i];
@@ -562,6 +582,24 @@ int SDLStatic_GraphicsLoadArgs(SDLStatic_GraphicsSettings *s, int argc, char *co
         {
             s->window_mode = SDLSTATIC_WINDOW_WINDOWED;
             changed++;
+        }
+        else if (OPT("--display") && value != NULL)
+        {
+            s->display = SDL_atoi(value);
+            changed++;
+        }
+        else if (OPT("--window-size") && value != NULL)
+        {
+            /* WxH, the spelling every game with a launcher already uses. */
+            int w = 0;
+            int h = 0;
+            if (SDL_sscanf(value, "%dx%d", &w, &h) == 2 && w > 0 && h > 0)
+            {
+                s->window_width = w;
+                s->window_height = h;
+                s->window_mode = SDLSTATIC_WINDOW_WINDOWED;
+                changed++;
+            }
         }
         else if (OPT("--window-mode") && value != NULL)
         {
@@ -743,6 +781,19 @@ void SDLStatic_GraphicsResolve(SDLStatic_GraphicsSettings *out, int argc, char *
     g_config_path[0] = '\0';
     g_config_error[0] = '\0';
 
+    /* The escape hatches skip every config file. That is the whole point:
+       they have to work when the saved settings are what is broken, so
+       reading those settings first would defeat them. */
+    for (int i = 1; i < argc && argv != NULL; ++i)
+    {
+        if (SDL_strcmp(argv[i], "--with-safe-mode") == 0 ||
+            SDL_strcmp(argv[i], "--with-default-settings") == 0)
+        {
+            SDLStatic_GraphicsLoadArgs(out, argc, argv);
+            return;
+        }
+    }
+
     /* An explicit --config replaces the search entirely. Someone passing a
        path wants that file, not that file plus three others. */
     const char *explicit_path = SDLStatic_GraphicsArgsConfigPath(argc, argv);
@@ -821,6 +872,9 @@ char *SDLStatic_GraphicsToToml(const SDLStatic_GraphicsSettings *s)
                  "vsync = %s\n"
                  "max_fps = %d          # 0 follows the display, negative uncaps\n"
                  "window_mode = \"%s\"   # windowed | borderless | exclusive\n"
+                 "window_width = %d     # windowed size; 0 for the default\n"
+                 "window_height = %d\n"
+                 "display = %d           # 0-based monitor index\n"
                  "presentation = \"%s\"  # letterbox | expand | overscan | integer | "
                  "stretch | native\n"
                  "render_scale = %.3f    # 0.25-2.0; below 1.0 trades sharpness for speed\n"
@@ -851,6 +905,7 @@ char *SDLStatic_GraphicsToToml(const SDLStatic_GraphicsSettings *s)
                  "screen_shake = %.3f\n"
                  "ui_scale = %.3f\n",
                  s->vsync ? "true" : "false", s->max_fps, WindowModeName(s->window_mode),
+                 s->window_width, s->window_height, s->display,
                  PresentationName(s->presentation), (double)s->render_scale,
                  FilterName(s->filter), SDLStatic_GraphicsQualityName(s->particles),
                  SDLStatic_GraphicsQualityName(s->dynamic_lights),

@@ -36,35 +36,25 @@ class Args
     std::vector<char *> pointers_;
 };
 
-TEST(GraphicsDefaults, AreConservative)
+// The parts of the defaults that are not about fidelity: pacing, the
+// coordinate space, and the neutral image. What "maximum fidelity" means is
+// covered by GraphicsShippingDefaults below.
+TEST(GraphicsDefaults, ArePacedAndNeutral)
 {
     const SDLStatic_GraphicsSettings s = SDLStatic_GraphicsDefaults();
 
     EXPECT_TRUE(s.vsync);
     EXPECT_EQ(s.max_fps, 0) << "follow the display";
     EXPECT_EQ(s.presentation, SDLSTATIC_PRESENT_LETTERBOX);
-    EXPECT_EQ(s.window_mode, SDLSTATIC_WINDOW_WINDOWED);
     EXPECT_FLOAT_EQ(s.render_scale, 1.0f);
+    EXPECT_EQ(s.filter, SDLSTATIC_FILTER_AUTO);
 
-    // Budgets start high: a game should look like itself until a player
-    // says otherwise.
-    EXPECT_EQ(s.particles, SDLSTATIC_QUALITY_HIGH);
-    EXPECT_EQ(s.dynamic_lights, SDLSTATIC_QUALITY_HIGH);
-    EXPECT_EQ(s.shadows, SDLSTATIC_QUALITY_HIGH);
-
-    // Everything stylistic starts off — bloom and scanlines are decisions
-    // about how a game looks, and the engine does not get to make them.
-    EXPECT_FLOAT_EQ(s.bloom, 0.0f);
-    EXPECT_FLOAT_EQ(s.crt, 0.0f);
-    EXPECT_FLOAT_EQ(s.chromatic_aberration, 0.0f);
-    EXPECT_EQ(s.pixelation, 1);
-    EXPECT_EQ(s.antialias, SDLSTATIC_AA_OFF);
-
+    // A neutral image: the grade is what the artist chose.
     EXPECT_FLOAT_EQ(s.brightness, 1.0f);
     EXPECT_FLOAT_EQ(s.contrast, 1.0f);
     EXPECT_FLOAT_EQ(s.saturation, 1.0f);
-    EXPECT_EQ(s.color_blind, SDLSTATIC_COLORBLIND_NONE);
-    EXPECT_FALSE(s.reduced_flashing);
+    EXPECT_FLOAT_EQ(s.screen_shake, 1.0f);
+    EXPECT_FLOAT_EQ(s.ui_scale, 1.0f);
 }
 
 // A config file is a text file a human edits, so it will eventually contain
@@ -621,6 +611,175 @@ TEST_F(GraphicsEngine, NullsAreHandled)
     EXPECT_FALSE(SDLStatic_EngineEffectsAvailable(nullptr));
     const SDLStatic_GraphicsSettings s = SDLStatic_GraphicsDefaults();
     EXPECT_FALSE(SDLStatic_EngineSetGraphics(nullptr, &s));
+}
+
+} // namespace
+
+// --- defaults, safe mode, and the escape hatches --------------------------
+
+namespace
+{
+
+// Shipping defaults: as good as the machine can manage, on the whole screen.
+TEST(GraphicsShippingDefaults, AreFullscreenAtMaximumFidelity)
+{
+    const SDLStatic_GraphicsSettings s = SDLStatic_GraphicsDefaults();
+    EXPECT_EQ(s.window_mode, SDLSTATIC_WINDOW_BORDERLESS) << "what a finished game does";
+    EXPECT_EQ(s.particles, SDLSTATIC_QUALITY_HIGH);
+    EXPECT_EQ(s.dynamic_lights, SDLSTATIC_QUALITY_HIGH);
+    EXPECT_EQ(s.shadows, SDLSTATIC_QUALITY_HIGH);
+    EXPECT_EQ(s.antialias, SDLSTATIC_AA_FXAA) << "fidelity, not style";
+    EXPECT_FLOAT_EQ(s.render_scale, 1.0f);
+    EXPECT_TRUE(s.vsync);
+
+    // Accessibility alters the image away from what the artist intended, so
+    // it is opt-in however useful it is to the people who need it.
+    EXPECT_FALSE(s.reduced_flashing);
+    EXPECT_EQ(s.color_blind, SDLSTATIC_COLORBLIND_NONE);
+
+    // Style is the game's decision, not the engine's.
+    EXPECT_FLOAT_EQ(s.bloom, 0.0f);
+    EXPECT_FLOAT_EQ(s.crt, 0.0f);
+    EXPECT_FLOAT_EQ(s.chromatic_aberration, 0.0f);
+    EXPECT_EQ(s.pixelation, 1);
+}
+
+TEST(GraphicsSafeMode, IsAWindowYouCanAlwaysSee)
+{
+    const SDLStatic_GraphicsSettings s = SDLStatic_GraphicsSafeMode();
+    EXPECT_EQ(s.window_mode, SDLSTATIC_WINDOW_WINDOWED);
+    EXPECT_EQ(s.window_width, 1280);
+    EXPECT_EQ(s.window_height, 720);
+    EXPECT_EQ(s.display, 0) << "the primary monitor, which is the one plugged in";
+
+    // Every shader effect off: if the chain is what broke the machine, safe
+    // mode must not run it.
+    EXPECT_FLOAT_EQ(s.bloom, 0.0f);
+    EXPECT_FLOAT_EQ(s.crt, 0.0f);
+    EXPECT_EQ(s.antialias, SDLSTATIC_AA_OFF);
+    EXPECT_FLOAT_EQ(s.brightness, 1.0f);
+
+    // Down, not off — it still has to be playable enough to reach the
+    // options screen and undo whatever went wrong.
+    EXPECT_EQ(s.shadows, SDLSTATIC_QUALITY_OFF);
+    EXPECT_EQ(s.particles, SDLSTATIC_QUALITY_LOW);
+    EXPECT_FLOAT_EQ(s.render_scale, 1.0f);
+}
+
+// The whole point of the escape hatches: they have to work when the saved
+// settings are what is broken, so they must not read them.
+TEST(GraphicsResolve, SafeModeIgnoresEveryConfigFile)
+{
+    const std::string path = std::string(testing::TempDir()) + "sdlstatic_gfx_broken.toml";
+    const std::string toml = "[display]\nwindow_mode = \"exclusive\"\nrender_scale = 0.25\n"
+                             "[effects]\ncrt = 1.0\n";
+    ASSERT_TRUE(SDL_SaveFile(path.c_str(), toml.data(), toml.size())) << SDL_GetError();
+
+    const Args args({"game", std::string("--config=") + path, "--with-safe-mode"});
+    SDLStatic_GraphicsSettings s{};
+    SDLStatic_GraphicsResolve(&s, args.argc(), args.argv(), nullptr, nullptr);
+
+    EXPECT_EQ(s.window_mode, SDLSTATIC_WINDOW_WINDOWED) << "not the file's exclusive";
+    EXPECT_FLOAT_EQ(s.crt, 0.0f);
+    EXPECT_FLOAT_EQ(s.render_scale, 1.0f);
+    SDL_RemovePath(path.c_str());
+}
+
+TEST(GraphicsResolve, DefaultSettingsIgnoresEveryConfigFileToo)
+{
+    const std::string path = std::string(testing::TempDir()) + "sdlstatic_gfx_odd.toml";
+    const std::string toml = "[quality]\nshadows = \"off\"\n";
+    ASSERT_TRUE(SDL_SaveFile(path.c_str(), toml.data(), toml.size()));
+
+    const Args args({"game", std::string("--config=") + path, "--with-default-settings"});
+    SDLStatic_GraphicsSettings s{};
+    SDLStatic_GraphicsResolve(&s, args.argc(), args.argv(), nullptr, nullptr);
+
+    EXPECT_EQ(s.shadows, SDLSTATIC_QUALITY_HIGH);
+    EXPECT_EQ(s.window_mode, SDLSTATIC_WINDOW_BORDERLESS);
+    SDL_RemovePath(path.c_str());
+}
+
+// An escape hatch replaces the struct, but the rest of the line still
+// applies on top — order-independently, so a player can add one fix.
+TEST(GraphicsArgs, SafeModeIsReplacedThenOverlaid)
+{
+    SDLStatic_GraphicsSettings s = SDLStatic_GraphicsDefaults();
+    const Args args({"game", "--bloom=0.5", "--with-safe-mode"});
+    SDLStatic_GraphicsLoadArgs(&s, args.argc(), args.argv());
+    EXPECT_EQ(s.window_mode, SDLSTATIC_WINDOW_WINDOWED) << "safe mode applied first";
+    EXPECT_FLOAT_EQ(s.bloom, 0.5f) << "then the explicit argument, whatever the order";
+}
+
+TEST(GraphicsArgs, ReadsWindowSizeAndDisplay)
+{
+    SDLStatic_GraphicsSettings s = SDLStatic_GraphicsDefaults();
+    const Args args({"game", "--window-size=1600x900", "--display=1"});
+    SDLStatic_GraphicsLoadArgs(&s, args.argc(), args.argv());
+    EXPECT_EQ(s.window_width, 1600);
+    EXPECT_EQ(s.window_height, 900);
+    EXPECT_EQ(s.window_mode, SDLSTATIC_WINDOW_WINDOWED) << "asking for a size implies windowed";
+    EXPECT_EQ(s.display, 1);
+
+    // Nonsense leaves it alone rather than producing a 0x0 window.
+    SDLStatic_GraphicsSettings other = SDLStatic_GraphicsDefaults();
+    const Args bad({"game", "--window-size=huge"});
+    SDLStatic_GraphicsLoadArgs(&other, bad.argc(), bad.argv());
+    EXPECT_EQ(other.window_width, 0);
+}
+
+TEST(GraphicsToml, WindowSizeAndDisplayRoundTrip)
+{
+    SDLStatic_GraphicsSettings original = SDLStatic_GraphicsDefaults();
+    original.window_width = 1600;
+    original.window_height = 900;
+    original.display = 2;
+
+    char *text = SDLStatic_GraphicsToToml(&original);
+    ASSERT_NE(text, nullptr);
+    SDLStatic_GraphicsSettings restored = SDLStatic_GraphicsDefaults();
+    ASSERT_TRUE(SDLStatic_GraphicsLoadTomlString(&restored, text)) << text;
+    SDL_free(text);
+
+    EXPECT_EQ(restored.window_width, 1600);
+    EXPECT_EQ(restored.window_height, 900);
+    EXPECT_EQ(restored.display, 2);
+}
+
+// A saved monitor that has since been unplugged must not leave the game
+// invisible on a display that is not there.
+// Only the boundaries here. Enumerating real displays needs the video
+// subsystem, and initialising it in this binary — after the other fixtures
+// have cycled SDL_Init/SDL_Quit dozens of times — deadlocks against the
+// Cocoa event loop on macOS. The enumeration itself is exercised by the
+// engine demos, which have a window and therefore a legitimate reason to
+// have video running.
+TEST(GraphicsDisplays, HandleIndicesThatDoNotExist)
+{
+    EXPECT_EQ(SDLStatic_EngineDisplayName(-1), nullptr);
+    EXPECT_EQ(SDLStatic_EngineDisplayName(9999), nullptr);
+    EXPECT_EQ(SDLStatic_EngineDisplay(nullptr), 0);
+    EXPECT_FALSE(SDLStatic_EngineSetDisplay(nullptr, 0));
+    EXPECT_GE(SDLStatic_EngineDisplayCount(), 0) << "never negative, video or not";
+}
+
+TEST(GraphicsClamp, WindowSizeIsUsableOrTheDefault)
+{
+    SDLStatic_GraphicsSettings s = SDLStatic_GraphicsDefaults();
+    s.window_width = 4;
+    s.window_height = 4;
+    SDLStatic_GraphicsClamp(&s);
+    EXPECT_GE(s.window_width, 320) << "a 4x4 window cannot show a UI";
+
+    // Zero is not a mistake: it means "the engine's default".
+    SDLStatic_GraphicsSettings zeroed = SDLStatic_GraphicsDefaults();
+    SDLStatic_GraphicsClamp(&zeroed);
+    EXPECT_EQ(zeroed.window_width, 0);
+
+    SDLStatic_GraphicsSettings negative = SDLStatic_GraphicsDefaults();
+    negative.display = -3;
+    SDLStatic_GraphicsClamp(&negative);
+    EXPECT_EQ(negative.display, 0);
 }
 
 } // namespace

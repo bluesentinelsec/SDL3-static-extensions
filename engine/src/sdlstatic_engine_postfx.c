@@ -25,8 +25,8 @@
  *   Degrade, never fail. On a Metal or Direct3D renderer there is no GL to
  *   talk to, so the chain reports itself unavailable and the frame is
  *   blitted plainly. A game must not fail to start because a player asked
- *   for scanlines. Games that ship these effects should set
- *   `config.prefer_opengl` so SDL picks a renderer that can run them.
+ *   for scanlines. The engine asks SDL for OpenGL by default, so this only
+ *   happens on SDLSTATIC_BACKEND_NATIVE or a machine with no working GL.
  *
  * Bloom is three passes rather than one: threshold-and-downsample, then a
  * separable blur across and down. A single wide-tap pass is cheaper to
@@ -421,7 +421,7 @@ static bool Initialise(SDLStatic_Engine *engine)
     if (!RendererIsOpenGL(engine->renderer, &is_es))
     {
         SDL_SetError("post-processing needs an OpenGL renderer (this one is %s); "
-                     "set config.prefer_opengl",
+                     "leave config.backend at SDLSTATIC_BACKEND_OPENGL",
                      SDL_GetRendererName(engine->renderer));
         return false;
     }

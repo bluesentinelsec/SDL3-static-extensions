@@ -22,7 +22,12 @@ SDLStatic_GraphicsSettings SDLStatic_GraphicsDefaults(void)
 
     s.vsync = true;
     s.max_fps = 0; /* follow the display */
-    s.window_mode = SDLSTATIC_WINDOW_WINDOWED;
+    /* Borderless fullscreen: what a finished game does on launch. Windowed
+       is the developer's setting, not the shipping one. */
+    s.window_mode = SDLSTATIC_WINDOW_BORDERLESS;
+    s.window_width = 0; /* the engine's default, when windowed */
+    s.window_height = 0;
+    s.display = 0;
     s.presentation = SDLSTATIC_PRESENT_LETTERBOX;
     s.render_scale = 1.0f;
     s.filter = SDLSTATIC_FILTER_AUTO;
@@ -41,16 +46,58 @@ SDLStatic_GraphicsSettings SDLStatic_GraphicsDefaults(void)
     s.crt_curvature = 0.0f;
     s.pixelation = 1;
     s.chromatic_aberration = 0.0f;
-    s.antialias = SDLSTATIC_AA_OFF;
+    /* Anti-aliasing is fidelity rather than style, so it is on. A pixel-art
+       game should turn it off along with setting INTEGER presentation. */
+    s.antialias = SDLSTATIC_AA_FXAA;
 
     s.brightness = 1.0f;
     s.contrast = 1.0f;
     s.saturation = 1.0f;
+    /* Accessibility settings alter the image away from what the artist
+       intended — exactly right for the player who needs them, wrong for
+       everyone else. Opt-in, both of them. */
     s.color_blind = SDLSTATIC_COLORBLIND_NONE;
     s.reduced_flashing = false;
     s.screen_shake = 1.0f;
     s.ui_scale = 1.0f;
 
+    return s;
+}
+
+SDLStatic_GraphicsSettings SDLStatic_GraphicsSafeMode(void)
+{
+    SDLStatic_GraphicsSettings s = SDLStatic_GraphicsDefaults();
+
+    /* Windowed and resizable, on the primary display, at a size every
+       monitor made this century can show. A window that will not display
+       correctly can at least be dragged somewhere that will. */
+    s.window_mode = SDLSTATIC_WINDOW_WINDOWED;
+    s.window_width = 1280;
+    s.window_height = 720;
+    s.display = 0;
+    s.presentation = SDLSTATIC_PRESENT_LETTERBOX;
+    s.vsync = true;
+    s.max_fps = 60;
+
+    /* Down, not off: safe mode still has to be playable enough to reach the
+       options screen and fix whatever went wrong. */
+    s.render_scale = 1.0f;
+    s.particles = SDLSTATIC_QUALITY_LOW;
+    s.dynamic_lights = SDLSTATIC_QUALITY_LOW;
+    s.shadows = SDLSTATIC_QUALITY_OFF;
+
+    /* Every shader effect off. If the post-processing chain is what broke
+       the machine, safe mode must not run it. */
+    s.bloom = 0.0f;
+    s.crt = 0.0f;
+    s.crt_curvature = 0.0f;
+    s.pixelation = 1;
+    s.chromatic_aberration = 0.0f;
+    s.antialias = SDLSTATIC_AA_OFF;
+    s.brightness = 1.0f;
+    s.contrast = 1.0f;
+    s.saturation = 1.0f;
+    s.color_blind = SDLSTATIC_COLORBLIND_NONE;
     return s;
 }
 
@@ -118,6 +165,19 @@ void SDLStatic_GraphicsClamp(SDLStatic_GraphicsSettings *s)
     }
 
     s->render_scale = ClampF(s->render_scale, 0.25f, 2.0f);
+
+    /* A window smaller than this cannot show a usable UI, and a stored
+       negative would be an SDL error rather than a preference. Zero stays
+       zero: that is "use the engine's default". */
+    if (s->window_width != 0 || s->window_height != 0)
+    {
+        s->window_width = ClampI(s->window_width, 320, 16384);
+        s->window_height = ClampI(s->window_height, 240, 16384);
+    }
+    if (s->display < 0)
+    {
+        s->display = 0;
+    }
     s->particles = ClampQuality(s->particles);
     s->dynamic_lights = ClampQuality(s->dynamic_lights);
     s->shadows = ClampQuality(s->shadows);
@@ -154,7 +214,9 @@ bool SDLStatic_GraphicsEqual(const SDLStatic_GraphicsSettings *a,
     /* Field by field rather than memcmp: the struct has padding, and two
        structs that differ only in padding are the same settings. */
     return a->vsync == b->vsync && a->max_fps == b->max_fps &&
-           a->window_mode == b->window_mode && a->presentation == b->presentation &&
+           a->window_mode == b->window_mode && a->window_width == b->window_width &&
+           a->window_height == b->window_height && a->display == b->display &&
+           a->presentation == b->presentation &&
            a->render_scale == b->render_scale && a->filter == b->filter &&
            a->particles == b->particles && a->dynamic_lights == b->dynamic_lights &&
            a->shadows == b->shadows && a->bloom == b->bloom &&
@@ -287,6 +349,105 @@ bool SDLStatic_GraphicsQualityFromName(const char *name, SDLStatic_GraphicsQuali
     return false;
 }
 
+/* --- monitors ------------------------------------------------------------ */
+
+int SDLStatic_EngineDisplayCount(void)
+{
+    int count = 0;
+    SDL_DisplayID *ids = SDL_GetDisplays(&count);
+    SDL_free(ids);
+    return count;
+}
+
+/* The SDL_DisplayID for a 0-based index, or 0. Settings store an index
+   because an ID is assigned per run and would mean nothing in a file
+   written yesterday. */
+static SDL_DisplayID DisplayAt(int index)
+{
+    int count = 0;
+    SDL_DisplayID *ids = SDL_GetDisplays(&count);
+    SDL_DisplayID id = 0;
+    if (ids != NULL && index >= 0 && index < count)
+    {
+        id = ids[index];
+    }
+    SDL_free(ids);
+    return id;
+}
+
+const char *SDLStatic_EngineDisplayName(int index)
+{
+    const SDL_DisplayID id = DisplayAt(index);
+    return (id != 0) ? SDL_GetDisplayName(id) : NULL;
+}
+
+int SDLStatic_EngineDisplay(SDLStatic_Engine *engine)
+{
+    if (engine == NULL || engine->window == NULL)
+    {
+        return 0;
+    }
+    const SDL_DisplayID current = SDL_GetDisplayForWindow(engine->window);
+    int count = 0;
+    SDL_DisplayID *ids = SDL_GetDisplays(&count);
+    int index = 0;
+    for (int i = 0; i < count; ++i)
+    {
+        if (ids[i] == current)
+        {
+            index = i;
+            break;
+        }
+    }
+    SDL_free(ids);
+    return index;
+}
+
+bool SDLStatic_EngineSetDisplay(SDLStatic_Engine *engine, int index)
+{
+    if (engine == NULL || engine->window == NULL)
+    {
+        SDL_InvalidParamError("engine");
+        return false;
+    }
+    const SDL_DisplayID id = DisplayAt(index);
+    if (id == 0)
+    {
+        SDL_SetError("no display %d (there are %d)", index, SDLStatic_EngineDisplayCount());
+        return false;
+    }
+
+    /* Leave fullscreen before moving. A fullscreen window is owned by its
+       display, so repositioning it while fullscreen either does nothing or
+       leaves it half on each monitor. */
+    const SDLStatic_WindowMode mode = engine->graphics.window_mode;
+    if (mode != SDLSTATIC_WINDOW_WINDOWED)
+    {
+        SDL_SetWindowFullscreen(engine->window, false);
+        SDL_SyncWindow(engine->window);
+    }
+
+    SDL_SetWindowPosition(engine->window, SDL_WINDOWPOS_CENTERED_DISPLAY(id),
+                          SDL_WINDOWPOS_CENTERED_DISPLAY(id));
+    SDL_SyncWindow(engine->window);
+
+    if (mode != SDLSTATIC_WINDOW_WINDOWED)
+    {
+        SDL_SetWindowFullscreenMode(engine->window,
+                                    (mode == SDLSTATIC_WINDOW_EXCLUSIVE)
+                                        ? SDL_GetDesktopDisplayMode(id)
+                                        : NULL);
+        SDL_SetWindowFullscreen(engine->window, true);
+        SDL_SyncWindow(engine->window);
+    }
+
+    engine->graphics.display = index;
+    /* The new monitor may be a different size or density, so the design
+       space has to be re-fitted to it before anything draws. */
+    SDLStatic_EngineSetPresentation(engine, engine->presentation);
+    return true;
+}
+
 /* --- applying to a running engine ---------------------------------------- */
 
 const SDLStatic_GraphicsSettings *SDLStatic_EngineGraphics(SDLStatic_Engine *engine)
@@ -328,6 +489,20 @@ bool SDLStatic_EngineSetGraphics(SDLStatic_Engine *engine, const SDLStatic_Graph
     if (next.presentation != previous.presentation || engine->frame_count == 0)
     {
         SDLStatic_EngineSetPresentation(engine, next.presentation);
+    }
+
+    if (engine->window != NULL && next.display != previous.display)
+    {
+        SDLStatic_EngineSetDisplay(engine, next.display);
+    }
+
+    if (engine->window != NULL && next.window_mode == SDLSTATIC_WINDOW_WINDOWED &&
+        next.window_width > 0 && next.window_height > 0 &&
+        (next.window_width != previous.window_width ||
+         next.window_height != previous.window_height ||
+         next.window_mode != previous.window_mode))
+    {
+        SDL_SetWindowSize(engine->window, next.window_width, next.window_height);
     }
 
     if (engine->window != NULL &&

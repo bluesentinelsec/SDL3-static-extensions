@@ -74,8 +74,10 @@ typedef enum SDLStatic_GraphicsQuality
 } SDLStatic_GraphicsQuality;
 
 /** Anti-aliasing. FXAA is a post-process pass: it costs one full-screen
- *  shader and smooths the edges of rotated sprites and vector shapes. It
- *  also softens pixel art, which is why it is off by default. */
+ *  shader and smooths the edges of rotated sprites and vector shapes. On by
+ *  default, because it is fidelity rather than style — but it softens pixel
+ *  art, so a pixel-art game should turn it off along with choosing INTEGER
+ *  presentation. */
 typedef enum SDLStatic_GraphicsAA
 {
     SDLSTATIC_AA_OFF = 0,
@@ -126,7 +128,22 @@ typedef struct SDLStatic_GraphicsSettings
 
     bool vsync;    /**< default on */
     int max_fps;   /**< 0 follows the display; negative uncaps; default 0 */
+    /** Default **borderless fullscreen**. That is what a finished game
+     *  should do on launch, and it is what players expect; windowed is the
+     *  developer's setting, not the shipping one. */
     SDLStatic_WindowMode window_mode;
+    /** Window size in pixels when windowed, ignored when fullscreen. 0
+     *  means the engine's own default. Persisted, so a player who resizes
+     *  a window gets it back next launch. */
+    int window_width, window_height;
+    /** Which monitor to open on, as a 0-based index into the displays SDL
+     *  reports. Clamped to what actually exists at launch, so unplugging
+     *  the monitor a game was saved on does not leave it invisible on a
+     *  display that is no longer there.
+     *
+     *  An index rather than an SDL_DisplayID because the ID is assigned per
+     *  run and would mean nothing in a settings file written yesterday. */
+    int display;
     SDLStatic_EnginePresentation presentation;
     /** Render at a fraction of the window's resolution and let the display
      *  scale the result up. The single largest performance lever there is:
@@ -161,7 +178,7 @@ typedef struct SDLStatic_GraphicsSettings
     /** RGB separation increasing towards the edges of the screen, 0..1.
      *  Subtle is the point: 0.1–0.2. Default 0. */
     float chromatic_aberration;
-    SDLStatic_GraphicsAA antialias; /**< default OFF */
+    SDLStatic_GraphicsAA antialias; /**< default FXAA */
 
     /* --- image and accessibility --------------------------------------- */
 
@@ -175,7 +192,9 @@ typedef struct SDLStatic_GraphicsSettings
     float saturation;
     SDLStatic_ColorBlindMode color_blind;
     /** Suppress full-screen flashes and clamp bloom spikes. A
-     *  photosensitivity setting; ship it. Default false. */
+     *  photosensitivity setting; ship it, but off by default — it alters
+     *  the image away from what the artist intended, which is right for the
+     *  player who needs it and wrong for everyone else. */
     bool reduced_flashing;
     /** Screen-shake multiplier, 0..1. Advisory — the game multiplies its
      *  own shake by this. 0 is the motion-sickness setting. Default 1. */
@@ -186,10 +205,40 @@ typedef struct SDLStatic_GraphicsSettings
 
 /* --- defaults and validation -------------------------------------------- */
 
-/** The compiled-in defaults: vsync on, everything cosmetic off, every
- *  budget high. Deliberately conservative — a game looks like itself until
- *  a player or a config file says otherwise. */
+/**
+ * The compiled-in defaults: **borderless fullscreen at maximum fidelity.**
+ *
+ * Vsync on, every quality budget high, anti-aliasing on, native render
+ * scale. A game should look as good as it can on first launch, because most
+ * players never open the options screen at all.
+ *
+ * Two categories stay off, and neither is a fidelity decision:
+ *
+ *   The **stylistic** effects — bloom, CRT, curvature, pixelation,
+ *   chromatic aberration — are decisions about how a game looks, not how
+ *   well it looks. The engine does not get to make them; turn on the ones
+ *   your game is meant to have.
+ *
+ *   The **accessibility** settings — reduced flashing, colour-blind
+ *   correction — alter the image away from what the artist intended, which
+ *   is exactly right for the player who needs them and wrong for everyone
+ *   else. They are opt-in.
+ */
 extern SDLStatic_GraphicsSettings SDLStatic_GraphicsDefaults(void);
+
+/**
+ * Safe mode: a resizable 1280x720 window with the graphics turned down.
+ *
+ * The escape hatch for a player who has made the game unstartable — a
+ * resolution the monitor cannot show, a display that is no longer plugged
+ * in, an effect the driver crashes on. Reached with `--with-safe-mode`,
+ * which needs no working config file and no working settings screen, so it
+ * still works when the saved settings are the problem.
+ *
+ * Windowed and resizable on purpose: a window that will not display
+ * correctly can at least be dragged somewhere that will.
+ */
+extern SDLStatic_GraphicsSettings SDLStatic_GraphicsSafeMode(void);
 
 /** Force every field into its valid range. Called for you by
  *  SDLStatic_EngineSetGraphics and by every loader, so a hand-edited
@@ -216,14 +265,40 @@ extern bool SDLStatic_EngineSetGraphics(SDLStatic_Engine *engine,
  *  what you want, and set it back. */
 extern const SDLStatic_GraphicsSettings *SDLStatic_EngineGraphics(SDLStatic_Engine *engine);
 
+/* --- monitors ------------------------------------------------------------ */
+
+/** How many displays SDL can see. */
+extern int SDLStatic_EngineDisplayCount(void);
+
+/** The name of display `index` — "Built-in Retina Display", "DELL U2720Q" —
+ *  for an options screen to list. NULL when the index does not exist. */
+extern const char *SDLStatic_EngineDisplayName(int index);
+
+/** Which display the window is on now, as a 0-based index. */
+extern int SDLStatic_EngineDisplay(SDLStatic_Engine *engine);
+
+/**
+ * Move the window to another monitor.
+ *
+ * The window and renderer are **kept**, not recreated. Recreating them
+ * would invalidate every texture the game has loaded — SDL textures belong
+ * to the renderer that made them — so a monitor change would silently
+ * become a full asset reload, and any game that did not know to reload
+ * would draw nothing at all afterwards. Moving the window achieves the same
+ * result and cannot do that: the fullscreen mode is dropped, the window is
+ * repositioned on the target display, and the mode is restored.
+ *
+ * Returns false if the index does not name a display.
+ */
+extern bool SDLStatic_EngineSetDisplay(SDLStatic_Engine *engine, int index);
+
 /** Can this renderer run the post-processing chain?
  *
- *  The effects are OpenGL shaders, so they need an OpenGL or OpenGL ES
- *  renderer. Ask for one with `config.prefer_opengl`, which is what a game
- *  that ships CRT or bloom should do — otherwise SDL may pick Metal or
- *  Direct3D and the effects will be silently skipped. An options screen
- *  should grey out that section when this returns false rather than offer
- *  sliders that do nothing. */
+ *  The effects are OpenGL shaders, and the engine asks SDL for an OpenGL
+ *  renderer by default, so normally this is true. It is false when a game
+ *  chose SDLSTATIC_BACKEND_NATIVE, or on a machine with no working GL at
+ *  all. An options screen should grey that section out when it returns
+ *  false rather than offer sliders that do nothing. */
 extern bool SDLStatic_EngineEffectsAvailable(SDLStatic_Engine *engine);
 
 /* --- budgets, turned into numbers ---------------------------------------- */
@@ -328,12 +403,25 @@ extern bool SDLStatic_GraphicsLoadTomlFile(SDLStatic_GraphicsSettings *settings,
  * Overlay command-line arguments.
  *
  *     --vsync=off --max-fps=120 --shadows=low --bloom=0.4 --render-scale=0.75
- *     --fullscreen --presentation=letterbox --config=/path/to/other.toml
+ *     --fullscreen --display=1 --window-size=1600x900 --presentation=letterbox
+ *     --config=/path/to/other.toml
  *
  * Both `--key=value` and `--key value` are accepted, and booleans take
  * on/off/true/false/1/0 or may be given bare (`--vsync` means on,
  * `--no-vsync` means off). Unrecognised arguments are ignored, because the
  * game owns the command line and the engine is only a guest on it.
+ *
+ * Two arguments are **escape hatches** and behave differently from the
+ * rest: they replace the whole settings struct rather than overlaying one
+ * field, and they are applied before anything else on the line, so
+ * `--with-safe-mode --bloom=0.5` means safe mode with bloom.
+ *
+ *     --with-default-settings   the shipped defaults, ignoring every config
+ *                               file: borderless fullscreen, maximum fidelity
+ *     --with-safe-mode          a resizable 1280x720 window, graphics low
+ *
+ * Both work when the saved settings are what is broken, which is the whole
+ * point — a player should never have to reinstall a game to undo a setting.
  *
  * Returns the number of settings changed.
  */

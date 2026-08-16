@@ -11,6 +11,7 @@
 
 #include <SDLStatic/engine.h>
 #include <SDLStatic/engine_graphics.h>
+#include <SDLStatic/engine_media.h>
 #include <SDLStatic/engine_scene.h>
 
 #define NS_PER_SECOND 1000000000ull
@@ -72,7 +73,20 @@ struct SDLStatic_Engine
     bool frame_target_active; /* set between Begin and End, so End knows */
     struct SDLStatic_PostFX *postfx;
     bool postfx_failed; /* tried once, could not: do not try every frame */
+
+    SDLStatic_MediaSource media_source;
+    char media_path[512];
 };
+
+/* --- media --------------------------------------------------------------- */
+
+/** Run the mount search and record what it found on the engine. */
+extern void SDLStatic_EngineMountMedia(SDLStatic_Engine *engine, const char *explicit_path,
+                                       int argc, char *const *argv);
+
+/** Point the settings resolver at the mounted archive, so a game's shipped
+ *  config.toml is found wherever it lives. */
+extern void SDLStatic_EngineInstallConfigReader(void);
 
 /* --- graphics ------------------------------------------------------------ */
 

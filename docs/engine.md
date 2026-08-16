@@ -452,7 +452,8 @@ SDLStatic_GraphicsResolve(&gfx, argc, argv, "acme", "mygame");
 
 SDLStatic_EngineConfig config = {0};
 config.graphics = &gfx;
-config.prefer_opengl = true;          /* only if you ship post-effects */
+config.argc = argc;                   /* so --media works */
+config.argv = argv;
 SDLStatic_Engine *engine = SDLStatic_CreateEngine(&config);
 ```
 
@@ -566,13 +567,11 @@ handheld it is the difference between 30 and 60 fps.
 
 **Post-processing** — bloom, CRT scanlines and curvature, pixelation,
 chromatic aberration, FXAA, brightness/contrast/saturation, colour-blind
-correction — runs as GLSL over the finished frame. It needs an OpenGL or
-OpenGL ES renderer, which SDL will not choose by default on macOS (Metal) or
-Windows (Direct3D), so a game that ships these effects should set
-`config.prefer_opengl`. Without one they are skipped rather than fatal: a
-game must not fail to start because a player asked for scanlines. Ask
-`SDLStatic_EngineEffectsAvailable` and grey the section out rather than
-offering sliders that do nothing.
+correction — runs as GLSL over the finished frame, and the engine asks SDL
+for an OpenGL renderer by default so that it can. Without one they are
+skipped rather than fatal: a game must not fail to start because a player
+asked for scanlines. Ask `SDLStatic_EngineEffectsAvailable` and grey the
+section out rather than offering sliders that do nothing.
 
 The chain runs *before* the `post_render` hook, so a HUD drawn there is not
 scanlined along with the world — real CRT games had no UI layer, and
@@ -681,3 +680,129 @@ and the eye cannot find the boundary.
 cannot spill into the other player's half, and
 `SDLStatic_CameraScreenToWorld` returns false outside its own viewport,
 which is how a game works out whose half was clicked.
+
+## The renderer backend
+
+SDL ships several renderer backends and, left alone, picks the platform's
+native one: Metal on Apple, Direct3D on Windows, OpenGL elsewhere. **This
+engine asks for OpenGL, everywhere, by default.**
+
+```c
+config.backend = SDLSTATIC_BACKEND_OPENGL;   /* already the default */
+```
+
+The reason is that the post-processing chain and the lighting module are
+GLSL. Under a native backend they cannot run at all, so the same game would
+look different on macOS from how it looks on Linux for no reason the player
+can see — and writing the effects again in MSL, HLSL and SPIR-V is three
+more implementations to keep in step. GLSL 1.x covers desktop GL, GLES on
+mobile and WebGL in a browser, which is every platform this project targets.
+
+The cost is worth stating plainly. Apple deprecated OpenGL in 2018: it still
+works, it is capped at 4.1, and it will not improve. Metal has lower CPU
+overhead. Some Windows OEM drivers have weaker GL than their Direct3D. A 2D
+game is very unlikely to measure any of it, but a game that does can say:
+
+| | |
+|---|---|
+| `SDLSTATIC_BACKEND_OPENGL` | the default; the shader effects work |
+| `SDLSTATIC_BACKEND_NATIVE` | Metal/Direct3D/Vulkan; no post-processing |
+| `SDLSTATIC_BACKEND_SOFTWARE` | for tools, and for a machine whose drivers are broken enough that nothing else starts |
+
+The hint is a preference, not a demand: on a machine with no working GL, SDL
+still returns a renderer and only the shader effects go missing. Better than
+refusing to start.
+
+## Assets
+
+The engine mounts the game's assets during `SDLStatic_CreateEngine`, before
+anything asks for a file. There is no setup call, because an opinionated
+engine that made you write mounting code would not be one.
+
+```c
+config.argc = argc;   /* so --media and --media-password work */
+config.argv = argv;
+```
+
+Search order, first match wins:
+
+| | Source | |
+|---|---|---|
+| 1 | `--media=PATH`, or `config.media_path` | replaces the search entirely |
+| 2 | an archive compiled into the executable | `SDLStatic_EngineEmbedMedia` |
+| 3 | `media.zip` beside the executable | possibly encrypted |
+| 4 | `media.dat` | the same, named so it does not invite a double-click |
+| 5 | `media/` | a plain directory: what you develop against |
+
+Everything mounts at `/`, so `assets/player.png` means the same file
+whichever source it came from. That is the point of the ordering: you
+develop against `media/`, ship `media.zip`, and one day embed the archive in
+the binary — and not one line of the game changes. The embedded archive
+comes *before* the files on disk, so a single-file build cannot be quietly
+overridden by whatever happens to be sitting in the working directory; the
+directory comes last, so building a release archive changes what the game
+reads without anyone having to remember to delete it.
+
+```c
+SDL_IOStream *io = SDLStatic_OpenVFSRead("assets/player.png");
+SDL_Texture *tex = IMG_LoadTexture_IO(renderer, io, true);
+```
+
+`SDLStatic_EngineMediaSource` and `SDLStatic_EngineMediaPath` report what
+was mounted — worth logging, since "which copy of my assets is this running
+against" is otherwise guesswork. A game that wants none of it sets
+`config.no_auto_mount`.
+
+Encrypted archives take a password from `--media-password` or
+`SDLStatic_EngineSetMediaPassword`. Embedding an encrypted archive with its
+password in the same binary is obfuscation rather than security: it stops
+casual extraction, not a determined person with a debugger.
+
+## Escape hatches
+
+Two command-line arguments **replace the settings entirely and read no
+config file at all**. That is the whole point — they have to work when the
+saved settings are what is broken, and reading them first would defeat it. A
+player should never have to reinstall a game to undo a setting.
+
+```
+--with-default-settings    the shipped defaults: borderless fullscreen,
+                           maximum fidelity
+--with-safe-mode           a resizable 1280x720 window, graphics low,
+                           every shader effect off
+```
+
+Both are applied before the rest of the line, so `--with-safe-mode
+--bloom=0.5` means safe mode with bloom whichever order they were typed in.
+
+Safe mode turns the budgets *down* rather than off — it still has to be
+playable enough to reach the options screen and undo whatever went wrong —
+but every shader effect is off, because if the post-processing chain is what
+broke the machine, safe mode must not run it. It is windowed and resizable
+on purpose: a window that will not display correctly can at least be dragged
+somewhere that will.
+
+## Multiple monitors
+
+```c
+for (int i = 0; i < SDLStatic_EngineDisplayCount(); i++) {
+    printf("%d: %s\n", i, SDLStatic_EngineDisplayName(i));   /* "DELL U2720Q" */
+}
+SDLStatic_EngineSetDisplay(engine, chosen);
+```
+
+or persist it: `display = 1` in `config.toml`, `--display=1` on the command
+line.
+
+The window and renderer are **kept, not recreated**. Recreating them is the
+obvious implementation and it is a trap: SDL textures belong to the renderer
+that made them, so tearing the renderer down invalidates every texture the
+game has loaded. A monitor change would silently become a full asset reload,
+and any game that did not know to reload would draw nothing at all
+afterwards. Moving the window achieves the same result and cannot do that —
+the fullscreen mode is dropped, the window is repositioned on the target
+display, and the mode is restored.
+
+A saved display index is clamped to what exists at launch, so unplugging the
+monitor a game was saved on does not leave it running invisibly on a display
+that is no longer there.

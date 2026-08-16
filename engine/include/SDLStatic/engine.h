@@ -94,6 +94,47 @@ typedef enum SDLStatic_EnginePresentation
     SDLSTATIC_PRESENT_NATIVE   /**< no scaling: coordinates are pixels */
 } SDLStatic_EnginePresentation;
 
+/**
+ * Which SDL renderer backend to run on.
+ *
+ * SDL ships several — on a Mac it offers metal, opengl, opengles2, vulkan,
+ * gpu and software — and left alone it picks the platform's native one:
+ * Metal on Apple, Direct3D on Windows, OpenGL elsewhere.
+ *
+ * This engine picks **OpenGL, everywhere, by default**, and that is a
+ * deliberate trade:
+ *
+ *   One shader language. The post-processing chain and the lighting module
+ *   are GLSL. Under a native backend they cannot run at all, so the same
+ *   game looks different on macOS from how it looks on Linux — for no
+ *   reason the player can see. Writing them again in MSL, HLSL and SPIR-V
+ *   is three more implementations to keep in step.
+ *
+ *   One code path to test. GLSL 1.x runs on desktop GL, GLES on mobile and
+ *   WebGL in a browser, which covers every platform this project targets.
+ *
+ * The cost is real and worth stating. Apple deprecated OpenGL in 2018: it
+ * still works, it is capped at 4.1, and it will not improve. Metal has
+ * lower CPU overhead. Some Windows OEM drivers have weaker GL than their
+ * Direct3D. A 2D game is very unlikely to notice any of it — but a game
+ * that measures a difference, or is shipping on a platform where GL is
+ * genuinely worse, should say `SDLSTATIC_BACKEND_NATIVE` and give up the
+ * shader effects knowingly rather than by accident.
+ */
+typedef enum SDLStatic_EngineBackend
+{
+    /** OpenGL / OpenGL ES: the default, and the only one where the shader
+     *  effects work. Falls back to whatever SDL can provide if the machine
+     *  genuinely has no GL, rather than refusing to start. */
+    SDLSTATIC_BACKEND_OPENGL = 0,
+    /** Whatever SDL would have chosen: Metal, Direct3D, Vulkan. Faster on
+     *  paper; no post-processing. */
+    SDLSTATIC_BACKEND_NATIVE,
+    /** The software renderer. For tools, and for a machine whose drivers
+     *  are broken enough that nothing else starts. */
+    SDLSTATIC_BACKEND_SOFTWARE
+} SDLStatic_EngineBackend;
+
 /** How rendering positions things between two simulation steps. */
 typedef enum SDLStatic_EngineInterpolation
 {
@@ -161,15 +202,28 @@ typedef struct SDLStatic_EngineConfig
      *  remain for games that want nothing to do with settings files. */
     const struct SDLStatic_GraphicsSettings *graphics;
 
-    /** Ask SDL for an OpenGL renderer.
+    /** Which of SDL's renderer backends to use. Zero means OpenGL, which is
+     *  this engine's opinion — see SDLStatic_EngineBackend. */
+    SDLStatic_EngineBackend backend;
+
+    /** The program's command line, so the engine can honour the arguments
+     *  it documents — `--media`, `--media-password`. Pass them straight
+     *  through from main(); anything the engine does not recognise is left
+     *  alone, because the game owns this command line.
      *
-     *  The post-processing effects — bloom, CRT, chromatic aberration,
-     *  anti-aliasing, colour grading — are OpenGL shaders. SDL otherwise
-     *  prefers Metal on Apple platforms and Direct3D on Windows, where those
-     *  effects cannot run and are silently skipped. A game that ships them
-     *  should set this; a game that does not should leave it alone and take
-     *  the platform's native backend. */
-    bool prefer_opengl;
+     *  Graphics settings are read from argv separately, by
+     *  SDLStatic_GraphicsResolve, so that a game can inspect or override
+     *  them before the engine exists. */
+    int argc;
+    char *const *argv;
+
+    /** Where the game's assets are. NULL runs the default search — an
+     *  embedded archive, then media.zip, media.dat and media/ — which is
+     *  what almost every game should do. An explicit path here beats
+     *  `--media` on the command line. See engine_media.h. */
+    const char *media_path;
+    /** Do not mount anything. For a game that manages its own VFS. */
+    bool no_auto_mount;
 
     /** Headless: software renderer, no window. For tests and tools. */
     bool headless;
