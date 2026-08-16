@@ -8,6 +8,8 @@
 #   <SDLStatic/engine_media.h>     mounting the game's assets
 #   <SDLStatic/engine_actor.h>     actors: identity, hierarchy, messages
 #   <SDLStatic/engine_render.h>    sprites, z-ordering and culling
+#   <SDLStatic/engine_input.h>     polled keyboard, mouse, gamepads, touch
+#   <SDLStatic/engine_binding.h>   actions and rebindable controls
 #
 # Original code (zlib), plain C over SDL3. The loop is a fixed simulation
 # tick with interpolated rendering — the arrangement that makes motion look
@@ -25,6 +27,8 @@ add_library(SDLStatic_Engine STATIC
   src/sdlstatic_engine_media.c
   src/sdlstatic_engine_actor.c
   src/sdlstatic_engine_render.c
+  src/sdlstatic_engine_input.c
+  src/sdlstatic_engine_binding.c
 )
 add_library(SDLStatic::Engine ALIAS SDLStatic_Engine)
 

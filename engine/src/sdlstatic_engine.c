@@ -198,6 +198,12 @@ SDLStatic_Engine *SDLStatic_CreateEngine(const SDLStatic_EngineConfig *config)
     engine->clear_color = (SDL_FColor){0.06f, 0.07f, 0.09f, 1.0f};
     engine->running = true;
 
+    if (!SDLStatic_EngineInputInit(engine))
+    {
+        SDL_free(engine);
+        return NULL;
+    }
+
     /* Assets first: the settings below may want the config.toml the game
        shipped inside its archive, and it has to be mounted to be read. */
     if (!config->no_auto_mount)
@@ -352,6 +358,7 @@ SDLStatic_Engine *SDLStatic_CreateEngine(const SDLStatic_EngineConfig *config)
         SDLStatic_EngineSetGraphics(engine, &applied);
     }
 
+    SDLStatic_EngineInputOpenGamepads(engine);
     engine->last_ns = Now(engine);
     return engine;
 }
@@ -368,6 +375,7 @@ void SDLStatic_DestroyEngine(SDLStatic_Engine *engine)
     /* Actors after scenes: a scene's unload may still want to reach them. */
     SDLStatic_ActorWorldDestroy(engine);
     SDLStatic_RenderDestroy(engine);
+    SDLStatic_EngineInputDestroy(engine);
     /* GL objects before the renderer that owns the context they live in. */
     SDLStatic_EnginePostFXDestroy(engine);
     SDLStatic_EngineDestroyFrameTarget(engine);
@@ -390,9 +398,15 @@ void SDLStatic_DestroyEngine(SDLStatic_Engine *engine)
 
 static void PumpEvents(SDLStatic_Engine *engine)
 {
+    /* Snapshot before draining, so this frame's edges are the difference
+       between what is held now and what was held last frame — computed
+       once, and therefore the same for every fixed step in the frame. */
+    SDLStatic_EngineInputBeginFrame(engine);
+
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
+        SDLStatic_EngineInputEvent(engine, &event);
         if (event.type == SDL_EVENT_QUIT)
         {
             engine->running = false;
@@ -459,6 +473,16 @@ static void LimitFrameRate(SDLStatic_Engine *engine)
     }
 }
 
+void SDLStatic_EngineSetHooks(SDLStatic_Engine *engine, const SDLStatic_GameHooks *hooks,
+                              void *user)
+{
+    if (engine != NULL)
+    {
+        engine->hooks = hooks;
+        engine->user = user;
+    }
+}
+
 bool SDLStatic_EngineTick(SDLStatic_Engine *engine)
 {
     if (engine == NULL)
@@ -482,6 +506,12 @@ bool SDLStatic_EngineTick(SDLStatic_Engine *engine)
     }
     const Uint64 delta_ns = SmoothDelta(engine, raw); /* [2] */
     engine->delta_seconds = (float)((double)delta_ns / (double)NS_PER_SECOND);
+
+    /* Stick axes are polled, not evented — a stick resting off-centre
+       produces no events at all — and the menu-repeat clocks need the
+       frame's delta. Both happen here, after the events and before any
+       game code asks a question. */
+    SDLStatic_EngineInputEndFrame(engine, engine->delta_seconds);
 
     /* [3] Exact, equal simulation steps. */
     engine->accumulator_ns += (Uint64)((double)delta_ns * (double)engine->time_scale);

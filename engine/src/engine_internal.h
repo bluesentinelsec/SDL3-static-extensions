@@ -12,6 +12,7 @@
 #include <SDLStatic/engine.h>
 #include <SDLStatic/engine_graphics.h>
 #include <SDLStatic/engine_media.h>
+#include <SDLStatic/engine_input.h>
 #include <SDLStatic/engine_render.h>
 #include <SDLStatic/engine_scene.h>
 
@@ -20,6 +21,7 @@
 struct SDLStatic_PostFX;
 struct SDLStatic_ActorWorld;
 struct SDLStatic_DrawItem;
+struct SDLStatic_Input;
 
 struct SDLStatic_Engine
 {
@@ -89,7 +91,32 @@ struct SDLStatic_Engine
     struct SDLStatic_DrawItem *draw_list;
     int draw_capacity;
     SDLStatic_RenderStats render_stats;
+
+    struct SDLStatic_Input *input;
 };
+
+/* --- input --------------------------------------------------------------- */
+
+extern bool SDLStatic_EngineInputInit(SDLStatic_Engine *engine);
+extern void SDLStatic_EngineInputDestroy(SDLStatic_Engine *engine);
+
+/** Adopt controllers that were already plugged in at startup: they do not
+ *  all produce an ADDED event. */
+extern void SDLStatic_EngineInputOpenGamepads(SDLStatic_Engine *engine);
+
+/** Snapshot last frame's state; edges are the difference. */
+extern void SDLStatic_EngineInputBeginFrame(SDLStatic_Engine *engine);
+
+/** Fold one SDL event into the state table. */
+extern void SDLStatic_EngineInputEvent(SDLStatic_Engine *engine, const SDL_Event *event);
+
+/** Sample the things that are polled rather than evented — stick axes —
+ *  and advance the menu-repeat clocks. */
+extern void SDLStatic_EngineInputEndFrame(SDLStatic_Engine *engine, float dt);
+
+/* Small hooks the binding layer uses. */
+extern bool SDLStatic_InputKeyDownRaw(SDLStatic_Engine *engine, int scancode);
+extern int SDLStatic_InputFirstPressedKey(SDLStatic_Engine *engine);
 
 /* --- rendering ----------------------------------------------------------- */
 

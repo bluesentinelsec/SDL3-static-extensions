@@ -21,8 +21,8 @@ target_link_libraries(your_game PRIVATE SDLStatic::Engine)
 ```
 
 This page covers the loop and time, presentation and scaling, scenes,
-graphics settings, the camera, actors and engine-owned rendering. Input,
-assets, physics and the lighting integration follow.
+graphics settings, the camera, actors, engine-owned rendering, input and
+actions. Assets, physics and the lighting integration follow.
 
 ## The loop
 
@@ -1042,3 +1042,150 @@ SDLStatic_RenderOverlay(engine, alpha);
 made however it liked. Drawing what you are given and fetching what you
 asked for are different jobs with different failure modes, and merging them
 makes both worse; asset streaming is its own subsystem.
+
+## Input
+
+The engine pumps SDL's events once a frame and folds them into state the
+game **asks** for. `<SDLStatic/engine_input.h>`.
+
+```c
+if (SDLStatic_KeyPressed(engine, SDL_SCANCODE_SPACE)) Jump();
+if (SDLStatic_GamepadButtonDown(engine, 0, SDLSTATIC_PAD_A)) Hold();
+
+float x, y;
+SDLStatic_GamepadStick(engine, 0, 0, &x, &y);
+```
+
+Polling rather than callbacks, because a game asks "is the player holding
+right" at the point in its own logic where the answer matters, and an event
+callback arrives at a point where it does not. Every callback-based game
+ends up building this state table by hand, usually with one of the two bugs
+below in it.
+
+### Edges last the whole frame
+
+`Pressed` and `Released` mean "this frame" and stay true for **all** of it,
+including every `fixed_update` step — of which there may be several.
+
+This is the bug worth knowing about. A jump polled from a fixed step, with
+edges cleared per step, is silently dropped whenever a frame happens to run
+two steps: the first step sees the press, the second does not, and which one
+your `if` lives in decides whether the input registered. Here the edges are
+computed once at the top of the frame from the difference between this
+frame's held set and the last one, so all steps agree. There is a test that
+runs a 50 ms frame (three steps at 60 Hz) and asserts all three see the
+press.
+
+### Disconnection is normal
+
+A gamepad that goes away reads as **neutral** — no buttons, sticks at zero —
+rather than freezing at whatever it was doing. A player whose battery dies
+mid-run should stop, not keep sprinting into a pit. Slots are stable, so
+reconnecting puts that player back where they were rather than shuffling
+everyone along, and a fifth controller simply is not a player rather than
+displacing one of the four already playing.
+
+### Devices
+
+| | |
+|---|---|
+| **Keyboard** | scancodes (key *positions*, so WASD survives AZERTY), modifiers, and `SDLStatic_TextTyped` for text — the only correct way to read what an IME or layout produced |
+| **Mouse** | position and delta in **design coordinates**, left/middle/right plus two thumb buttons, and a wheel with vertical *and* horizontal movement, sign-corrected for natural scrolling |
+| **Gamepads** | four slots; every button on an Xbox pad including the share button, all four Elite paddles and the touchpad click; both sticks; both triggers as analog values *and* as buttons |
+| **Touch** | up to ten fingers in design coordinates, with `FingerInRect` and `FingerHeldInRect` as the building blocks for on-screen controls |
+| **Motion** | gyro and accelerometer, from a controller that has them or from the device itself |
+
+Rumble is `SDLStatic_GamepadRumble(engine, player, low, high, ms)` — the two
+motors are different weights, so a hit wants low and a pickup wants high —
+plus `RumbleTriggers` on pads that have them. `SDLStatic_GamepadStopRumble`
+exists because a controller left buzzing while the player is in a menu is a
+bug people remember.
+
+### Sticks are round
+
+`SDLStatic_GamepadStick` applies a **radial** deadzone: it measures the
+stick's distance from centre, ignores it below the threshold, and rescales
+the rest to a full 0..1.
+
+Deadzoning each axis separately is the classic mistake — it carves a square
+hole out of a round stick, so a gentle diagonal reads as zero while the same
+distance straight up does not, and the player feels the corners.
+
+### Sticks as buttons, for menus
+
+```c
+if (SDLStatic_GamepadDirectionRepeat(engine, player, SDLSTATIC_DIR_DOWN)) SelectNext();
+```
+
+Navigating a menu with a stick is otherwise miserable: a raw threshold test
+moves the selection sixty times a second, and a bare edge moves it once and
+stops while the player is still holding. This gives one press immediately, a
+pause, then a steady repeat — what a keyboard does, because that is the
+behaviour everyone has already learned. Both sticks and the d-pad feed it,
+so a menu works with either without knowing which the player used.
+
+## Actions
+
+Game code should say what it means, not which key means it.
+`<SDLStatic/engine_binding.h>`.
+
+```c
+SDLStatic_ActionMap *map = SDLStatic_ActionMapCreate();
+SDLStatic_ActionBindKey(map, "jump", SDL_SCANCODE_SPACE);
+SDLStatic_ActionBindPad(map, "jump", SDLSTATIC_PAD_A);
+SDLStatic_ActionBindKeySigned(map, "move_x", SDL_SCANCODE_A, -1);
+SDLStatic_ActionBindKeySigned(map, "move_x", SDL_SCANCODE_D, +1);
+SDLStatic_ActionBindAxis(map, "move_x", SDLSTATIC_AXIS_LEFT_X, 0);
+
+if (SDLStatic_ActionPressed(engine, map, player, "jump")) Jump();
+float move = SDLStatic_ActionValue(engine, map, player, "move_x");
+```
+
+A game written against scancodes cannot be rebound without editing the game,
+cannot support a controller without writing every check twice, and cannot be
+played by someone whose hands do not fit the layout the designer happened to
+have. An action map is how all three stop being the game's problem.
+
+**Actions are signed and analog**, in [-1, 1], not booleans. A key
+contributes its binding's sign, a stick its deflection — so "move_x" bound
+to A, D *and* the stick works with all three at once, and the game reads one
+number whichever the player used. A boolean action cannot express a stick,
+so an engine with boolean actions grows a parallel axis API and every game
+ends up using both.
+
+`SDLStatic_ActionVector` normalises past unit length, so holding two keys
+does not move a player 41% faster diagonally.
+
+**Who is player 2:** gamepad bindings read the pad in the player's own slot.
+Keyboard and mouse bindings belong to whichever player
+`SDLStatic_ActionMapSetKeyboardPlayer` says — player 0 by default, or -1 for
+a gamepad-only game — because there is one keyboard and four people cannot
+share it.
+
+### Rebinding
+
+```c
+SDLStatic_Binding pressed;
+if (SDLStatic_ActionCapture(engine, -1, &pressed)) {
+    SDLStatic_ActionClear(map, "jump");
+    SDLStatic_ActionBind(map, "jump", pressed);
+    SDLStatic_ActionMapSave(map, "acme", "mygame");
+}
+```
+
+`ActionCapture` ignores movement, or a stick resting slightly off-centre
+would capture itself the instant the prompt opened. Bindings render as text
+— `"space"`, `"pad:a"`, `"axis:left_x"`, `"-a"` — for a settings screen and
+for `media/bindings.toml` beside `config.toml`:
+
+```toml
+[bindings]
+jump = ["space", "pad:a"]
+move_x = ["-a", "+d", "axis:left_x"]
+```
+
+Loading **replaces the bindings of actions the file mentions and leaves the
+rest alone**, so a player who rebound one key does not lose every other
+binding when the game adds a new action in a later version. A malformed file
+leaves the defaults in place, and an unparseable individual binding is
+skipped rather than being fatal.

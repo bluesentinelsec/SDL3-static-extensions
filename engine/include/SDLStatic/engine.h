@@ -294,6 +294,18 @@ extern bool SDLStatic_RunGame(SDLStatic_Engine *engine, const SDLStatic_GameHook
  *  false once the engine has been asked to stop. */
 extern bool SDLStatic_EngineTick(SDLStatic_Engine *engine);
 
+/** Install the hooks without handing over the loop.
+ *
+ *  SDLStatic_RunGame does this for you. A game driving the loop itself with
+ *  SDLStatic_EngineTick needs it, because otherwise there is no way to be
+ *  called back at all — which made the manual-loop path documented but not
+ *  actually usable.
+ *
+ *  `hooks` is **not** copied: it must outlive the engine, which is what a
+ *  static or a member gives you for free. Pass NULL to detach. */
+extern void SDLStatic_EngineSetHooks(SDLStatic_Engine *engine,
+                                     const SDLStatic_GameHooks *hooks, void *user);
+
 /** Ask the loop to stop after the current frame. */
 extern void SDLStatic_EngineQuit(SDLStatic_Engine *engine);
 
