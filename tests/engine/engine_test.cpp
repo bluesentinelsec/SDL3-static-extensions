@@ -476,6 +476,61 @@ TEST_F(PresentationHarness, ExpandKeepsPixelsSquare)
     SDLStatic_DestroyEngine(engine);
 }
 
+// An options menu will switch modes at runtime, and the view must be
+// correct on the very next frame.
+TEST_F(PresentationHarness, PresentationChangesAtRuntime)
+{
+    SDLStatic_Engine *engine = Make(2560, 1080, SDLSTATIC_PRESENT_LETTERBOX);
+    ASSERT_NE(engine, nullptr);
+    EXPECT_NEAR(SDLStatic_EngineViewRect(engine).w, 1920.0f, 1.0f);
+
+    ASSERT_TRUE(SDLStatic_EngineSetPresentation(engine, SDLSTATIC_PRESENT_EXPAND));
+    EXPECT_EQ(SDLStatic_EnginePresentation_(engine), SDLSTATIC_PRESENT_EXPAND);
+    EXPECT_NEAR(SDLStatic_EngineViewRect(engine).w, 2560.0f, 2.0f) << "recomputed at once";
+
+    ASSERT_TRUE(SDLStatic_EngineSetPresentation(engine, SDLSTATIC_PRESENT_LETTERBOX));
+    EXPECT_NEAR(SDLStatic_EngineViewRect(engine).w, 1920.0f, 1.0f) << "and back";
+    SDLStatic_DestroyEngine(engine);
+}
+
+// Integer scaling floors the factor, so the reported scale must be the floored
+// one — a pixel-art game that trusted the unfloored number would size its UI
+// for a magnification it never gets.
+TEST_F(PresentationHarness, IntegerReportsTheFlooredScale)
+{
+    // 1.95x fits, but integer scaling can only take 1x.
+    SDLStatic_Engine *engine = Make(2560, 2106, SDLSTATIC_PRESENT_INTEGER);
+    ASSERT_NE(engine, nullptr);
+    EXPECT_NEAR(SDLStatic_EngineRenderScale(engine), 1.0f, 0.01f)
+        << "floored, not the 1.95 that would have fitted";
+    EXPECT_EQ(SDLStatic_EngineAssetScale(engine), 1);
+    SDLStatic_DestroyEngine(engine);
+}
+
+// Overscan is the one mode that *crops*. The view and safe rects have to
+// shrink to what survives, or a HUD anchored to the safe rect walks off the
+// screen on exactly the displays overscan exists to serve.
+TEST_F(PresentationHarness, OverscanShrinksTheViewToWhatSurvivesTheCrop)
+{
+    SDLStatic_Engine *engine = Make(2560, 1080, SDLSTATIC_PRESENT_OVERSCAN); // 21:9
+    ASSERT_NE(engine, nullptr);
+
+    // Covering a 21:9 window from a 16:9 design means scaling by width...
+    EXPECT_NEAR(SDLStatic_EngineRenderScale(engine), 2560.0f / 1920.0f, 0.01f);
+
+    // ...so the full design width survives and the height is cut.
+    const SDL_FRect view = SDLStatic_EngineViewRect(engine);
+    EXPECT_NEAR(view.w, 1920.0f, 1.0f);
+    EXPECT_LT(view.h, 1080.0f) << "the top and bottom are off-screen";
+    EXPECT_NEAR(view.h, 1080.0f / (2560.0f / 1920.0f), 2.0f) << "1080 window px at 1.333x";
+    EXPECT_GT(view.y, 0.0f) << "and the visible band sits in the middle";
+
+    const SDL_FRect safe = SDLStatic_EngineSafeRect(engine);
+    EXPECT_NEAR(safe.h, view.h, 1.0f) << "the safe rect cannot promise cropped rows";
+    EXPECT_NEAR(safe.y, view.y, 1.0f);
+    SDLStatic_DestroyEngine(engine);
+}
+
 // Native means "coordinates are pixels", which some tools want.
 TEST_F(PresentationHarness, NativeMakesDesignUnitsPixels)
 {
@@ -549,6 +604,7 @@ TEST_F(EngineHarness, NullsAreHandled)
     SDLStatic_EnginePixelSize(nullptr, nullptr, nullptr);
     EXPECT_FLOAT_EQ(SDLStatic_EngineRenderScale(nullptr), 1.0f);
     EXPECT_EQ(SDLStatic_EngineAssetScale(nullptr), 1);
+    EXPECT_FALSE(SDLStatic_EngineSetPresentation(nullptr, SDLSTATIC_PRESENT_EXPAND));
     EXPECT_FLOAT_EQ(SDLStatic_EngineTimeScale(nullptr), 0.0f);
     EXPECT_FALSE(SDLStatic_EngineSetTickRate(nullptr, 60));
     EXPECT_EQ(SDLStatic_EngineTickRate(nullptr), 0);

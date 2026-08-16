@@ -104,7 +104,12 @@ static void ApplyPresentation(SDLStatic_Engine *engine)
 {
     int pixel_w = 0;
     int pixel_h = 0;
-    if (!SDL_GetCurrentRenderOutputSize(engine->renderer, &pixel_w, &pixel_h) || pixel_w <= 0 ||
+    /* SDL_GetRenderOutputSize, not SDL_GetCurrentRenderOutputSize: the
+       "current" size is the logical destination rectangle — the area we
+       already fitted the design space into — so using it here would ask
+       the window what shape we just made it, and EXPAND would never
+       expand. This one is the framebuffer. */
+    if (!SDL_GetRenderOutputSize(engine->renderer, &pixel_w, &pixel_h) || pixel_w <= 0 ||
         pixel_h <= 0)
     {
         return;
@@ -629,6 +634,89 @@ void SDLStatic_EngineDesignSize(SDLStatic_Engine *engine, int *width, int *heigh
     }
 }
 
+bool SDLStatic_EngineSetPresentation(SDLStatic_Engine *engine,
+                                     SDLStatic_EnginePresentation mode)
+{
+    if (engine == NULL)
+    {
+        return SDL_InvalidParamError("engine");
+    }
+    engine->presentation = mode;
+    ApplyPresentation(engine);
+    return true;
+}
+
+SDLStatic_EnginePresentation SDLStatic_EnginePresentation_(SDLStatic_Engine *engine)
+{
+    return (engine != NULL) ? engine->presentation : SDLSTATIC_PRESENT_EXPAND;
+}
+
+/**
+ * Where the logical area actually lands, in logical units.
+ *
+ * Asked of SDL rather than derived from the mode, because only SDL knows what
+ * each mode did: INTEGER floors the scale, OVERSCAN scales past the window and
+ * crops, STRETCH uses a different factor per axis. Guessing gets four of the
+ * six modes wrong.
+ *
+ * `SDL_GetRenderLogicalPresentationRect` gives the destination in *pixels*.
+ * Inverting it back into logical units gives the region of the logical area a
+ * player can actually see, which is what a game wants to reason about.
+ */
+static bool VisibleLogicalRect(SDLStatic_Engine *engine, SDL_FRect *out, float *scale_x,
+                               float *scale_y)
+{
+    if (engine == NULL || engine->renderer == NULL || engine->view_width <= 0.0f ||
+        engine->view_height <= 0.0f)
+    {
+        return false;
+    }
+    int pixel_w = 0;
+    int pixel_h = 0;
+    SDL_GetRenderOutputSize(engine->renderer, &pixel_w, &pixel_h);
+    if (pixel_w <= 0 || pixel_h <= 0)
+    {
+        return false;
+    }
+
+    SDL_FRect dst = {0.0f, 0.0f, (float)pixel_w, (float)pixel_h};
+    if (!SDL_GetRenderLogicalPresentationRect(engine->renderer, &dst) || dst.w <= 0.0f ||
+        dst.h <= 0.0f)
+    {
+        dst.x = 0.0f;
+        dst.y = 0.0f;
+        dst.w = (float)pixel_w;
+        dst.h = (float)pixel_h;
+    }
+
+    const float sx = dst.w / engine->view_width;
+    const float sy = dst.h / engine->view_height;
+
+    /* Un-project the window back through the presentation transform, then
+       clip to the logical area — SDL will not draw outside it, so the bars a
+       letterbox leaves are not part of the view. */
+    SDL_FRect visible;
+    visible.x = -dst.x / sx;
+    visible.y = -dst.y / sy;
+    visible.w = (float)pixel_w / sx;
+    visible.h = (float)pixel_h / sy;
+
+    const SDL_FRect logical = {0.0f, 0.0f, engine->view_width, engine->view_height};
+    if (!SDL_GetRectIntersectionFloat(&visible, &logical, out))
+    {
+        *out = logical;
+    }
+    if (scale_x != NULL)
+    {
+        *scale_x = sx;
+    }
+    if (scale_y != NULL)
+    {
+        *scale_y = sy;
+    }
+    return true;
+}
+
 SDL_FRect SDLStatic_EngineViewRect(SDLStatic_Engine *engine)
 {
     SDL_FRect rect = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -636,14 +724,10 @@ SDL_FRect SDLStatic_EngineViewRect(SDLStatic_Engine *engine)
     {
         return rect;
     }
-    rect.w = engine->view_width;
-    rect.h = engine->view_height;
-    if (engine->presentation == SDLSTATIC_PRESENT_OVERSCAN)
+    if (!VisibleLogicalRect(engine, &rect, NULL, NULL))
     {
-        /* Overscan crops: the visible rect is the design space, but part of
-           it is off-screen, so report where the design space sits. */
-        rect.x = 0.0f;
-        rect.y = 0.0f;
+        rect.w = engine->view_width;
+        rect.h = engine->view_height;
     }
     return rect;
 }
@@ -655,20 +739,20 @@ SDL_FRect SDLStatic_EngineSafeRect(SDLStatic_Engine *engine)
     {
         return rect;
     }
-    /* The design rectangle, centred in whatever the view turned out to be. */
-    rect.w = (float)engine->design_width;
-    rect.h = (float)engine->design_height;
-    rect.x = (engine->view_width - rect.w) * 0.5f;
-    rect.y = (engine->view_height - rect.h) * 0.5f;
-    if (rect.w > engine->view_width)
+    /* The design rectangle, centred in the logical area... */
+    SDL_FRect design;
+    design.w = (float)engine->design_width;
+    design.h = (float)engine->design_height;
+    design.x = (engine->view_width - design.w) * 0.5f;
+    design.y = (engine->view_height - design.h) * 0.5f;
+
+    /* ...intersected with what is on screen, so that under OVERSCAN — the one
+       mode that crops — the safe rect shrinks instead of promising room that
+       the player cannot see. */
+    const SDL_FRect view = SDLStatic_EngineViewRect(engine);
+    if (!SDL_GetRectIntersectionFloat(&design, &view, &rect))
     {
-        rect.x = 0.0f;
-        rect.w = engine->view_width;
-    }
-    if (rect.h > engine->view_height)
-    {
-        rect.y = 0.0f;
-        rect.h = engine->view_height;
+        rect = view;
     }
     return rect;
 }
@@ -679,7 +763,7 @@ void SDLStatic_EnginePixelSize(SDLStatic_Engine *engine, int *width, int *height
     int h = 0;
     if (engine != NULL)
     {
-        SDL_GetCurrentRenderOutputSize(engine->renderer, &w, &h);
+        SDL_GetRenderOutputSize(engine->renderer, &w, &h);
     }
     if (width != NULL)
     {
@@ -693,20 +777,15 @@ void SDLStatic_EnginePixelSize(SDLStatic_Engine *engine, int *width, int *height
 
 float SDLStatic_EngineRenderScale(SDLStatic_Engine *engine)
 {
-    if (engine == NULL || engine->view_width <= 0.0f)
+    SDL_FRect view;
+    float sx = 1.0f;
+    float sy = 1.0f;
+    if (!VisibleLogicalRect(engine, &view, &sx, &sy))
     {
         return 1.0f;
     }
-    int pixel_w = 0;
-    int pixel_h = 0;
-    SDL_GetCurrentRenderOutputSize(engine->renderer, &pixel_w, &pixel_h);
-    if (pixel_w <= 0 || pixel_h <= 0)
-    {
-        return 1.0f;
-    }
-    /* The smaller of the two, which is the one the fit is limited by. */
-    const float sx = (float)pixel_w / engine->view_width;
-    const float sy = (float)pixel_h / engine->view_height;
+    /* Every mode but STRETCH is uniform, so sx == sy; for STRETCH the smaller
+       factor is the honest one to quote, since it bounds detail. */
     return SDL_min(sx, sy);
 }
 

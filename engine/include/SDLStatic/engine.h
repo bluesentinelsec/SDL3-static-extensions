@@ -242,6 +242,16 @@ extern int SDLStatic_EngineTickRate(SDLStatic_Engine *engine);
 extern SDL_Renderer *SDLStatic_EngineRenderer(SDLStatic_Engine *engine);
 extern SDL_Window *SDLStatic_EngineWindow(SDLStatic_Engine *engine);
 
+/** Change how the design space is fitted to the window, at runtime.
+ *
+ *  An options menu will want this — "letterbox" versus "expand" is a taste
+ *  players have opinions about — and the view rect is recomputed
+ *  immediately, so the next frame is already laid out for the new mode. */
+extern bool SDLStatic_EngineSetPresentation(SDLStatic_Engine *engine,
+                                            SDLStatic_EnginePresentation mode);
+
+extern SDLStatic_EnginePresentation SDLStatic_EnginePresentation_(SDLStatic_Engine *engine);
+
 /** The design (reference) space the game was configured with. */
 extern void SDLStatic_EngineDesignSize(SDLStatic_Engine *engine, int *width, int *height);
 

@@ -210,6 +210,29 @@ In `EXPAND` the view is recomputed whenever the window's pixel size
 changes, so dragging a window between a laptop screen and an ultrawide is
 handled without the game hearing about it.
 
+Both rects, and `SDLStatic_EngineRenderScale`, are read back out of SDL
+rather than derived from the mode — because the modes do not agree on what
+"the scale" is. `INTEGER` floors it, `OVERSCAN` scales *past* the window and
+crops, `STRETCH` uses a different factor per axis. So under `OVERSCAN` the
+view rect is the band that survives the crop, not the full design space, and
+the safe rect shrinks with it: a HUD anchored to the safe rect stays on
+screen in the one mode that would otherwise push it off.
+
+> Capturing a frame: `SDL_RenderReadPixels` takes its rect in **pixels**,
+> not render coordinates, and `NULL` means the whole logical area. Under
+> `OVERSCAN` that is bigger than the window, and the driver returns rows
+> that are not in the framebuffer. Pass `SDLStatic_EnginePixelSize` instead.
+
+### One art set at every size
+
+Nothing above requires shipping art at several resolutions. Scaling is a
+coordinate transform, so a single set holds up in both directions provided
+the art is authored at the largest size it will be drawn and drawn with
+linear filtering. Point sampling is what makes downscaled art sparkle, and
+that is a filter setting rather than an asset problem — reserve nearest for
+pixel art, ideally alongside `INTEGER`. `SDLStatic_EngineAssetScale` is
+there for anyone who later wants a second set; it is not a prerequisite.
+
 ### Mouse and touch
 
 SDL reports events in *window* coordinates, so they need converting:
