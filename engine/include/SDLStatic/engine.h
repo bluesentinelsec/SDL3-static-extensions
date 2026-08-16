@@ -153,6 +153,24 @@ typedef struct SDLStatic_EngineConfig
                                   frame, and the time is dropped; 0.25 if 0 */
     SDLStatic_EngineInterpolation interpolation;
 
+    /** Graphics settings to start with — usually the result of
+     *  SDLStatic_GraphicsResolve, which is how a config file and the command
+     *  line reach the engine. NULL means SDLStatic_GraphicsDefaults().
+     *
+     *  These win over `presentation`, `no_vsync` and `max_fps` above, which
+     *  remain for games that want nothing to do with settings files. */
+    const struct SDLStatic_GraphicsSettings *graphics;
+
+    /** Ask SDL for an OpenGL renderer.
+     *
+     *  The post-processing effects — bloom, CRT, chromatic aberration,
+     *  anti-aliasing, colour grading — are OpenGL shaders. SDL otherwise
+     *  prefers Metal on Apple platforms and Direct3D on Windows, where those
+     *  effects cannot run and are silently skipped. A game that ships them
+     *  should set this; a game that does not should leave it alone and take
+     *  the platform's native backend. */
+    bool prefer_opengl;
+
     /** Headless: software renderer, no window. For tests and tools. */
     bool headless;
     /** Drive time with SDLStatic_EngineAdvance instead of the clock, so a
@@ -185,6 +203,18 @@ typedef struct SDLStatic_GameHooks
     void (*fixed_update)(void *user, float step);  /**< simulation */
     void (*update)(void *user, float dt);          /**< per-frame cosmetics */
     void (*render)(void *user, float alpha);       /**< draw */
+    /** Draw *after* the post-processing chain, over the finished frame and
+     *  before it is presented.
+     *
+     *  Two things need this. A HUD usually should not be scanlined,
+     *  pixelated or chromatically split along with the world — real CRT
+     *  games had no UI layer, and applying the effect to one looks like a
+     *  bug rather than a style. And a screenshot of what the player
+     *  actually saw can only be taken here, because everything before this
+     *  point is the frame *without* the effects.
+     *
+     *  Coordinates are design coordinates, the same as `render`. */
+    void (*post_render)(void *user);
     void (*event)(void *user, const SDL_Event *event);
     void (*resize)(void *user, int width, int height);
     void (*unload)(void *user);                    /**< once, after the loop */

@@ -198,6 +198,30 @@ SDLStatic_Engine *SDLStatic_CreateEngine(const SDLStatic_EngineConfig *config)
     engine->clear_color = (SDL_FColor){0.06f, 0.07f, 0.09f, 1.0f};
     engine->running = true;
 
+    /* Settings, if the game resolved any. They carry the presentation mode,
+       vsync and the frame cap, so they win over the plain config fields —
+       otherwise a player's config.toml would be overridden by whatever the
+       game happened to hard-code. */
+    engine->graphics = SDLStatic_GraphicsDefaults();
+    if (config->graphics != NULL)
+    {
+        engine->graphics = *config->graphics;
+        SDLStatic_GraphicsClamp(&engine->graphics);
+        engine->presentation = engine->graphics.presentation;
+        engine->max_fps = engine->graphics.max_fps;
+    }
+    else
+    {
+        /* No settings struct: mirror the plain fields into it, so that
+           SDLStatic_EngineGraphics always describes what is actually
+           happening rather than a default nobody applied. */
+        engine->graphics.presentation = engine->presentation;
+        engine->graphics.vsync = !config->no_vsync;
+        engine->graphics.max_fps = engine->max_fps;
+        engine->graphics.window_mode =
+            config->fullscreen ? SDLSTATIC_WINDOW_BORDERLESS : SDLSTATIC_WINDOW_WINDOWED;
+    }
+
     if (config->headless)
     {
         /* No window: a software renderer over a surface the size of the
@@ -244,6 +268,17 @@ SDLStatic_Engine *SDLStatic_CreateEngine(const SDLStatic_EngineConfig *config)
         }
         const int width = (config->window_width > 0) ? config->window_width : 1280;
         const int height = (config->window_height > 0) ? config->window_height : 720;
+
+        /* The post-processing effects are OpenGL shaders, so a game that
+           wants them has to have an OpenGL renderer. Asking through the hint
+           rather than by name keeps the fallback: if GL is unavailable SDL
+           still gives us *a* renderer, and the effects report themselves
+           unavailable instead of the game failing to start. */
+        if (config->prefer_opengl)
+        {
+            SDL_SetHint(SDL_HINT_RENDER_DRIVER, "opengl,opengles2,opengles");
+        }
+
         if (!SDL_CreateWindowAndRenderer((config->title != NULL) ? config->title : "SDLStatic",
                                          width, height, flags, &engine->window,
                                          &engine->renderer))
@@ -254,13 +289,21 @@ SDLStatic_Engine *SDLStatic_CreateEngine(const SDLStatic_EngineConfig *config)
         /* Vsync unless asked otherwise: it costs nothing, it stops the loop
            free-running at four figures, and it quantises the frame delta
            for the smoothing above. */
-        SDL_SetRenderVSync(engine->renderer, config->no_vsync ? 0 : 1);
+        SDL_SetRenderVSync(engine->renderer, engine->graphics.vsync ? 1 : 0);
         DetectRefreshRate(engine);
     }
 
     /* Design coordinates: the game is written once, at one size, and SDL
        scales it to whatever the display is. */
     ApplyPresentation(engine);
+    SDLStatic_EngineApplyFilter(engine);
+    if (config->graphics != NULL && engine->window != NULL)
+    {
+        /* Window mode is the one setting that cannot be folded into window
+           creation, because borderless and exclusive differ after the fact. */
+        SDLStatic_GraphicsSettings applied = engine->graphics;
+        SDLStatic_EngineSetGraphics(engine, &applied);
+    }
 
     engine->last_ns = Now(engine);
     return engine;
@@ -275,6 +318,9 @@ void SDLStatic_DestroyEngine(SDLStatic_Engine *engine)
     /* Scenes first, so they see exit and unload while the renderer they
        may want to use is still alive. */
     SDLStatic_SceneShutdown(engine);
+    /* GL objects before the renderer that owns the context they live in. */
+    SDLStatic_EnginePostFXDestroy(engine);
+    SDLStatic_EngineDestroyFrameTarget(engine);
     if (engine->renderer != NULL)
     {
         SDL_DestroyRenderer(engine->renderer);
@@ -435,6 +481,10 @@ bool SDLStatic_EngineTick(SDLStatic_Engine *engine)
     }
     SDLStatic_SceneDispatchUpdate(engine, engine->delta_seconds);
 
+    /* Redirect into the offscreen frame if the settings call for one. No-op
+       at render scale 1.0 with every effect off, which is the common case. */
+    SDLStatic_EngineBeginFrameTarget(engine);
+
     SDL_SetRenderDrawColorFloat(engine->renderer, engine->clear_color.r, engine->clear_color.g,
                                 engine->clear_color.b, engine->clear_color.a);
     SDL_SetRenderDrawBlendMode(engine->renderer, SDL_BLENDMODE_NONE);
@@ -446,6 +496,17 @@ bool SDLStatic_EngineTick(SDLStatic_Engine *engine)
     {
         engine->hooks->render(engine->user, engine->alpha);
     }
+
+    /* Composite the offscreen frame back, through the effect chain. */
+    SDLStatic_EngineEndFrameTarget(engine);
+
+    /* Above the effects: a HUD that should not be scanlined, and the only
+       point from which a screenshot shows what the player actually saw. */
+    if (engine->hooks != NULL && engine->hooks->post_render != NULL)
+    {
+        engine->hooks->post_render(engine->user);
+    }
+
     SDL_RenderPresent(engine->renderer);
 
     LimitFrameRate(engine);

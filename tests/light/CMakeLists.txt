@@ -17,10 +17,11 @@ if(Python3_Interpreter_FOUND)
   )
 endif()
 
-# The embedded shaders are generated from light/shaders/*; this is the same
-# guard bindgen_freshness gives the generated bindings.
+# The embedded shaders are generated from light/shaders/* and
+# engine/shaders/*; one --check covers both bundles. Same guard
+# bindgen_freshness gives the generated bindings.
 if(Python3_Interpreter_FOUND)
-  add_test(NAME light_shaders_freshness
+  add_test(NAME embedded_shaders_freshness
     COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/scripts/embed_shaders.py --check
   )
 endif()
