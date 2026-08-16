@@ -78,6 +78,14 @@ struct SDLStatic_Actor
     SDLStatic_Sprite sprite;
     bool has_sprite;
 
+    /* A Box2D body handle, kept as its three fields so this file needs no
+       Box2D header — the actor system does not depend on physics, only the
+       other way round. */
+    int body_index;
+    Uint16 body_world, body_generation;
+    float body_offset_x, body_offset_y;
+    bool has_body;
+
     bool enabled;
     bool alive;    /* the slot holds an actor */
     bool pending;  /* spawned this frame; not yet updated or queried */
@@ -562,6 +570,61 @@ void SDLStatic_ActorSpriteRemove(SDLStatic_Actor *actor)
     if (actor != NULL)
     {
         actor->has_sprite = false;
+    }
+}
+
+/* --- physics bodies ------------------------------------------------------ */
+
+void SDLStatic_ActorSetBody(SDLStatic_Actor *actor, int index, Uint16 world, Uint16 generation,
+                            float offset_x, float offset_y)
+{
+    if (actor == NULL)
+    {
+        return;
+    }
+    actor->body_index = index;
+    actor->body_world = world;
+    actor->body_generation = generation;
+    actor->body_offset_x = offset_x;
+    actor->body_offset_y = offset_y;
+    actor->has_body = true;
+}
+
+bool SDLStatic_ActorGetBody(SDLStatic_Actor *actor, int *index, Uint16 *world,
+                            Uint16 *generation, float *offset_x, float *offset_y)
+{
+    if (actor == NULL || !actor->has_body)
+    {
+        return false;
+    }
+    if (index != NULL)
+    {
+        *index = actor->body_index;
+    }
+    if (world != NULL)
+    {
+        *world = actor->body_world;
+    }
+    if (generation != NULL)
+    {
+        *generation = actor->body_generation;
+    }
+    if (offset_x != NULL)
+    {
+        *offset_x = actor->body_offset_x;
+    }
+    if (offset_y != NULL)
+    {
+        *offset_y = actor->body_offset_y;
+    }
+    return true;
+}
+
+void SDLStatic_ActorClearBody(SDLStatic_Actor *actor)
+{
+    if (actor != NULL)
+    {
+        actor->has_body = false;
     }
 }
 

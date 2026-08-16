@@ -21,8 +21,8 @@ target_link_libraries(your_game PRIVATE SDLStatic::Engine)
 ```
 
 This page covers the loop and time, presentation and scaling, scenes,
-graphics settings, the camera, actors, engine-owned rendering, input and
-actions. Assets, physics and the lighting integration follow.
+graphics settings, the camera, actors, engine-owned rendering, input,
+actions and physics. Assets and the lighting integration follow.
 
 ## The loop
 
@@ -1189,3 +1189,111 @@ rest alone**, so a player who rebound one key does not lose every other
 binding when the game adds a new action in a later version. A malformed file
 leaves the defaults in place, and an unparseable individual binding is
 skipped rather than being fatal.
+
+## Physics
+
+Give an actor a body and the engine simulates it, then writes the result
+back onto the actor's transform — so the sprite the renderer draws is
+already in the right place. `<SDLStatic/engine_physics.h>`.
+
+```c
+SDLStatic_BodyDef def = SDLStatic_BodyDefault();
+def.shape = SDLSTATIC_SHAPE_CAPSULE;
+def.width = 46.0f;
+def.height = 88.0f;
+def.offset_y = -44.0f;      /* the actor stands at its feet */
+def.fixed_rotation = true;
+SDLStatic_ActorAddBody(actor, &def);
+```
+
+Start from `SDLStatic_BodyDefault()`: a zeroed def has no size and no
+density, which is a body that falls through the world.
+
+### It steps with the simulation, not with the frame
+
+The world advances once per `fixed_update`, with the same step every time.
+A solver fed a variable timestep produces different results on different
+machines, and a game whose physics depend on frame rate cannot be tested,
+recorded or played fairly. The fixed tick exists for exactly this reason and
+physics is its most demanding customer.
+
+Bodies step **after** the actors' own `fixed_update`, so a game sets a
+velocity and the solver acts on it in the same step rather than the next.
+
+### Pixels are not metres
+
+Box2D is tuned for a world measured in metres, where a person is about 2
+units tall. Games are written in pixels, where a person is about 100. Feed
+it pixels and everything becomes a thousand-tonne skyscraper: contacts
+jitter, stacks explode, and the tuning constants stop meaning what they were
+tuned to mean.
+
+So the engine converts at the boundary. `PixelsPerMetre` is 64 by default —
+a 64-pixel crate is a one-metre crate — and **every number in the physics
+API is in design units**, the same coordinates the game already draws in. No
+game code ever sees a metre.
+
+### One position, and the solver owns it
+
+After each step, every body's position is written onto its actor's
+transform. There are not two positions to keep in agreement; the renderer
+reads what the solver decided.
+
+`offset_x`/`offset_y` are what make a feet-anchored sprite and a centred
+body agree. An actor drawn with `origin_y = 1` stands at its feet, so its
+body wants `offset_y = -height / 2`:
+
+| | |
+|---|---|
+| sprite `origin_y = 1.0` | the actor's position is where its feet are |
+| body `offset_y = -h/2` | the body is centred on the sprite, not half-buried |
+
+Get this wrong and the character sinks into the floor by half its height —
+which looks like a physics bug and is really a units bug.
+
+Almost every walking character also wants `fixed_rotation`: a capsule free
+to spin lies down the first time it bumps into anything.
+
+### Collisions
+
+```c
+static void OnCollision(SDLStatic_Engine *engine, SDLStatic_ActorId a,
+                        SDLStatic_ActorId b, bool began, void *user) {
+    if (began && IsBullet(a)) SDLStatic_ActorDestroy(engine, a);
+}
+SDLStatic_PhysicsSetCollisionCallback(engine, OnCollision, NULL);
+```
+
+Callbacks name **actors**, not shapes, and are delivered **after** the step
+rather than during it — the solver is mid-flight while it runs, and
+destroying a body from inside it corrupts the world. Since actor destruction
+is deferred to the end of the frame anyway, `SDLStatic_ActorDestroy` from a
+handler is safe, which is the first thing every handler wants to do.
+
+Sensors report through the same callback, with the sensor always first. They
+come from a different Box2D event stream than contacts, because a sensor
+never produces a contact — the solver has nothing to solve. Folding them in
+here is the point: a trigger volume nobody can detect is not a trigger
+volume.
+
+### Queries
+
+```c
+/* the ground check every platformer needs */
+SDLStatic_RayHit down = SDLStatic_PhysicsRaycast(engine, x, y, 0.0f, 12.0f, CAT_GROUND);
+bool grounded = down.hit;
+
+SDLStatic_ActorId nearby[32];
+int n = SDLStatic_PhysicsOverlap(engine, blast_area, CAT_ENEMY, nearby, 32);
+```
+
+Both are in design units and return actor ids. Overlap writes one entry per
+actor rather than per shape, so a body with several shapes does not fill the
+caller's array with itself.
+
+### Filtering
+
+`category` says what a body **is**; `collides_with` says what it **hits**.
+Zero means everything, which is what a game wants until it does not — a
+one-way platform, a ghost that walks through walls, a bullet that ignores
+the player who fired it.

@@ -373,6 +373,9 @@ void SDLStatic_DestroyEngine(SDLStatic_Engine *engine)
        may want to use is still alive. */
     SDLStatic_SceneShutdown(engine);
     /* Actors after scenes: a scene's unload may still want to reach them. */
+    /* Bodies before actors: destroying the world invalidates every handle
+       an actor is holding. */
+    SDLStatic_EnginePhysicsDestroy(engine);
     SDLStatic_ActorWorldDestroy(engine);
     SDLStatic_RenderDestroy(engine);
     SDLStatic_EngineInputDestroy(engine);
@@ -529,6 +532,9 @@ bool SDLStatic_EngineTick(SDLStatic_Engine *engine)
         /* Actors last in the step, so a scene has already set up whatever
            it wanted to before its actors act on it. */
         SDLStatic_ActorDispatchFixedUpdate(engine, step);
+        /* Physics after the actors, so a game that set a velocity this step
+           has the solver act on it now rather than next step. */
+        SDLStatic_EnginePhysicsStep(engine, step);
         engine->accumulator_ns -= engine->step_ns;
         steps++;
     }

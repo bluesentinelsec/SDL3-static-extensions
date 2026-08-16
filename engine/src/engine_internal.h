@@ -22,6 +22,7 @@ struct SDLStatic_PostFX;
 struct SDLStatic_ActorWorld;
 struct SDLStatic_DrawItem;
 struct SDLStatic_Input;
+struct SDLStatic_Physics;
 
 struct SDLStatic_Engine
 {
@@ -93,7 +94,22 @@ struct SDLStatic_Engine
     SDLStatic_RenderStats render_stats;
 
     struct SDLStatic_Input *input;
+    struct SDLStatic_Physics *physics;
 };
+
+/* --- physics ------------------------------------------------------------- */
+
+/** Advance the world one fixed step and write the results onto actors. */
+extern void SDLStatic_EnginePhysicsStep(SDLStatic_Engine *engine, float step);
+extern void SDLStatic_EnginePhysicsDestroy(SDLStatic_Engine *engine);
+
+/** A Box2D body handle, stored on the actor as its three fields so that the
+ *  actor system needs no Box2D header. */
+extern void SDLStatic_ActorSetBody(SDLStatic_Actor *actor, int index, Uint16 world,
+                                   Uint16 generation, float offset_x, float offset_y);
+extern bool SDLStatic_ActorGetBody(SDLStatic_Actor *actor, int *index, Uint16 *world,
+                                   Uint16 *generation, float *offset_x, float *offset_y);
+extern void SDLStatic_ActorClearBody(SDLStatic_Actor *actor);
 
 /* --- input --------------------------------------------------------------- */
 
