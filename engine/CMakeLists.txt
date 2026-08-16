@@ -4,6 +4,7 @@
 #   <SDLStatic/engine.h>           the loop, time, and the drawing surface
 #   <SDLStatic/engine_scene.h>     the scene stack
 #   <SDLStatic/engine_graphics.h>  graphics settings, config.toml and the CLI
+#   <SDLStatic/engine_camera.h>    2D camera, scrolling and split screen
 #
 # Original code (zlib), plain C over SDL3. The loop is a fixed simulation
 # tick with interpolated rendering — the arrangement that makes motion look
@@ -17,6 +18,7 @@ add_library(SDLStatic_Engine STATIC
   src/sdlstatic_engine_gfxconfig.c
   src/sdlstatic_engine_target.c
   src/sdlstatic_engine_postfx.c
+  src/sdlstatic_engine_camera.c
 )
 add_library(SDLStatic::Engine ALIAS SDLStatic_Engine)
 

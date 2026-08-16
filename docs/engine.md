@@ -20,9 +20,9 @@ what a goblin is.
 target_link_libraries(your_game PRIVATE SDLStatic::Engine)
 ```
 
-This page covers the first subsystem: the loop, time, and the drawing
-surface. Scenes, actors, rendering, input, assets, physics and lighting
-follow.
+This page covers the loop and time, presentation and scaling, scenes,
+graphics settings, and the camera. Actors, input, assets, physics and the
+lighting integration follow.
 
 ## The loop
 
@@ -145,11 +145,10 @@ Three spaces, and it is worth being exact about which is which:
 | **Design** | the fixed virtual screen you compose into, e.g. 1920×1080 | `config.design_width/height` |
 | **Pixel** | the actual framebuffer of the window | the display |
 
-A **camera** maps world → design; the engine maps design → pixels. The
-engine currently has no camera, so a game that draws directly in design
-coordinates is effectively saying "the world is exactly one screen" — fine
-for menus, not for a level. The camera arrives with the rendering
-subsystem; when it does, nothing on this page changes.
+A **camera** maps world → design; the presentation maps design → pixels. A
+game that draws directly in design coordinates is saying "the world is
+exactly one screen" — fine for a menu, not for a level. See
+[The camera](#the-camera) below.
 
 ### Design → pixels costs nothing
 
@@ -440,3 +439,245 @@ executable so it ships as a single file.
 
 The full mechanism lands with the scripting subsystem; the loop is
 independent of it.
+
+## Graphics settings
+
+Everything a player can change lives in one struct,
+`SDLStatic_GraphicsSettings` — plain data, so it copies, compares and
+serialises. `<SDLStatic/engine_graphics.h>`.
+
+```c
+SDLStatic_GraphicsSettings gfx;
+SDLStatic_GraphicsResolve(&gfx, argc, argv, "acme", "mygame");
+
+SDLStatic_EngineConfig config = {0};
+config.graphics = &gfx;
+config.prefer_opengl = true;          /* only if you ship post-effects */
+SDLStatic_Engine *engine = SDLStatic_CreateEngine(&config);
+```
+
+and an options screen is three lines:
+
+```c
+SDLStatic_GraphicsSettings next = *SDLStatic_EngineGraphics(engine);
+next.bloom = slider;
+SDLStatic_EngineSetGraphics(engine, &next);       /* applies now */
+SDLStatic_GraphicsSave(&next, "acme", "mygame");  /* persists */
+```
+
+### Where the values come from
+
+`SDLStatic_GraphicsResolve` walks five sources, each beating the one before:
+
+| | Source | |
+|---|---|---|
+| 1 | `SDLStatic_GraphicsDefaults()` | compiled in |
+| 2 | `media/config.toml` **inside the media archive** | what the game shipped with |
+| 3 | `media/config.toml` in the working directory | an installer's, or a server's |
+| 4 | `media/config.toml` in the pref directory | the player's saved settings |
+| 5 | the command line | right now |
+
+The player's saved settings beat what the game shipped with, and the command
+line beats everything — which is the order you want at 2am when a game will
+not start because of a setting somebody saved. `--config=PATH` replaces the
+search entirely: someone passing a path wants *that* file, not that file
+plus three others.
+
+Nothing here is fatal. A malformed file leaves the previous values in place
+and reports through `SDLStatic_GraphicsConfigError`; every value is clamped
+on the way in, so a hand-edited `brightness = 40` cannot black out a game.
+`SDLStatic_GraphicsConfigPath` says which file was actually read, which is
+worth logging at startup — "why is my config being ignored" is otherwise a
+long afternoon.
+
+The archive is reached through a callback rather than a PhysFS dependency,
+because by the time settings resolve the archive may be a zip, an encrypted
+`.dat`, a plain directory, or bytes compiled into the executable, and
+mounting it is the game's decision:
+
+```c
+static bool ReadFromVfs(const char *path, char **text, void *user) {
+    int size = 0;
+    unsigned char *data = SDLStatic_LoadVFSFile(path, &size);
+    if (data == NULL) return false;
+    *text = (char *)data;
+    return true;
+}
+SDLStatic_GraphicsSetArchiveReader(ReadFromVfs, NULL);   /* before Resolve */
+```
+
+### config.toml
+
+Keys are optional, and are accepted at the top level as well as in their
+section — someone writing this by hand should not have to know which section
+a key lives in.
+
+```toml
+[display]
+vsync = true
+max_fps = 0            # 0 follows the display, negative uncaps
+window_mode = "windowed"     # windowed | borderless | exclusive
+presentation = "letterbox"   # letterbox | expand | overscan | integer | stretch | native
+render_scale = 1.0     # 0.25-2.0
+filter = "auto"        # auto | linear | nearest
+
+[quality]
+particles = "high"     # off | low | medium | high
+dynamic_lights = "high"
+shadows = "high"
+
+[effects]
+bloom = 0.0
+bloom_threshold = 0.7
+crt = 0.0
+crt_curvature = 0.0
+pixelation = 1         # 1 is off
+chromatic_aberration = 0.0
+antialias = "off"      # off | fxaa
+
+[image]
+brightness = 1.0
+contrast = 1.0
+saturation = 1.0
+color_blind = "none"   # none | protanopia | deuteranopia | tritanopia
+
+[accessibility]
+reduced_flashing = false
+screen_shake = 1.0
+ui_scale = 1.0
+```
+
+Every key has a command-line twin: `--vsync=off`, `--max-fps 120`,
+`--shadows=low`, `--bloom=0.4`, `--render-scale=0.75`, `--fullscreen`,
+`--color-blind=deuteranopia`. Both `--key=value` and `--key value` work,
+booleans take on/off/true/false/1/0 or may be bare (`--vsync`, `--no-vsync`),
+and anything unrecognised is ignored — the game owns the command line and the
+engine is only a guest on it.
+
+### Three kinds of setting, which fail differently
+
+**Engine settings** — vsync, frame cap, window mode, presentation, render
+scale, filtering — apply the moment they are set.
+
+`render_scale` deserves a mention: it renders at a fraction of the window's
+resolution and lets the display scale the result up. It is the single
+largest performance lever available, it needs no art changes, and on a
+handheld it is the difference between 30 and 60 fps.
+
+**Post-processing** — bloom, CRT scanlines and curvature, pixelation,
+chromatic aberration, FXAA, brightness/contrast/saturation, colour-blind
+correction — runs as GLSL over the finished frame. It needs an OpenGL or
+OpenGL ES renderer, which SDL will not choose by default on macOS (Metal) or
+Windows (Direct3D), so a game that ships these effects should set
+`config.prefer_opengl`. Without one they are skipped rather than fatal: a
+game must not fail to start because a player asked for scanlines. Ask
+`SDLStatic_EngineEffectsAvailable` and grey the section out rather than
+offering sliders that do nothing.
+
+The chain runs *before* the `post_render` hook, so a HUD drawn there is not
+scanlined along with the world — real CRT games had no UI layer, and
+applying the effect to one reads as a bug rather than a style. It is also
+the only place a screenshot shows what the player actually saw.
+
+**Budgets** — particles, dynamic lights, shadows, screen shake, UI scale —
+are carried by the engine and spent by the game. The engine cannot know what
+a particle costs in your game, so it does not pretend to; it converts the
+player's choice into concrete numbers and leaves the spending to you:
+
+```c
+const SDLStatic_GraphicsSettings *g = SDLStatic_EngineGraphics(engine);
+
+int count = (int)(base * SDLStatic_GraphicsParticleDensity(g->particles));
+SDLStatic_SetLightMapScale(scene, SDLStatic_GraphicsLightMapScale(g->dynamic_lights));
+SDLStatic_SetLightShadowRays(scene, SDLStatic_GraphicsShadowRays(g->shadows));
+SDLStatic_SetLightShadowSoftness(scene, SDLStatic_GraphicsShadowSoftness(g->shadows));
+```
+
+Note `SDLStatic_GraphicsShadowSoftness` returns 0 below the top tier: soft
+edges need rays to look soft, and a penumbra built from 32 rays reads as
+banding rather than softness.
+
+`reduced_flashing` is a safety setting rather than an aesthetic one, so it
+overrides the aesthetic ones — enabling it caps bloom, because bloom is what
+turns a bright frame into a flash.
+
+## The camera
+
+`<SDLStatic/engine_camera.h>`. The camera maps **world** coordinates onto
+the design space; the presentation maps design onto pixels. A game with no
+camera is saying "the world is exactly one screen".
+
+```c
+SDLStatic_Camera camera;
+SDLStatic_CameraInit(&camera, engine);
+camera.bounds = (SDL_FRect){0, 0, 8000, 2000};   /* the level */
+camera.smoothing = 0.15f;                        /* seconds to catch up */
+camera.deadzone_w = 300.0f;                      /* design units */
+
+/* update */
+SDLStatic_CameraFollow(&camera, player.x, player.y);
+SDLStatic_CameraUpdate(&camera, engine, dt);
+
+/* render */
+SDLStatic_CameraBegin(engine, &camera);
+for (Entity *e = level; e; e = e->next) {
+    if (!SDLStatic_CameraVisible(&camera, e->box)) continue;   /* cull */
+    SDL_FRect dst = SDLStatic_CameraRect(&camera, e->box);
+    SDL_RenderTexture(renderer, e->texture, NULL, &dst);
+}
+SDLStatic_CameraEnd(engine);
+```
+
+Update from the per-frame `update` hook, not `fixed_update`: camera movement
+is cosmetic and should track the display's rate.
+
+Four things worth knowing:
+
+- **Smoothing is frame-rate independent.** It is exponential decay against
+  `dt`, not a fixed fraction per frame — the latter is nearly two and a half
+  times faster at 144 Hz than at 60, which is the classic reason a camera
+  "feels wrong on someone else's machine".
+- **The deadzone is in design units**, converted to world units against the
+  zoom, so zooming in does not silently widen it. It is what stops a
+  platformer's camera twitching every time the player hops.
+- **A level smaller than the view is centred**, not clamped to an edge.
+- **`SDLStatic_CameraRect` translates but does not scale.** The renderer is
+  already scaled by the zoom; scaling here as well applies it twice.
+
+There is no rotation. SDL's renderer has no general transform, so a rotating
+camera would have to rotate every draw call individually, and a field that
+only worked for some of them would be worse than not having one.
+
+### Split screen
+
+Four cameras are four viewports over the same world, so split screen is the
+same code:
+
+```c
+SDLStatic_Camera cameras[SDLSTATIC_SPLIT_MAX];
+for (int i = 0; i < 4; i++) SDLStatic_CameraInit(&cameras[i], engine);
+
+int n = SDLStatic_CameraSplit(engine, SDLSTATIC_SPLIT_HORIZONTAL, players, 6.0f, cameras);
+for (int i = 0; i < n; i++) {
+    SDLStatic_CameraBegin(engine, &cameras[i]);
+    DrawWorld(&cameras[i]);
+    SDLStatic_CameraEnd(engine);
+}
+```
+
+| Mode | Layout | Suits |
+|---|---|---|
+| `HORIZONTAL` | full-width bands, stacked | side-scrollers, which need horizontal room |
+| `VERTICAL` | full-height columns | vertical games, and racing on an ultrawide |
+| `GRID` | quarters | four players; with three, the odd one takes the whole bottom half rather than leaving a dead quadrant |
+
+One player gets the whole view, so a game runs the same path for one player
+and for four. Splitting keeps each camera's own settings, so a game can
+configure them once and re-split whenever somebody joins. The `gap` argument
+leaves a few design units of black between panes — without it two views abut
+and the eye cannot find the boundary.
+
+`SDLStatic_CameraBegin` clips as well as setting the viewport, so a sprite
+cannot spill into the other player's half, and
+`SDLStatic_CameraScreenToWorld` returns false outside its own viewport,
+which is how a game works out whose half was clicked.
