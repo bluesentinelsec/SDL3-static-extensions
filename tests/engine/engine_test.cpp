@@ -493,6 +493,26 @@ TEST_F(PresentationHarness, PresentationChangesAtRuntime)
     SDLStatic_DestroyEngine(engine);
 }
 
+// A zero-initialised config must land on the recommended mode, not merely be
+// documented to. Letterbox is the one mode where the view never changes shape,
+// so it is the safe thing to get by accident.
+TEST_F(PresentationHarness, LetterboxIsWhatZeroInitialisationGives)
+{
+    SDLStatic_EngineConfig config{};
+    config.headless = true;
+    config.manual_clock = true;
+    config.window_width = 2560; // deliberately not the design's aspect
+    config.window_height = 1080;
+    SDLStatic_Engine *engine = SDLStatic_CreateEngine(&config);
+    ASSERT_NE(engine, nullptr) << SDL_GetError();
+
+    EXPECT_EQ(SDLStatic_EnginePresentation_(engine), SDLSTATIC_PRESENT_LETTERBOX);
+    const SDL_FRect view = SDLStatic_EngineViewRect(engine);
+    EXPECT_NEAR(view.w, 1920.0f, 1.0f) << "the design space, whole, on a 21:9 window";
+    EXPECT_NEAR(view.h, 1080.0f, 1.0f);
+    SDLStatic_DestroyEngine(engine);
+}
+
 // Integer scaling floors the factor, so the reported scale must be the floored
 // one — a pixel-art game that trusted the unfloored number would size its UI
 // for a magnification it never gets.

@@ -648,7 +648,7 @@ bool SDLStatic_EngineSetPresentation(SDLStatic_Engine *engine,
 
 SDLStatic_EnginePresentation SDLStatic_EnginePresentation_(SDLStatic_Engine *engine)
 {
-    return (engine != NULL) ? engine->presentation : SDLSTATIC_PRESENT_EXPAND;
+    return (engine != NULL) ? engine->presentation : SDLSTATIC_PRESENT_LETTERBOX;
 }
 
 /**

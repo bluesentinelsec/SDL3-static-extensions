@@ -174,22 +174,79 @@ SDL_snprintf(path, sizeof(path), "sprites/player@%dx.png",
              SDLStatic_EngineAssetScale(engine));
 ```
 
+## Presentation modes
+
 ### Fitting a design space to a window that is the wrong shape
 
-This is the only genuinely hard part, and the mode decides it:
+A window is rarely the shape you composed for. There are only three things
+any engine can do about it — **show bars, crop, or distort** — and the
+presentation mode is how you choose. Nothing else about the game changes;
+the drawing code is identical in all six.
 
-| Mode | On a window with a different aspect ratio |
-|---|---|
-| **`EXPAND`** (default) | Keeps the design's shorter axis and lets the other grow — an ultrawide **sees more world**. No bars, no cropping, no distortion. |
-| `LETTERBOX` | Keeps the whole design space visible and adds bars. Nothing ever moves. |
-| `OVERSCAN` | Fills the window by cropping the overflow. |
-| `INTEGER` | Whole-number scaling for pixel art; also switches texture filtering to nearest, since fractional scaling is what makes pixel art shimmer. |
-| `STRETCH` | Fills by distorting. Rarely what anyone wants. |
-| `NATIVE` | No scaling: design units *are* pixels. |
+#### Setting it
 
-`EXPAND` is the default because it is what a modern 2D game wants, and it
-is what Godot calls the same thing. The trade is that the visible rectangle
-is no longer fixed, which is what the next two calls are for:
+At creation:
+
+```c
+SDLStatic_EngineConfig config = {0};
+config.design_width = 1920;
+config.design_height = 1080;
+config.presentation = SDLSTATIC_PRESENT_LETTERBOX;   /* already the default */
+
+SDLStatic_Engine *engine = SDLStatic_CreateEngine(&config);
+```
+
+`SDLSTATIC_PRESENT_LETTERBOX` is zero, so a zero-initialised config —
+including `SDLStatic_CreateEngine(NULL)` — gets it without asking.
+
+And at runtime, which is what an options menu needs:
+
+```c
+SDLStatic_EngineSetPresentation(engine, SDLSTATIC_PRESENT_INTEGER);
+SDLStatic_EnginePresentation mode = SDLStatic_EnginePresentation_(engine);
+```
+
+The change takes effect immediately: the view rect is correct on the very
+next call, not the next frame, so a menu can redraw its own preview from it.
+Persist the value with the settings and restore it on launch.
+
+#### Choosing one
+
+| Mode | Aspect | Bars | Crops | Suited to |
+|---|---|---|---|---|
+| **`LETTERBOX`** (default) | kept | yes | no | **almost everything** — see below |
+| `EXPAND` | kept | no | no | competitive or exploration games where a wider monitor giving a wider view is a feature, not an unfairness |
+| `OVERSCAN` | kept | no | **yes** | full-bleed backdrops and video, where filling the screen matters more than the edges |
+| `INTEGER` | kept | yes | no | pixel art, where a fractional scale is what makes it shimmer |
+| `STRETCH` | **lost** | no | no | effectively nothing; it distorts |
+| `NATIVE` | n/a | n/a | n/a | tools, editors and debug windows that want to think in pixels |
+
+**Recommendation: `LETTERBOX`, unless you have a specific reason not to.**
+It is the only mode that guarantees every player sees exactly the frame you
+composed — same aspect, nothing cut off, nothing stretched — at every window
+size, on every monitor, from a phone to an ultrawide. The view rect never
+changes, so UI can sit at fixed coordinates and a screen that was laid out
+carefully stays laid out. The price is bars on a mismatched display, and
+that is a very small price for "it looks right everywhere". It is also the
+easiest mode to *test*, because there is exactly one composition to check.
+
+The others are each a considered trade against that:
+
+- **`EXPAND`** trades a fixed frame for filling the screen. Good when the
+  extra visible world is harmless or desirable; bad when seeing further is a
+  competitive advantage, and it means every layout must be checked at
+  several aspect ratios.
+- **`OVERSCAN`** trades content for filling the screen. Whatever falls
+  outside the window is gone, so it only suits art with nothing important
+  near the edges.
+- **`INTEGER`** trades screen coverage for pixel-perfect scaling. Essential
+  for pixel art, wasteful for anything else — on a 5120×2106 window a
+  1920×1080 design can only take 1×, leaving most of the screen as bars.
+- **`STRETCH`** distorts. Circles become ovals. Offer it in an options menu
+  if you like, but do not ship it as a default.
+- **`NATIVE`** turns the whole design-space idea off.
+
+Whichever you pick, these two calls describe what the player is seeing:
 
 ```c
 const SDL_FRect view = SDLStatic_EngineViewRect(engine);  /* all that is visible */
@@ -199,12 +256,18 @@ DrawBackdrop(view);                       /* fill everything, edge to edge */
 DrawHealthBar(safe.x + 40, safe.y + 40);  /* anchor UI to the safe area */
 ```
 
-The **view rect** is everything on screen — wider than the design on an
-ultrawide. The **safe rect** is the design rectangle centred inside it: the
-part guaranteed visible on every aspect ratio, and where the game was
-actually composed. Anchor UI to the safe rect and a button never drifts off
-into the periphery on a 21:9 monitor; fill the view rect with backdrops and
-there is never a gap at the edge. Consoles call the same idea title-safe.
+The **view rect** is everything on screen. The **safe rect** is the design
+rectangle intersected with it: the part guaranteed visible, and where the
+game was actually composed. Anchor UI to the safe rect and a button never
+drifts off into the periphery on a 21:9 monitor; fill the view rect with
+backdrops and there is never a gap at the edge. Consoles call the same idea
+title-safe.
+
+In `LETTERBOX` — and in `INTEGER` and `STRETCH` — the two are identical and
+never change, which is exactly why it is the recommended mode: writing
+against the safe rect and writing against fixed coordinates give the same
+result. Using the safe rect anyway costs nothing and means switching modes
+later is free.
 
 In `EXPAND` the view is recomputed whenever the window's pixel size
 changes, so dragging a window between a laptop screen and an ultrawide is

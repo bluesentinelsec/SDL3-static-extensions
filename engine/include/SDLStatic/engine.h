@@ -30,9 +30,10 @@
  *     SDLStatic_DestroyEngine(engine);
  *
  * Coordinates are **design coordinates**, not pixels: the engine sets a
- * logical presentation size (3840x2160 by default) and SDL scales it to
+ * logical presentation size (1920x1080 by default) and SDL scales it to
  * whatever the display actually is, letterboxed. A game is written once, at
- * one resolution, and looks right on a 1080p laptop and a 4K monitor.
+ * one resolution, and looks right on a 1080p laptop and a 4K monitor —
+ * see SDLStatic_EnginePresentation for the other ways to fit it.
  */
 #ifndef SDLSTATIC_ENGINE_H
 #define SDLSTATIC_ENGINE_H
@@ -51,28 +52,45 @@ typedef struct SDLStatic_Engine SDLStatic_Engine;
  * All of these scale the *coordinates* — SDL applies a transform, it does
  * not render offscreen and resample — so a game authored at 4K costs a
  * 1080p machine nothing extra. What differs is what happens when the
- * window's aspect ratio is not the design's.
+ * window's aspect ratio is not the design's, and there are only three
+ * possible answers: show bars, crop, or distort.
+ *
+ *     SDLStatic_EngineConfig config = {0};
+ *     config.presentation = SDLSTATIC_PRESENT_LETTERBOX;   // already the default
+ *     SDLStatic_Engine *engine = SDLStatic_CreateEngine(&config);
+ *
+ * and to change it later, from an options menu:
+ *
+ *     SDLStatic_EngineSetPresentation(engine, SDLSTATIC_PRESENT_INTEGER);
+ *
+ * See docs/engine.md for the full comparison.
  */
 typedef enum SDLStatic_EnginePresentation
 {
+    /** Fit the whole design space, preserving aspect, with bars where the
+     *  window is a different shape.
+     *
+     *  The default, and the right answer for most games: every player sees
+     *  exactly the frame the game was composed in, at every window size and
+     *  on every monitor, with no distortion and nothing cropped. The view
+     *  rect never changes, so UI may be positioned against fixed
+     *  coordinates. The cost is bars on a mismatched display. */
+    SDLSTATIC_PRESENT_LETTERBOX = 0,
     /** Keep the design's shorter axis and let the other grow or shrink with
      *  the window, so an ultrawide monitor **sees more world** instead of
-     *  black bars. No bars, no cropping, no distortion — the trade is that
-     *  the visible area is not fixed, so UI must anchor to
-     *  SDLStatic_EngineSafeRect rather than to hard-coded corners.
-     *
-     *  This is the default because it is what a modern 2D game wants; it is
-     *  what Godot calls "expand". */
-    SDLSTATIC_PRESENT_EXPAND = 0,
-    /** Fit the whole design space, preserving aspect, with bars where the
-     *  window is a different shape. Nothing moves, ever — the right choice
-     *  when a screen has been composed exactly. */
-    SDLSTATIC_PRESENT_LETTERBOX,
-    SDLSTATIC_PRESENT_OVERSCAN, /**< fill, cropping the overflow */
+     *  black bars. No bars, no cropping, no distortion either — the trade is
+     *  that the visible area is not fixed, so UI must anchor to
+     *  SDLStatic_EngineSafeRect, and a player on a wider monitor sees
+     *  further. What Godot calls "expand". */
+    SDLSTATIC_PRESENT_EXPAND,
+    /** Fill the window by cropping the overflow. Preserves aspect, no bars,
+     *  but part of the design space is off-screen — the view and safe rects
+     *  shrink to what survives. */
+    SDLSTATIC_PRESENT_OVERSCAN,
     /** Whole-number scale, for pixel art. Also switches texture filtering to
      *  nearest, because a fractional scale is what makes pixel art shimmer. */
     SDLSTATIC_PRESENT_INTEGER,
-    SDLSTATIC_PRESENT_STRETCH, /**< fill, ignoring aspect ratio */
+    SDLSTATIC_PRESENT_STRETCH, /**< fill, ignoring aspect ratio: distorts */
     SDLSTATIC_PRESENT_NATIVE   /**< no scaling: coordinates are pixels */
 } SDLStatic_EnginePresentation;
 
