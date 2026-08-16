@@ -16,6 +16,15 @@
 namespace
 {
 
+// Force a value into an enum field without a cast. See the call sites: a
+// static_cast of an out-of-range value is unspecified behaviour, and GCC
+// makes it a hard error, so the bytes go in directly.
+template <typename Enum> void WriteEnum(Enum &field, int value)
+{
+    static_assert(sizeof(Enum) == sizeof(int), "enum is not int-sized");
+    SDL_memcpy(&field, &value, sizeof(value));
+}
+
 // argv the way main() gets it: a program name, then the arguments.
 class Args
 {
@@ -71,8 +80,12 @@ TEST(GraphicsClamp, PullsNonsenseBackIntoRange)
     s.max_fps = 2;
     s.ui_scale = 100.0f;
     s.screen_shake = -1.0f;
-    s.particles = static_cast<SDLStatic_GraphicsQuality>(77);
-    s.presentation = static_cast<SDLStatic_EnginePresentation>(-4);
+    // Written as bytes rather than cast: converting an out-of-range value
+    // to an enum is *unspecified* in C++, and GCC rejects the cast outright
+    // under -Wconversion. Copying in is both portable and a truer
+    // simulation of what a corrupted settings file actually does.
+    WriteEnum(s.particles, 77);
+    WriteEnum(s.presentation, -4);
 
     SDLStatic_GraphicsClamp(&s);
 
