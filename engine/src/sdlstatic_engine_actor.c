@@ -73,6 +73,11 @@ struct SDLStatic_Actor
     void (*message)(SDLStatic_Actor *actor, const SDLStatic_ActorMessage *message);
     void (*destroy)(SDLStatic_Actor *actor);
 
+    /* By value rather than allocated: a sprite is smaller than the actor
+       already is, and this way it cannot be leaked or dangle. */
+    SDLStatic_Sprite sprite;
+    bool has_sprite;
+
     bool enabled;
     bool alive;    /* the slot holds an actor */
     bool pending;  /* spawned this frame; not yet updated or queried */
@@ -530,6 +535,34 @@ void SDLStatic_ActorWorldDestroy(SDLStatic_Engine *engine)
     SDL_free(world->messages);
     SDL_free(world);
     engine->actors = NULL;
+}
+
+/* --- sprites ------------------------------------------------------------- */
+
+SDLStatic_Sprite *SDLStatic_ActorSpriteSlot(SDLStatic_Actor *actor, bool create)
+{
+    if (actor == NULL)
+    {
+        return NULL;
+    }
+    if (!actor->has_sprite)
+    {
+        if (!create)
+        {
+            return NULL;
+        }
+        actor->sprite = SDLStatic_SpriteDefault();
+        actor->has_sprite = true;
+    }
+    return &actor->sprite;
+}
+
+void SDLStatic_ActorSpriteRemove(SDLStatic_Actor *actor)
+{
+    if (actor != NULL)
+    {
+        actor->has_sprite = false;
+    }
 }
 
 /* --- accessors ----------------------------------------------------------- */

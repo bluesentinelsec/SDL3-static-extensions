@@ -12,12 +12,14 @@
 #include <SDLStatic/engine.h>
 #include <SDLStatic/engine_graphics.h>
 #include <SDLStatic/engine_media.h>
+#include <SDLStatic/engine_render.h>
 #include <SDLStatic/engine_scene.h>
 
 #define NS_PER_SECOND 1000000000ull
 
 struct SDLStatic_PostFX;
 struct SDLStatic_ActorWorld;
+struct SDLStatic_DrawItem;
 
 struct SDLStatic_Engine
 {
@@ -81,7 +83,24 @@ struct SDLStatic_Engine
     /* Allocated on first spawn, so a game that never uses actors pays
        nothing for them. */
     struct SDLStatic_ActorWorld *actors;
+
+    /* The draw list: grown once and reused, because this runs every frame
+       and possibly once per camera. */
+    struct SDLStatic_DrawItem *draw_list;
+    int draw_capacity;
+    SDLStatic_RenderStats render_stats;
 };
+
+/* --- rendering ----------------------------------------------------------- */
+
+/** The actor's sprite storage. `create` gives it one if it has none. */
+extern SDLStatic_Sprite *SDLStatic_ActorSpriteSlot(SDLStatic_Actor *actor, bool create);
+
+/** Forget the actor's sprite. */
+extern void SDLStatic_ActorSpriteRemove(SDLStatic_Actor *actor);
+
+/** Free the draw list with the engine. */
+extern void SDLStatic_RenderDestroy(SDLStatic_Engine *engine);
 
 /* --- actors, driven by the loop ------------------------------------------ */
 

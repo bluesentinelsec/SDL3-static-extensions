@@ -21,7 +21,7 @@ target_link_libraries(your_game PRIVATE SDLStatic::Engine)
 ```
 
 This page covers the loop and time, presentation and scaling, scenes,
-graphics settings, the camera and actors. Engine-owned rendering, input,
+graphics settings, the camera, actors and engine-owned rendering. Input,
 assets, physics and the lighting integration follow.
 
 ## The loop
@@ -946,3 +946,99 @@ overflow.
 
 A target that dies between the send and the delivery simply does not receive
 it, which is what "it is gone" should mean.
+
+## Rendering
+
+Give an actor a sprite and the engine draws it — ordered, culled, and at
+the interpolated position. `<SDLStatic/engine_render.h>`.
+
+```c
+SDLStatic_Sprite sprite = SDLStatic_SpriteDefault();
+sprite.texture = goblin_texture;
+sprite.width = 64.0f;
+sprite.height = 96.0f;
+sprite.origin_y = 1.0f;        /* the position is where its feet are */
+sprite.layer = LAYER_ACTORS;
+sprite.sort_by_y = true;
+SDLStatic_ActorSetSprite(actor, &sprite);
+
+/* in the render hook */
+SDLStatic_RenderWorld(engine, &camera, alpha);
+SDLStatic_RenderOverlay(engine, alpha);
+```
+
+That is the whole draw loop for a 2D game. Start from
+`SDLStatic_SpriteDefault()` rather than a zeroed struct — a zeroed sprite
+would be invisible, fully transparent and pinned by its top-left corner,
+which is never what anybody meant.
+
+A sprite with **no texture** draws a solid rectangle in its colour. That is
+deliberate: it is how a game gets something on screen before it has any art,
+and how a debug view marks a hitbox. Every screenshot in this section was
+made that way.
+
+### What the engine is doing for you
+
+**Ordering.** Draw order is the difference between a character standing in
+front of a tree and inside it. Sprites sort by `layer` first, then by
+`order` — or by world Y when `sort_by_y` is set, which is how a top-down or
+isometric game gets depth out of a flat scene. Doing it in the engine means
+it happens *after* the actors have moved, rather than from a value the game
+had to remember to update.
+
+Ties break on the actor id. That is not decoration: without a stable
+tiebreak, two sprites at the same depth swap places whenever the sort runs
+differently, and the flicker only appears when things overlap — exactly when
+somebody is looking.
+
+**Culling.** Sprites outside the camera's visible rectangle are skipped. A
+level is bigger than the screen, which is the entire reason a camera exists,
+so this turns "draw the level" from O(level) into O(screen). The demo draws
+66 of 426 sprites in a single view; in two-way split screen each narrower
+viewport draws 32 and 37.
+
+```c
+SDLStatic_RenderStats s = SDLStatic_RenderLastStats(engine);
+printf("considered %d, culled %d, drew %d\n", s.considered, s.culled, s.drawn);
+```
+
+Worth putting on a debug overlay: "drew 4000" is how you find out culling
+is not working.
+
+A rotated sprite is culled against its circumscribed square rather than its
+rectangle, or a sprite near the screen edge would vanish as it turned.
+
+**Interpolation.** Sprites draw at `SDLStatic_ActorRenderTransform`, so
+motion is smooth without any game writing its own `previous_x`.
+
+### Origins
+
+`origin_x`/`origin_y` say where the actor's position sits within the sprite,
+as a fraction of its size. The default (0.5, 0.5) centres it. **(0.5, 1.0)
+is what you want for anything standing on ground**: the actor's position
+becomes where its feet are, which makes both Y-sorting and physics agree
+with what the player sees. Rotation happens about the same point, so a
+sprite pinned at its feet turns about its feet rather than its waist.
+
+### World and screen
+
+`SDLStatic_RenderWorld` draws world sprites through a camera.
+`SDLStatic_RenderOverlay` draws sprites with `screen_space` set, in design
+coordinates, ignoring the camera.
+
+They are separate calls because a HUD belongs to the player, not to a
+viewport. A split-screen game calls RenderWorld once per camera and
+RenderOverlay once, at the end:
+
+```c
+for (int i = 0; i < players; i++)
+    SDLStatic_RenderWorld(engine, &cameras[i], alpha);
+SDLStatic_RenderOverlay(engine, alpha);
+```
+
+### What the engine does not do
+
+**It does not load textures.** A sprite holds an `SDL_Texture *` the game
+made however it liked. Drawing what you are given and fetching what you
+asked for are different jobs with different failure modes, and merging them
+makes both worse; asset streaming is its own subsystem.

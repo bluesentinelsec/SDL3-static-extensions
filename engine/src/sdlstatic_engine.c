@@ -367,6 +367,7 @@ void SDLStatic_DestroyEngine(SDLStatic_Engine *engine)
     SDLStatic_SceneShutdown(engine);
     /* Actors after scenes: a scene's unload may still want to reach them. */
     SDLStatic_ActorWorldDestroy(engine);
+    SDLStatic_RenderDestroy(engine);
     /* GL objects before the renderer that owns the context they live in. */
     SDLStatic_EnginePostFXDestroy(engine);
     SDLStatic_EngineDestroyFrameTarget(engine);
