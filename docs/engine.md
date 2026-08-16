@@ -209,6 +209,72 @@ of *noisy* frames also produces exactly 60; a two-second stall produces at
 most five; on a simulated 144 Hz display, 144 renders accompany 60 steps and
 `alpha` never leaves [0, 1).
 
+## Scenes
+
+A scene is a screen: a title, a level, a pause menu, a loading screen. The
+engine keeps them in a **stack**, not a single "current scene" pointer,
+because a stack is what makes a pause menu possible — pushing one leaves
+the level underneath intact, so popping it returns to exactly where the
+player was, with nothing to rebuild and no state to restore.
+
+```c
+static SDLStatic_SceneDef kLevel = {
+    .name = "level",
+    .state_size = sizeof(LevelState),
+    .load = LevelLoad,           /* build the world; false aborts the push */
+    .fixed_update = LevelStep,
+    .render = LevelRender,
+};
+
+SDLStatic_ScenePush(engine, &kLevel);
+```
+
+`state_size` bytes are allocated with the scene and zeroed;
+`SDLStatic_SceneState` hands them back. That keeps a scene's data next to
+its lifetime, so leaving the scene frees it and no game code has to
+remember. The definition itself is **copied**, so it may be a local, a
+temporary, or a table a script just built.
+
+### Lifecycle
+
+`load` once when created → `enter` whenever it becomes the top scene →
+`fixed_update`/`update`/`render`/`event` while it is on the stack → `exit`
+whenever it stops being the top → `unload` once before destruction. A scene
+covered by a pause menu sees `exit`, and sees `enter` again when the menu
+pops.
+
+### Covered scenes
+
+Two flags answer the two questions a stack has to answer:
+
+| Flag | Meaning |
+|---|---|
+| `SDLSTATIC_SCENE_UPDATE_WHEN_COVERED` | keep simulating underneath. Off by default — which is what "paused" means. On for a level running behind a dialogue box. |
+| `SDLSTATIC_SCENE_TRANSPARENT` | this scene does not fill the screen, so draw the one below it first. What makes a pause menu look like one. |
+
+An opaque scene means the scenes below are not drawn at all, which is the
+saving that makes a deep stack cheap.
+
+### Changes are deferred
+
+`Push`, `Pop`, `Replace` and `Reset` take effect at the **end of the frame**,
+so a scene can replace itself from inside its own update and keep running
+to the end of that update without the ground moving underneath it. Two
+changes in one frame is an error rather than a silent last-one-wins.
+
+### Transitions
+
+```c
+SDLStatic_SceneTransitionTo(engine, &kLevel, SDLSTATIC_TRANSITION_FADE, 0.35f);
+```
+
+A fade runs in two halves: the outgoing scene fades to the transition
+colour, **the swap happens at the midpoint** where the screen is covered,
+and the incoming scene fades up. Only one scene is ever live, so a
+transition cannot double the game's memory or run two simulations at once —
+and the swap is hidden anyway. Scenes keep updating during a fade, so a
+level does not freeze as it leaves.
+
 ## Getting your game into the engine
 
 Three ways, depending on the language, all supported deliberately.

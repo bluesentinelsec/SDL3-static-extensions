@@ -14,52 +14,11 @@
  */
 #include <SDLStatic/engine.h>
 
+#include "engine_internal.h"
+
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
-
-#define NS_PER_SECOND 1000000000ull
-
-struct SDLStatic_Engine
-{
-    SDL_Window *window;
-    SDL_Renderer *renderer;
-    bool owns_window;
-
-    int design_width, design_height;
-    SDL_FColor clear_color;
-
-    /* Timing. All internal time is nanoseconds; the API speaks seconds. */
-    Uint64 step_ns;         /* one simulation step */
-    Uint64 accumulator_ns;  /* unsimulated time carried between frames */
-    Uint64 last_ns;         /* clock reading at the start of the last frame */
-    Uint64 refresh_ns;      /* display period, 0 if unknown */
-    Uint64 max_frame_ns;    /* longer than this is a stall */
-    Uint64 manual_ns;       /* the injected clock, when manual */
-    bool manual_clock;
-
-    int tick_rate;
-    int max_steps;
-    int max_fps;          /* 0 = follow the display, <0 = no limiter */
-    Uint64 frame_start_ns; /* for the limiter */
-    SDLStatic_EngineInterpolation interpolation;
-    float time_scale;
-
-    float delta_seconds;
-    float alpha;
-    int steps_last_frame;
-    int overload_frames;
-    Uint64 frame_count;
-
-    /* A short moving average, so a debug overlay does not flicker. */
-    float fps;
-    float fps_accumulator;
-    int fps_frames;
-
-    bool running;
-    const SDLStatic_GameHooks *hooks;
-    void *user;
-};
 
 /* --- clock -------------------------------------------------------------- */
 
@@ -196,9 +155,9 @@ SDLStatic_Engine *SDLStatic_CreateEngine(const SDLStatic_EngineConfig *config)
             SDL_free(engine);
             return NULL;
         }
-        /* The renderer owns the surface's lifetime from here; SDL frees it
-           with the renderer. */
-        engine->owns_window = false;
+        /* A software renderer does *not* take ownership of the surface it
+           draws into, so we keep it and free it ourselves. */
+        engine->headless_surface = surface;
     }
     else
     {
@@ -224,7 +183,6 @@ SDLStatic_Engine *SDLStatic_CreateEngine(const SDLStatic_EngineConfig *config)
             SDL_free(engine);
             return NULL;
         }
-        engine->owns_window = true;
         /* Vsync unless asked otherwise: it costs nothing, it stops the loop
            free-running at four figures, and it quantises the frame delta
            for the smoothing above. */
@@ -248,6 +206,9 @@ void SDLStatic_DestroyEngine(SDLStatic_Engine *engine)
     {
         return;
     }
+    /* Scenes first, so they see exit and unload while the renderer they
+       may want to use is still alive. */
+    SDLStatic_SceneShutdown(engine);
     if (engine->renderer != NULL)
     {
         SDL_DestroyRenderer(engine->renderer);
@@ -255,6 +216,10 @@ void SDLStatic_DestroyEngine(SDLStatic_Engine *engine)
     if (engine->window != NULL)
     {
         SDL_DestroyWindow(engine->window);
+    }
+    if (engine->headless_surface != NULL)
+    {
+        SDL_DestroySurface(engine->headless_surface); /* after the renderer */
     }
     SDL_free(engine);
 }
@@ -286,6 +251,7 @@ static void PumpEvents(SDLStatic_Engine *engine)
             }
             DetectRefreshRate(engine); /* a move between displays changes it */
         }
+        SDLStatic_SceneDispatchEvent(engine, &event);
         if (engine->hooks != NULL && engine->hooks->event != NULL)
         {
             engine->hooks->event(engine->user, &event);
@@ -357,10 +323,14 @@ bool SDLStatic_EngineTick(SDLStatic_Engine *engine)
     int steps = 0;
     while (engine->accumulator_ns >= engine->step_ns && steps < engine->max_steps)
     {
+        const float step = SDLStatic_EngineStep(engine);
         if (engine->hooks != NULL && engine->hooks->fixed_update != NULL)
         {
-            engine->hooks->fixed_update(engine->user, SDLStatic_EngineStep(engine));
+            engine->hooks->fixed_update(engine->user, step);
         }
+        /* Hooks run around the scene stack, never instead of it: a game can
+           use both, which is how a debug overlay coexists with scenes. */
+        SDLStatic_SceneDispatchFixedUpdate(engine, step);
         engine->accumulator_ns -= engine->step_ns;
         steps++;
     }
@@ -394,11 +364,15 @@ bool SDLStatic_EngineTick(SDLStatic_Engine *engine)
     {
         engine->hooks->update(engine->user, engine->delta_seconds);
     }
+    SDLStatic_SceneDispatchUpdate(engine, engine->delta_seconds);
 
     SDL_SetRenderDrawColorFloat(engine->renderer, engine->clear_color.r, engine->clear_color.g,
                                 engine->clear_color.b, engine->clear_color.a);
     SDL_SetRenderDrawBlendMode(engine->renderer, SDL_BLENDMODE_NONE);
     SDL_RenderClear(engine->renderer);
+    SDLStatic_SceneDispatchRender(engine, engine->alpha);
+    /* The game's own render hook goes last, so an overlay drawn there sits
+       above the scenes and above a transition fade. */
     if (engine->hooks != NULL && engine->hooks->render != NULL)
     {
         engine->hooks->render(engine->user, engine->alpha);

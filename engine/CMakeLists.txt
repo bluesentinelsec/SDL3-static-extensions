@@ -10,6 +10,7 @@ enable_language(C)
 
 add_library(SDLStatic_Engine STATIC
   src/sdlstatic_engine.c
+  src/sdlstatic_engine_scene.c
 )
 add_library(SDLStatic::Engine ALIAS SDLStatic_Engine)
 
