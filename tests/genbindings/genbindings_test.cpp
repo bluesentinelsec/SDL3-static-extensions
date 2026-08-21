@@ -295,3 +295,53 @@ TEST(GenRuby, JsonTreeWalkAndPhysics)
 }
 
 } // namespace
+
+// ---------------------------------------------------------------------------
+// The engine, from scripts.
+//
+// Adding engine/include/SDLStatic/*.h to the bindgen spec generates 377 of
+// the engine's 406 functions onto the Lua and Ruby surfaces. What that does
+// NOT yet give a script is a way to *start*: SDLStatic_CreateEngine takes an
+// SDLStatic_EngineConfig, and SDLStatic_ActorSpawn takes an
+// SDLStatic_ActorDef. Both are plain C structs a caller fills in on the
+// stack, and both contain pointers (and, for ActorDef, function pointers),
+// so the classifier exposes them as opaque handles rather than marshalling
+// them from a table the way it does SDL_Rect.
+//
+// So these check what is actually true today: the surface exists and is
+// reachable by name. Driving the engine from a script needs the host layer
+// described in docs/engine.md — table-to-struct marshalling for the def
+// structs, and a callback bridge for the hooks.
+
+namespace
+{
+
+TEST(GenLua, EngineFunctionsAreOnTheLuaSurface)
+{
+    RunLua(
+        "assert(type(SDLStaticC.CreateEngine) == 'function')\n"
+        "assert(type(SDLStaticC.EngineTick) == 'function')\n"
+        "assert(type(SDLStaticC.ActorSpawn) == 'function')\n"
+        "assert(type(SDLStaticC.RenderWorld) == 'function')\n"
+        "assert(type(SDLStaticC.LightSetPreset) == 'function')\n"
+        "assert(type(SDLStaticC.SaveWrite) == 'function')\n"
+        "assert(type(SDLStaticC.Text) == 'function')\n"
+        // Enums come through as constants, which is the half a script can
+        // already use without a host layer.
+        "assert(type(SDLStaticC.SDLSTATIC_LIGHT_NIGHT) == 'number')\n"
+        "assert(type(SDLStaticC.SDLSTATIC_QUALITY_HIGH) == 'number')\n"
+        "assert(type(SDLStaticC.SDLSTATIC_PAD_A) == 'number')\n");
+}
+
+TEST(GenRuby, EngineFunctionsAreOnTheRubySurface)
+{
+    // Ruby uses the same names as Lua, not snake_case.
+    RunRuby(
+        "raise 'CreateEngine' unless SDLStaticC.respond_to?(:CreateEngine)\n"
+        "raise 'EngineTick' unless SDLStaticC.respond_to?(:EngineTick)\n"
+        "raise 'ActorSpawn' unless SDLStaticC.respond_to?(:ActorSpawn)\n"
+        "raise 'LightSetPreset' unless SDLStaticC.respond_to?(:LightSetPreset)\n"
+        "raise 'LIGHT_NIGHT' unless SDLStaticC::SDLSTATIC_LIGHT_NIGHT.is_a?(Integer)\n");
+}
+
+} // namespace

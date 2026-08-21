@@ -25,18 +25,19 @@ types). The full C API additionally stays reachable from C/C++.
 | libyaml | 48 | 0 | 0 | 48 | 2 | 46 |
 | mog HTTP/S | 69 | 54 | 0 | 12 | 67 | 2 |
 | cJSON | 78 | 57 | 0 | 20 | 70 | 8 |
-| SDLStatic modules | 122 | 75 | 12 | 31 | 112 | 10 |
-| **Total** | 3014 | 1093 | 236 | 1638 | 2410 | 604 |
+| SDLStatic modules | 406 | 75 | 92 | 235 | 377 | 29 |
+| **Total** | 3298 | 1093 | 316 | 1842 | 2675 | 623 |
 
 ## Script-surface skip reasons
 
-- 289: unmarshalable parameter type
-- 129: unmarshalable return type
+- 297: unmarshalable parameter type
+- 138: unmarshalable return type
 - 76: stdlib clone
 - 53: math clone
 - 47: threading
-- 7: callback parameter
+- 8: callback parameter
 - 3: owned string, no free fn
+- 1: variadic
 
 ## Per-library skipped functions
 
@@ -699,8 +700,11 @@ types). The full C API additionally stays reachable from C/C++.
 
 </details>
 
-<details><summary>SDLStatic modules (10)</summary>
+<details><summary>SDLStatic modules (29)</summary>
 
+- `SDLStatic_ActorEach` — param visit: <funcptr>*
+- `SDLStatic_ActorLight` — returns struct pointer
+- `SDLStatic_ActorState` — return type void*
 - `SDLStatic_BidiItemize` — returns struct pointer
 - `SDLStatic_CompressData` — return type unsigned char*
 - `SDLStatic_ConnectSignal` — param callback: SDLStatic_SignalCallback
@@ -709,8 +713,24 @@ types). The full C API additionally stays reachable from C/C++.
 - `SDLStatic_DecryptData` — return type unsigned char*
 - `SDLStatic_EmitSignal` — param args: void*
 - `SDLStatic_EncryptData` — return type unsigned char*
+- `SDLStatic_EngineGraphics` — returns struct pointer
+- `SDLStatic_EngineSetHooks` — param user: void*
+- `SDLStatic_FingerHeldInRect` — returns struct pointer
+- `SDLStatic_FingerInRect` — returns struct pointer
+- `SDLStatic_GetFinger` — returns struct pointer
+- `SDLStatic_GraphicsArgsConfigPath` — param argv: char**
+- `SDLStatic_GraphicsLoadArgs` — param argv: char**
+- `SDLStatic_GraphicsResolve` — param argv: char**
+- `SDLStatic_GraphicsSetArchiveReader` — param reader: SDLStatic_GraphicsReadFile
 - `SDLStatic_GuiGridBegin` — param weights: const float*
 - `SDLStatic_LoadVFSFile` — return type unsigned char*
+- `SDLStatic_PhysicsSetCollisionCallback` — param callback: SDLStatic_CollisionCallback
+- `SDLStatic_RunGame` — param user: void*
+- `SDLStatic_SaveRead` — return type void*
+- `SDLStatic_SceneState` — return type void*
+- `SDLStatic_SpriteDefault` — return type SDLStatic_Sprite
+- `SDLStatic_TextFormat` — variadic
+- `SDLStatic_TextSystemLanguages` — param out: char**
 
 </details>
 

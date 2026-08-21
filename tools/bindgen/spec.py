@@ -191,6 +191,7 @@ LIBRARIES: list[LibrarySpec] = [
             "regex/include/SDLStatic/regex.h",
             "light/include/SDLStatic/light.h",
             "ttf/include/SDLStatic/*.h",
+            "engine/include/SDLStatic/*.h",
         ],
         includes=[],
         error_fn="SDL_GetError()",
