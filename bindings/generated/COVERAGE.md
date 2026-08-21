@@ -25,13 +25,13 @@ types). The full C API additionally stays reachable from C/C++.
 | libyaml | 48 | 0 | 0 | 48 | 2 | 46 |
 | mog HTTP/S | 69 | 54 | 0 | 12 | 67 | 2 |
 | cJSON | 78 | 57 | 0 | 20 | 70 | 8 |
-| SDLStatic modules | 406 | 75 | 92 | 235 | 377 | 29 |
-| **Total** | 3298 | 1093 | 316 | 1842 | 2675 | 623 |
+| SDLStatic modules | 479 | 75 | 96 | 304 | 446 | 33 |
+| **Total** | 3371 | 1093 | 320 | 1911 | 2744 | 627 |
 
 ## Script-surface skip reasons
 
-- 297: unmarshalable parameter type
-- 138: unmarshalable return type
+- 298: unmarshalable parameter type
+- 141: unmarshalable return type
 - 76: stdlib clone
 - 53: math clone
 - 47: threading
@@ -700,12 +700,14 @@ types). The full C API additionally stays reachable from C/C++.
 
 </details>
 
-<details><summary>SDLStatic modules (29)</summary>
+<details><summary>SDLStatic modules (33)</summary>
 
 - `SDLStatic_ActorEach` — param visit: <funcptr>*
 - `SDLStatic_ActorLight` — returns struct pointer
 - `SDLStatic_ActorState` — return type void*
 - `SDLStatic_BidiItemize` — returns struct pointer
+- `SDLStatic_BodyDefCreate` — returns struct pointer
+- `SDLStatic_CameraCreate` — returns struct pointer
 - `SDLStatic_CompressData` — return type unsigned char*
 - `SDLStatic_ConnectSignal` — param callback: SDLStatic_SignalCallback
 - `SDLStatic_DecodeDataBase64` — return type unsigned char*
@@ -723,11 +725,13 @@ types). The full C API additionally stays reachable from C/C++.
 - `SDLStatic_GraphicsResolve` — param argv: char**
 - `SDLStatic_GraphicsSetArchiveReader` — param reader: SDLStatic_GraphicsReadFile
 - `SDLStatic_GuiGridBegin` — param weights: const float*
+- `SDLStatic_LightDefCreate` — returns struct pointer
 - `SDLStatic_LoadVFSFile` — return type unsigned char*
 - `SDLStatic_PhysicsSetCollisionCallback` — param callback: SDLStatic_CollisionCallback
 - `SDLStatic_RunGame` — param user: void*
 - `SDLStatic_SaveRead` — return type void*
 - `SDLStatic_SceneState` — return type void*
+- `SDLStatic_ScriptBind` — param language_state: void*
 - `SDLStatic_SpriteDefault` — return type SDLStatic_Sprite
 - `SDLStatic_TextFormat` — variadic
 - `SDLStatic_TextSystemLanguages` — param out: char**

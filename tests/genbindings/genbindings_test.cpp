@@ -316,32 +316,77 @@ TEST(GenRuby, JsonTreeWalkAndPhysics)
 namespace
 {
 
-TEST(GenLua, EngineFunctionsAreOnTheLuaSurface)
+TEST(GenLua, AScriptCanCreateAndDriveAnEngine)
 {
+    ASSERT_TRUE(SDL_Init(0));
     RunLua(
-        "assert(type(SDLStaticC.CreateEngine) == 'function')\n"
-        "assert(type(SDLStaticC.EngineTick) == 'function')\n"
-        "assert(type(SDLStaticC.ActorSpawn) == 'function')\n"
-        "assert(type(SDLStaticC.RenderWorld) == 'function')\n"
-        "assert(type(SDLStaticC.LightSetPreset) == 'function')\n"
-        "assert(type(SDLStaticC.SaveWrite) == 'function')\n"
-        "assert(type(SDLStaticC.Text) == 'function')\n"
-        // Enums come through as constants, which is the half a script can
-        // already use without a host layer.
-        "assert(type(SDLStaticC.SDLSTATIC_LIGHT_NIGHT) == 'number')\n"
-        "assert(type(SDLStaticC.SDLSTATIC_QUALITY_HIGH) == 'number')\n"
-        "assert(type(SDLStaticC.SDLSTATIC_PAD_A) == 'number')\n");
+        // The builder is what makes this possible: a create/destroy pair
+        // plus scalar setters is a shape the generator already binds as an
+        // owned handle, so no marshalling was written for it.
+        "local cfg = SDLStaticC.ConfigCreate()\n"
+        "assert(cfg ~= nil)\n"
+        "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
+        "SDLStaticC.ConfigSetManualClock(cfg, true)\n"
+        "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
+        "SDLStaticC.ConfigSetDesignSize(cfg, 320, 240)\n"
+        "local e = SDLStaticC.CreateEngine(cfg)\n"
+        "assert(e ~= nil, 'engine created from script')\n"
+        "SDLStaticC.ConfigDestroy(cfg)\n"
+        // The loop, owned by the script.
+        "for i = 1, 3 do\n"
+        "  SDLStaticC.EngineAdvance(e, 16666667)\n"
+        "  SDLStaticC.EngineTick(e)\n"
+        "end\n"
+        "assert(SDLStaticC.EngineFrameCount(e) >= 3)\n"
+        // Actors, spawned from script through the same builder shape.
+        "local def = SDLStaticC.ActorDefCreate()\n"
+        "SDLStaticC.ActorDefSetType(def, 'goblin')\n"
+        "SDLStaticC.ActorDefSetPosition(def, 10, 20)\n"
+        "local id = SDLStaticC.ActorSpawn(e, def)\n"
+        "SDLStaticC.ActorDefDestroy(def)\n"
+        "assert(id ~= 0, 'spawned')\n"
+        "SDLStaticC.EngineAdvance(e, 16666667)\n"
+        "SDLStaticC.EngineTick(e)\n"
+        "assert(SDLStaticC.ActorCount(e) == 1)\n"
+        "assert(SDLStaticC.ActorFindByType(e, 'goblin') == id)\n"
+        // Lighting and text, to show the newer subsystems came through.
+        "SDLStaticC.LightSetPreset(e, SDLStaticC.SDLSTATIC_LIGHT_NIGHT)\n"
+        "assert(SDLStaticC.LightSunlight(e) < 0.5)\n"
+        "assert(SDLStaticC.TextLoad(e, 'en', '[strings]\\n\"hi\" = \"Hello\"\\n'))\n"
+        "assert(SDLStaticC.Text(e, 'hi') == 'Hello')\n"
+        "SDLStaticC.DestroyEngine(e)\n");
+    SDL_Quit();
 }
 
-TEST(GenRuby, EngineFunctionsAreOnTheRubySurface)
+TEST(GenRuby, AScriptCanCreateAndDriveAnEngine)
 {
+    ASSERT_TRUE(SDL_Init(0));
     // Ruby uses the same names as Lua, not snake_case.
     RunRuby(
-        "raise 'CreateEngine' unless SDLStaticC.respond_to?(:CreateEngine)\n"
-        "raise 'EngineTick' unless SDLStaticC.respond_to?(:EngineTick)\n"
-        "raise 'ActorSpawn' unless SDLStaticC.respond_to?(:ActorSpawn)\n"
-        "raise 'LightSetPreset' unless SDLStaticC.respond_to?(:LightSetPreset)\n"
-        "raise 'LIGHT_NIGHT' unless SDLStaticC::SDLSTATIC_LIGHT_NIGHT.is_a?(Integer)\n");
+        "cfg = SDLStaticC.ConfigCreate\n"
+        "raise 'cfg' if cfg.nil?\n"
+        "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
+        "SDLStaticC.ConfigSetManualClock(cfg, true)\n"
+        "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
+        "SDLStaticC.ConfigSetDesignSize(cfg, 320, 240)\n"
+        "e = SDLStaticC.CreateEngine(cfg)\n"
+        "raise 'engine' if e.nil?\n"
+        "SDLStaticC.ConfigDestroy(cfg)\n"
+        "3.times do\n"
+        "  SDLStaticC.EngineAdvance(e, 16666667)\n"
+        "  SDLStaticC.EngineTick(e)\n"
+        "end\n"
+        "raise 'frames' unless SDLStaticC.EngineFrameCount(e) >= 3\n"
+        "d = SDLStaticC.ActorDefCreate\n"
+        "SDLStaticC.ActorDefSetType(d, 'orc')\n"
+        "id = SDLStaticC.ActorSpawn(e, d)\n"
+        "SDLStaticC.ActorDefDestroy(d)\n"
+        "raise 'spawn' if id == 0\n"
+        "SDLStaticC.EngineAdvance(e, 16666667)\n"
+        "SDLStaticC.EngineTick(e)\n"
+        "raise 'count' unless SDLStaticC.ActorCount(e) == 1\n"
+        "SDLStaticC.DestroyEngine(e)\n");
+    SDL_Quit();
 }
 
 } // namespace

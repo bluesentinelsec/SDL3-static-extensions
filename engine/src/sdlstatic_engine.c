@@ -16,6 +16,8 @@
 
 #include "engine_internal.h"
 
+#include <SDLStatic/engine_script.h>
+
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
@@ -380,6 +382,7 @@ void SDLStatic_DestroyEngine(SDLStatic_Engine *engine)
     SDLStatic_EngineLightDestroy(engine);
     SDLStatic_EngineSavesDestroy(engine);
     SDLStatic_EngineTextDestroy(engine);
+    SDLStatic_ScriptUnbind(engine);
     SDLStatic_EngineAssetsDestroy(engine);
     SDLStatic_EnginePhysicsDestroy(engine);
     SDLStatic_ActorWorldDestroy(engine);

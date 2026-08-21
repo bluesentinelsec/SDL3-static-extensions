@@ -17,6 +17,7 @@
 #include <SDLStatic/engine_assets.h>
 #include <SDLStatic/engine_binding.h>
 #include <SDLStatic/engine_camera.h>
+#include <SDLStatic/engine_config.h>
 #include <SDLStatic/engine_graphics.h>
 #include <SDLStatic/engine_input.h>
 #include <SDLStatic/engine_light.h>
@@ -25,6 +26,7 @@
 #include <SDLStatic/engine_render.h>
 #include <SDLStatic/engine_save.h>
 #include <SDLStatic/engine_scene.h>
+#include <SDLStatic/engine_script.h>
 #include <SDLStatic/engine_text.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
@@ -672,6 +674,18 @@ inline Status SceneTransitionTo(SDLStatic_Engine *engine, const SDLStatic_SceneD
 inline Status SceneTransitioning(SDLStatic_Engine *engine) {
   return ::SDLStatic_SceneTransitioning(engine) ? Status() : Status::FromSdl();
 }
+inline Status ScriptBind(SDLStatic_Engine *engine, void *language_state, SDLStatic_ScriptDispatch dispatch, SDLStatic_ScriptRelease release) {
+  return ::SDLStatic_ScriptBind(engine, language_state, dispatch, release) ? Status() : Status::FromSdl();
+}
+inline Status ScriptHasHandlers(SDLStatic_Engine *engine) {
+  return ::SDLStatic_ScriptHasHandlers(engine) ? Status() : Status::FromSdl();
+}
+inline Status ScriptRun(SDLStatic_Engine *engine) {
+  return ::SDLStatic_ScriptRun(engine) ? Status() : Status::FromSdl();
+}
+inline Status ScriptSetHook(SDLStatic_Engine *engine, SDLStatic_ScriptHook hook, Sint64 handle) {
+  return ::SDLStatic_ScriptSetHook(engine, hook, handle) ? Status() : Status::FromSdl();
+}
 inline Status SetDeviceMotion(SDLStatic_Engine *engine, bool enabled) {
   return ::SDLStatic_SetDeviceMotion(engine, enabled) ? Status() : Status::FromSdl();
 }
@@ -718,6 +732,16 @@ inline constexpr auto& ActorChildCount = ::SDLStatic_ActorChildCount;
 inline constexpr auto& ActorClear = ::SDLStatic_ActorClear;
 inline constexpr auto& ActorClearSprite = ::SDLStatic_ActorClearSprite;
 inline constexpr auto& ActorCount = ::SDLStatic_ActorCount;
+inline constexpr auto& ActorDefCreate = ::SDLStatic_ActorDefCreate;
+inline constexpr auto& ActorDefDestroy = ::SDLStatic_ActorDefDestroy;
+inline constexpr auto& ActorDefSetName = ::SDLStatic_ActorDefSetName;
+inline constexpr auto& ActorDefSetParent = ::SDLStatic_ActorDefSetParent;
+inline constexpr auto& ActorDefSetPosition = ::SDLStatic_ActorDefSetPosition;
+inline constexpr auto& ActorDefSetRotation = ::SDLStatic_ActorDefSetRotation;
+inline constexpr auto& ActorDefSetScale = ::SDLStatic_ActorDefSetScale;
+inline constexpr auto& ActorDefSetStateSize = ::SDLStatic_ActorDefSetStateSize;
+inline constexpr auto& ActorDefSetTags = ::SDLStatic_ActorDefSetTags;
+inline constexpr auto& ActorDefSetType = ::SDLStatic_ActorDefSetType;
 inline constexpr auto& ActorDestroy = ::SDLStatic_ActorDestroy;
 inline constexpr auto& ActorEach = ::SDLStatic_ActorEach;
 inline constexpr auto& ActorEngine = ::SDLStatic_ActorEngine;
@@ -763,17 +787,56 @@ inline constexpr auto& AssetsSetWorkers = ::SDLStatic_AssetsSetWorkers;
 inline constexpr auto& AssetsWait = ::SDLStatic_AssetsWait;
 inline constexpr auto& BidiItemize = ::SDLStatic_BidiItemize;
 inline constexpr auto& BindingToString = ::SDLStatic_BindingToString;
+inline constexpr auto& BodyDefCreate = ::SDLStatic_BodyDefCreate;
+inline constexpr auto& BodyDefDestroy = ::SDLStatic_BodyDefDestroy;
+inline constexpr auto& BodyDefSetBullet = ::SDLStatic_BodyDefSetBullet;
+inline constexpr auto& BodyDefSetFilter = ::SDLStatic_BodyDefSetFilter;
+inline constexpr auto& BodyDefSetFixedRotation = ::SDLStatic_BodyDefSetFixedRotation;
+inline constexpr auto& BodyDefSetGravityScale = ::SDLStatic_BodyDefSetGravityScale;
+inline constexpr auto& BodyDefSetMaterial = ::SDLStatic_BodyDefSetMaterial;
+inline constexpr auto& BodyDefSetOffset = ::SDLStatic_BodyDefSetOffset;
+inline constexpr auto& BodyDefSetSensor = ::SDLStatic_BodyDefSetSensor;
+inline constexpr auto& BodyDefSetShape = ::SDLStatic_BodyDefSetShape;
+inline constexpr auto& BodyDefSetSize = ::SDLStatic_BodyDefSetSize;
+inline constexpr auto& BodyDefSetType = ::SDLStatic_BodyDefSetType;
 inline constexpr auto& BodyDefault = ::SDLStatic_BodyDefault;
+inline constexpr auto& CameraCreate = ::SDLStatic_CameraCreate;
+inline constexpr auto& CameraDestroy = ::SDLStatic_CameraDestroy;
 inline constexpr auto& CameraEnd = ::SDLStatic_CameraEnd;
 inline constexpr auto& CameraFollow = ::SDLStatic_CameraFollow;
 inline constexpr auto& CameraInit = ::SDLStatic_CameraInit;
 inline constexpr auto& CameraPoint = ::SDLStatic_CameraPoint;
 inline constexpr auto& CameraRect = ::SDLStatic_CameraRect;
+inline constexpr auto& CameraSetBounds = ::SDLStatic_CameraSetBounds;
+inline constexpr auto& CameraSetDeadzone = ::SDLStatic_CameraSetDeadzone;
+inline constexpr auto& CameraSetSmoothing = ::SDLStatic_CameraSetSmoothing;
+inline constexpr auto& CameraSetViewport = ::SDLStatic_CameraSetViewport;
+inline constexpr auto& CameraSetZoom = ::SDLStatic_CameraSetZoom;
 inline constexpr auto& CameraShake = ::SDLStatic_CameraShake;
 inline constexpr auto& CameraSnap = ::SDLStatic_CameraSnap;
 inline constexpr auto& CameraSplit = ::SDLStatic_CameraSplit;
 inline constexpr auto& CameraUpdate = ::SDLStatic_CameraUpdate;
+inline constexpr auto& CameraX = ::SDLStatic_CameraX;
+inline constexpr auto& CameraY = ::SDLStatic_CameraY;
 inline constexpr auto& CompressData = ::SDLStatic_CompressData;
+inline constexpr auto& ConfigCreate = ::SDLStatic_ConfigCreate;
+inline constexpr auto& ConfigDestroy = ::SDLStatic_ConfigDestroy;
+inline constexpr auto& ConfigSetAutoMount = ::SDLStatic_ConfigSetAutoMount;
+inline constexpr auto& ConfigSetBackend = ::SDLStatic_ConfigSetBackend;
+inline constexpr auto& ConfigSetDesignSize = ::SDLStatic_ConfigSetDesignSize;
+inline constexpr auto& ConfigSetFullscreen = ::SDLStatic_ConfigSetFullscreen;
+inline constexpr auto& ConfigSetGraphics = ::SDLStatic_ConfigSetGraphics;
+inline constexpr auto& ConfigSetHeadless = ::SDLStatic_ConfigSetHeadless;
+inline constexpr auto& ConfigSetHighDpi = ::SDLStatic_ConfigSetHighDpi;
+inline constexpr auto& ConfigSetManualClock = ::SDLStatic_ConfigSetManualClock;
+inline constexpr auto& ConfigSetMaxFps = ::SDLStatic_ConfigSetMaxFps;
+inline constexpr auto& ConfigSetMediaPath = ::SDLStatic_ConfigSetMediaPath;
+inline constexpr auto& ConfigSetPresentation = ::SDLStatic_ConfigSetPresentation;
+inline constexpr auto& ConfigSetResizable = ::SDLStatic_ConfigSetResizable;
+inline constexpr auto& ConfigSetTickRate = ::SDLStatic_ConfigSetTickRate;
+inline constexpr auto& ConfigSetTitle = ::SDLStatic_ConfigSetTitle;
+inline constexpr auto& ConfigSetVsync = ::SDLStatic_ConfigSetVsync;
+inline constexpr auto& ConfigSetWindowSize = ::SDLStatic_ConfigSetWindowSize;
 inline constexpr auto& ConnectSignal = ::SDLStatic_ConnectSignal;
 inline constexpr auto& CountSignalConnections = ::SDLStatic_CountSignalConnections;
 inline constexpr auto& CreateChipSFX = ::SDLStatic_CreateChipSFX;
@@ -874,6 +937,14 @@ inline constexpr auto& LightAddOccluderLine = ::SDLStatic_LightAddOccluderLine;
 inline constexpr auto& LightAmbient = ::SDLStatic_LightAmbient;
 inline constexpr auto& LightAt = ::SDLStatic_LightAt;
 inline constexpr auto& LightCount = ::SDLStatic_LightCount;
+inline constexpr auto& LightDefCreate = ::SDLStatic_LightDefCreate;
+inline constexpr auto& LightDefDestroy = ::SDLStatic_LightDefDestroy;
+inline constexpr auto& LightDefSetColor = ::SDLStatic_LightDefSetColor;
+inline constexpr auto& LightDefSetCone = ::SDLStatic_LightDefSetCone;
+inline constexpr auto& LightDefSetFlicker = ::SDLStatic_LightDefSetFlicker;
+inline constexpr auto& LightDefSetOffset = ::SDLStatic_LightDefSetOffset;
+inline constexpr auto& LightDefSetRadius = ::SDLStatic_LightDefSetRadius;
+inline constexpr auto& LightDefSetShadows = ::SDLStatic_LightDefSetShadows;
 inline constexpr auto& LightDefault = ::SDLStatic_LightDefault;
 inline constexpr auto& LightHour = ::SDLStatic_LightHour;
 inline constexpr auto& LightPreset_ = ::SDLStatic_LightPreset_;
@@ -917,12 +988,24 @@ inline constexpr auto& SceneFind = ::SDLStatic_SceneFind;
 inline constexpr auto& SceneName = ::SDLStatic_SceneName;
 inline constexpr auto& SceneSetTransitionColor = ::SDLStatic_SceneSetTransitionColor;
 inline constexpr auto& SceneState = ::SDLStatic_SceneState;
+inline constexpr auto& ScriptUnbind = ::SDLStatic_ScriptUnbind;
 inline constexpr auto& SetDebugTextSize = ::SDLStatic_SetDebugTextSize;
 inline constexpr auto& SetDirectionRepeat = ::SDLStatic_SetDirectionRepeat;
 inline constexpr auto& SetGamepadDeadzone = ::SDLStatic_SetGamepadDeadzone;
 inline constexpr auto& SetTextInput = ::SDLStatic_SetTextInput;
 inline constexpr auto& SetTriggerThreshold = ::SDLStatic_SetTriggerThreshold;
+inline constexpr auto& SpriteCreate = ::SDLStatic_SpriteCreate;
 inline constexpr auto& SpriteDefault = ::SDLStatic_SpriteDefault;
+inline constexpr auto& SpriteDestroy = ::SDLStatic_SpriteDestroy;
+inline constexpr auto& SpriteSetColor = ::SDLStatic_SpriteSetColor;
+inline constexpr auto& SpriteSetLayer = ::SDLStatic_SpriteSetLayer;
+inline constexpr auto& SpriteSetOrigin = ::SDLStatic_SpriteSetOrigin;
+inline constexpr auto& SpriteSetScreenSpace = ::SDLStatic_SpriteSetScreenSpace;
+inline constexpr auto& SpriteSetSize = ::SDLStatic_SpriteSetSize;
+inline constexpr auto& SpriteSetSortByY = ::SDLStatic_SpriteSetSortByY;
+inline constexpr auto& SpriteSetSource = ::SDLStatic_SpriteSetSource;
+inline constexpr auto& SpriteSetTexture = ::SDLStatic_SpriteSetTexture;
+inline constexpr auto& SpriteSetVisible = ::SDLStatic_SpriteSetVisible;
 inline constexpr auto& Text = ::SDLStatic_Text;
 inline constexpr auto& TextCount = ::SDLStatic_TextCount;
 inline constexpr auto& TextFormat = ::SDLStatic_TextFormat;

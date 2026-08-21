@@ -15,6 +15,7 @@
 #include <SDLStatic/engine_assets.h>
 #include <SDLStatic/engine_binding.h>
 #include <SDLStatic/engine_camera.h>
+#include <SDLStatic/engine_config.h>
 #include <SDLStatic/engine_graphics.h>
 #include <SDLStatic/engine_input.h>
 #include <SDLStatic/engine_light.h>
@@ -23,6 +24,7 @@
 #include <SDLStatic/engine_render.h>
 #include <SDLStatic/engine_save.h>
 #include <SDLStatic/engine_scene.h>
+#include <SDLStatic/engine_script.h>
 #include <SDLStatic/engine_text.h>
 #include <SDLStatic/gpu_primitives.h>
 #include <SDLStatic/gui.h>
@@ -932,6 +934,96 @@ static int GenL_SDLStatic_ActorCount(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_ActorDefCreate(lua_State *L)
+{
+    (void)L;
+    SDLStatic_ActorDef * rv = SDLStatic_ActorDefCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDLStatic_ActorDef");
+    return 1;
+}
+
+static int GenL_SDLStatic_ActorDefDestroy(lua_State *L)
+{
+    (void)L;
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_ActorDef");
+    SDLStatic_ActorDefDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_ActorDefSetName(lua_State *L)
+{
+    (void)L;
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_ActorDef");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    SDLStatic_ActorDefSetName(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ActorDefSetParent(lua_State *L)
+{
+    (void)L;
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_ActorDef");
+    SDLStatic_ActorId a1 = (SDLStatic_ActorId)luaL_checkinteger(L, 2);
+    SDLStatic_ActorDefSetParent(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ActorDefSetPosition(lua_State *L)
+{
+    (void)L;
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_ActorDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    SDLStatic_ActorDefSetPosition(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_ActorDefSetRotation(lua_State *L)
+{
+    (void)L;
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_ActorDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    SDLStatic_ActorDefSetRotation(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ActorDefSetScale(lua_State *L)
+{
+    (void)L;
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_ActorDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    SDLStatic_ActorDefSetScale(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_ActorDefSetStateSize(lua_State *L)
+{
+    (void)L;
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_ActorDef");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    SDLStatic_ActorDefSetStateSize(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ActorDefSetTags(lua_State *L)
+{
+    (void)L;
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_ActorDef");
+    SDLStatic_ActorTags a1 = (SDLStatic_ActorTags)luaL_checkinteger(L, 2);
+    SDLStatic_ActorDefSetTags(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ActorDefSetType(lua_State *L)
+{
+    (void)L;
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_ActorDef");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    SDLStatic_ActorDefSetType(a0, a1);
+    return 0;
+}
+
 static int GenL_SDLStatic_ActorDestroy(lua_State *L)
 {
     (void)L;
@@ -1483,6 +1575,131 @@ static int GenL_SDLStatic_BindingToString(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_BodyDefDestroy(lua_State *L)
+{
+    (void)L;
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    SDLStatic_BodyDefDestroy(&out0);
+    GenPush_SDLStatic_BodyDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_BodyDefSetBullet(lua_State *L)
+{
+    (void)L;
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    bool a1 = (bool)lua_toboolean(L, 1);
+    SDLStatic_BodyDefSetBullet(&out0, a1);
+    GenPush_SDLStatic_BodyDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_BodyDefSetFilter(lua_State *L)
+{
+    (void)L;
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 1);
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 2);
+    SDLStatic_BodyDefSetFilter(&out0, a1, a2);
+    GenPush_SDLStatic_BodyDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_BodyDefSetFixedRotation(lua_State *L)
+{
+    (void)L;
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    bool a1 = (bool)lua_toboolean(L, 1);
+    SDLStatic_BodyDefSetFixedRotation(&out0, a1);
+    GenPush_SDLStatic_BodyDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_BodyDefSetGravityScale(lua_State *L)
+{
+    (void)L;
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)luaL_checknumber(L, 1);
+    SDLStatic_BodyDefSetGravityScale(&out0, a1);
+    GenPush_SDLStatic_BodyDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_BodyDefSetMaterial(lua_State *L)
+{
+    (void)L;
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)luaL_checknumber(L, 1);
+    float a2 = (float)luaL_checknumber(L, 2);
+    float a3 = (float)luaL_checknumber(L, 3);
+    SDLStatic_BodyDefSetMaterial(&out0, a1, a2, a3);
+    GenPush_SDLStatic_BodyDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_BodyDefSetOffset(lua_State *L)
+{
+    (void)L;
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)luaL_checknumber(L, 1);
+    float a2 = (float)luaL_checknumber(L, 2);
+    SDLStatic_BodyDefSetOffset(&out0, a1, a2);
+    GenPush_SDLStatic_BodyDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_BodyDefSetSensor(lua_State *L)
+{
+    (void)L;
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    bool a1 = (bool)lua_toboolean(L, 1);
+    SDLStatic_BodyDefSetSensor(&out0, a1);
+    GenPush_SDLStatic_BodyDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_BodyDefSetShape(lua_State *L)
+{
+    (void)L;
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    SDLStatic_ShapeType a1 = (SDLStatic_ShapeType)luaL_checkinteger(L, 1);
+    SDLStatic_BodyDefSetShape(&out0, a1);
+    GenPush_SDLStatic_BodyDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_BodyDefSetSize(lua_State *L)
+{
+    (void)L;
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)luaL_checknumber(L, 1);
+    float a2 = (float)luaL_checknumber(L, 2);
+    SDLStatic_BodyDefSetSize(&out0, a1, a2);
+    GenPush_SDLStatic_BodyDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_BodyDefSetType(lua_State *L)
+{
+    (void)L;
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    SDLStatic_BodyType a1 = (SDLStatic_BodyType)luaL_checkinteger(L, 1);
+    SDLStatic_BodyDefSetType(&out0, a1);
+    GenPush_SDLStatic_BodyDef(L, &out0);
+    return 1;
+}
+
 static int GenL_SDLStatic_BodyDefault(lua_State *L)
 {
     (void)L;
@@ -1503,6 +1720,16 @@ static int GenL_SDLStatic_CameraBegin(lua_State *L)
     }
     bool rv = SDLStatic_CameraBegin(a0, a1);
     lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_CameraDestroy(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    SDLStatic_CameraDestroy(&out0);
+    GenPush_SDLStatic_Camera(L, &out0);
     return 1;
 }
 
@@ -1592,6 +1819,68 @@ static int GenL_SDLStatic_CameraScreenToWorld(lua_State *L)
     return 3;
 }
 
+static int GenL_SDLStatic_CameraSetBounds(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)luaL_checknumber(L, 1);
+    float a2 = (float)luaL_checknumber(L, 2);
+    float a3 = (float)luaL_checknumber(L, 3);
+    float a4 = (float)luaL_checknumber(L, 4);
+    SDLStatic_CameraSetBounds(&out0, a1, a2, a3, a4);
+    GenPush_SDLStatic_Camera(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_CameraSetDeadzone(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)luaL_checknumber(L, 1);
+    float a2 = (float)luaL_checknumber(L, 2);
+    SDLStatic_CameraSetDeadzone(&out0, a1, a2);
+    GenPush_SDLStatic_Camera(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_CameraSetSmoothing(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)luaL_checknumber(L, 1);
+    SDLStatic_CameraSetSmoothing(&out0, a1);
+    GenPush_SDLStatic_Camera(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_CameraSetViewport(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)luaL_checknumber(L, 1);
+    float a2 = (float)luaL_checknumber(L, 2);
+    float a3 = (float)luaL_checknumber(L, 3);
+    float a4 = (float)luaL_checknumber(L, 4);
+    SDLStatic_CameraSetViewport(&out0, a1, a2, a3, a4);
+    GenPush_SDLStatic_Camera(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_CameraSetZoom(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)luaL_checknumber(L, 1);
+    SDLStatic_CameraSetZoom(&out0, a1);
+    GenPush_SDLStatic_Camera(L, &out0);
+    return 1;
+}
+
 static int GenL_SDLStatic_CameraShake(lua_State *L)
 {
     (void)L;
@@ -1659,6 +1948,28 @@ static int GenL_SDLStatic_CameraVisible(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_CameraX(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    float rv = SDLStatic_CameraX(&out0);
+    lua_pushnumber(L, (lua_Number)rv);
+    GenPush_SDLStatic_Camera(L, &out0);
+    return 2;
+}
+
+static int GenL_SDLStatic_CameraY(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    float rv = SDLStatic_CameraY(&out0);
+    lua_pushnumber(L, (lua_Number)rv);
+    GenPush_SDLStatic_Camera(L, &out0);
+    return 2;
+}
+
 static int GenL_SDLStatic_CompileRegex(lua_State *L)
 {
     (void)L;
@@ -1667,6 +1978,173 @@ static int GenL_SDLStatic_CompileRegex(lua_State *L)
     SDLStatic_Regex * rv = SDLStatic_CompileRegex(a0, a1);
     SDLStaticGen_LuaPushOwned(L, (void *)rv, "SDLStatic_Regex", GenDtor_SDLStatic_DestroyRegex);
     return 1;
+}
+
+static int GenL_SDLStatic_ConfigCreate(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig * rv = SDLStatic_ConfigCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDLStatic_EngineConfig");
+    return 1;
+}
+
+static int GenL_SDLStatic_ConfigDestroy(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    SDLStatic_ConfigDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetAutoMount(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_ConfigSetAutoMount(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetBackend(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    SDLStatic_EngineBackend a1 = (SDLStatic_EngineBackend)luaL_checkinteger(L, 2);
+    SDLStatic_ConfigSetBackend(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetDesignSize(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    int a2 = (int)luaL_checkinteger(L, 3);
+    SDLStatic_ConfigSetDesignSize(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetFullscreen(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_ConfigSetFullscreen(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetGraphics(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    SDLStatic_GraphicsSettings tmp1;
+    const SDLStatic_GraphicsSettings *a1 = NULL;
+    if (!lua_isnoneornil(L, 2)) {
+        GenRead_SDLStatic_GraphicsSettings(L, 2, &tmp1);
+        a1 = &tmp1;
+    }
+    SDLStatic_ConfigSetGraphics(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetHeadless(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_ConfigSetHeadless(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetHighDpi(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_ConfigSetHighDpi(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetManualClock(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_ConfigSetManualClock(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetMaxFps(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    SDLStatic_ConfigSetMaxFps(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetMediaPath(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    SDLStatic_ConfigSetMediaPath(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetPresentation(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    SDLStatic_EnginePresentation a1 = (SDLStatic_EnginePresentation)luaL_checkinteger(L, 2);
+    SDLStatic_ConfigSetPresentation(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetResizable(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_ConfigSetResizable(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetTickRate(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    SDLStatic_ConfigSetTickRate(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetTitle(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    SDLStatic_ConfigSetTitle(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetVsync(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_ConfigSetVsync(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_ConfigSetWindowSize(lua_State *L)
+{
+    (void)L;
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_EngineConfig");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    int a2 = (int)luaL_checkinteger(L, 3);
+    SDLStatic_ConfigSetWindowSize(a0, a1, a2);
+    return 0;
 }
 
 static int GenL_SDLStatic_CountSignalConnections(lua_State *L)
@@ -3208,6 +3686,87 @@ static int GenL_SDLStatic_LightCount(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_LightDefDestroy(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightDef out0;
+    memset(&out0, 0, sizeof(out0));
+    SDLStatic_LightDefDestroy(&out0);
+    GenPush_SDLStatic_LightDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_LightDefSetColor(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)luaL_checknumber(L, 1);
+    float a2 = (float)luaL_checknumber(L, 2);
+    float a3 = (float)luaL_checknumber(L, 3);
+    float a4 = (float)luaL_checknumber(L, 4);
+    SDLStatic_LightDefSetColor(&out0, a1, a2, a3, a4);
+    GenPush_SDLStatic_LightDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_LightDefSetCone(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)luaL_checknumber(L, 1);
+    float a2 = (float)luaL_checknumber(L, 2);
+    SDLStatic_LightDefSetCone(&out0, a1, a2);
+    GenPush_SDLStatic_LightDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_LightDefSetFlicker(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)luaL_checknumber(L, 1);
+    SDLStatic_LightDefSetFlicker(&out0, a1);
+    GenPush_SDLStatic_LightDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_LightDefSetOffset(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)luaL_checknumber(L, 1);
+    float a2 = (float)luaL_checknumber(L, 2);
+    SDLStatic_LightDefSetOffset(&out0, a1, a2);
+    GenPush_SDLStatic_LightDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_LightDefSetRadius(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)luaL_checknumber(L, 1);
+    SDLStatic_LightDefSetRadius(&out0, a1);
+    GenPush_SDLStatic_LightDef(L, &out0);
+    return 1;
+}
+
+static int GenL_SDLStatic_LightDefSetShadows(lua_State *L)
+{
+    (void)L;
+    SDLStatic_LightDef out0;
+    memset(&out0, 0, sizeof(out0));
+    bool a1 = (bool)lua_toboolean(L, 1);
+    SDLStatic_LightDefSetShadows(&out0, a1);
+    GenPush_SDLStatic_LightDef(L, &out0);
+    return 1;
+}
+
 static int GenL_SDLStatic_LightDefault(lua_State *L)
 {
     (void)L;
@@ -3985,6 +4544,43 @@ static int GenL_SDLStatic_SceneTransitioning(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_ScriptHasHandlers(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
+    bool rv = SDLStatic_ScriptHasHandlers(a0);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_ScriptRun(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
+    bool rv = SDLStatic_ScriptRun(a0);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_ScriptSetHook(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
+    SDLStatic_ScriptHook a1 = (SDLStatic_ScriptHook)luaL_checkinteger(L, 2);
+    Sint64 a2 = (Sint64)luaL_checkinteger(L, 3);
+    bool rv = SDLStatic_ScriptSetHook(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_ScriptUnbind(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
+    SDLStatic_ScriptUnbind(a0);
+    return 0;
+}
+
 static int GenL_SDLStatic_SetDebugTextSize(lua_State *L)
 {
     (void)L;
@@ -4147,6 +4743,112 @@ static int GenL_SDLStatic_ShowSaveFileDialog(lua_State *L)
     bool rv = SDLStatic_ShowSaveFileDialog(a0, a1, a2, a3);
     lua_pushboolean(L, (int)rv);
     return 1;
+}
+
+static int GenL_SDLStatic_SpriteCreate(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Sprite * rv = SDLStatic_SpriteCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDLStatic_Sprite");
+    return 1;
+}
+
+static int GenL_SDLStatic_SpriteDestroy(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Sprite");
+    SDLStatic_SpriteDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_SpriteSetColor(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Sprite");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    float a4 = (float)luaL_checknumber(L, 5);
+    SDLStatic_SpriteSetColor(a0, a1, a2, a3, a4);
+    return 0;
+}
+
+static int GenL_SDLStatic_SpriteSetLayer(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Sprite");
+    int a1 = (int)luaL_checkinteger(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    SDLStatic_SpriteSetLayer(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_SpriteSetOrigin(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Sprite");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    SDLStatic_SpriteSetOrigin(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_SpriteSetScreenSpace(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Sprite");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_SpriteSetScreenSpace(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_SpriteSetSize(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Sprite");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    SDLStatic_SpriteSetSize(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_SpriteSetSortByY(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Sprite");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_SpriteSetSortByY(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_SpriteSetSource(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Sprite");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    float a4 = (float)luaL_checknumber(L, 5);
+    SDLStatic_SpriteSetSource(a0, a1, a2, a3, a4);
+    return 0;
+}
+
+static int GenL_SDLStatic_SpriteSetTexture(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Sprite");
+    SDL_Texture *a1 = (SDL_Texture *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_Texture");
+    SDLStatic_SpriteSetTexture(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_SpriteSetVisible(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Sprite");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_SpriteSetVisible(a0, a1);
+    return 0;
 }
 
 static int GenL_SDLStatic_Text(lua_State *L)
@@ -4366,7 +5068,7 @@ static int GenL_SDLStatic_TouchRotation(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 377);
+    lua_createtable(L, 0, 446);
     lua_pushcfunction(L, GenL_SDLStatic_ActionBind);
     lua_setfield(L, -2, "ActionBind");
     lua_pushcfunction(L, GenL_SDLStatic_ActionBindAxis);
@@ -4445,6 +5147,26 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "ActorClearSprite");
     lua_pushcfunction(L, GenL_SDLStatic_ActorCount);
     lua_setfield(L, -2, "ActorCount");
+    lua_pushcfunction(L, GenL_SDLStatic_ActorDefCreate);
+    lua_setfield(L, -2, "ActorDefCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_ActorDefDestroy);
+    lua_setfield(L, -2, "ActorDefDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_ActorDefSetName);
+    lua_setfield(L, -2, "ActorDefSetName");
+    lua_pushcfunction(L, GenL_SDLStatic_ActorDefSetParent);
+    lua_setfield(L, -2, "ActorDefSetParent");
+    lua_pushcfunction(L, GenL_SDLStatic_ActorDefSetPosition);
+    lua_setfield(L, -2, "ActorDefSetPosition");
+    lua_pushcfunction(L, GenL_SDLStatic_ActorDefSetRotation);
+    lua_setfield(L, -2, "ActorDefSetRotation");
+    lua_pushcfunction(L, GenL_SDLStatic_ActorDefSetScale);
+    lua_setfield(L, -2, "ActorDefSetScale");
+    lua_pushcfunction(L, GenL_SDLStatic_ActorDefSetStateSize);
+    lua_setfield(L, -2, "ActorDefSetStateSize");
+    lua_pushcfunction(L, GenL_SDLStatic_ActorDefSetTags);
+    lua_setfield(L, -2, "ActorDefSetTags");
+    lua_pushcfunction(L, GenL_SDLStatic_ActorDefSetType);
+    lua_setfield(L, -2, "ActorDefSetType");
     lua_pushcfunction(L, GenL_SDLStatic_ActorDestroy);
     lua_setfield(L, -2, "ActorDestroy");
     lua_pushcfunction(L, GenL_SDLStatic_ActorEnabled);
@@ -4555,10 +5277,34 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "BindingFromString");
     lua_pushcfunction(L, GenL_SDLStatic_BindingToString);
     lua_setfield(L, -2, "BindingToString");
+    lua_pushcfunction(L, GenL_SDLStatic_BodyDefDestroy);
+    lua_setfield(L, -2, "BodyDefDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_BodyDefSetBullet);
+    lua_setfield(L, -2, "BodyDefSetBullet");
+    lua_pushcfunction(L, GenL_SDLStatic_BodyDefSetFilter);
+    lua_setfield(L, -2, "BodyDefSetFilter");
+    lua_pushcfunction(L, GenL_SDLStatic_BodyDefSetFixedRotation);
+    lua_setfield(L, -2, "BodyDefSetFixedRotation");
+    lua_pushcfunction(L, GenL_SDLStatic_BodyDefSetGravityScale);
+    lua_setfield(L, -2, "BodyDefSetGravityScale");
+    lua_pushcfunction(L, GenL_SDLStatic_BodyDefSetMaterial);
+    lua_setfield(L, -2, "BodyDefSetMaterial");
+    lua_pushcfunction(L, GenL_SDLStatic_BodyDefSetOffset);
+    lua_setfield(L, -2, "BodyDefSetOffset");
+    lua_pushcfunction(L, GenL_SDLStatic_BodyDefSetSensor);
+    lua_setfield(L, -2, "BodyDefSetSensor");
+    lua_pushcfunction(L, GenL_SDLStatic_BodyDefSetShape);
+    lua_setfield(L, -2, "BodyDefSetShape");
+    lua_pushcfunction(L, GenL_SDLStatic_BodyDefSetSize);
+    lua_setfield(L, -2, "BodyDefSetSize");
+    lua_pushcfunction(L, GenL_SDLStatic_BodyDefSetType);
+    lua_setfield(L, -2, "BodyDefSetType");
     lua_pushcfunction(L, GenL_SDLStatic_BodyDefault);
     lua_setfield(L, -2, "BodyDefault");
     lua_pushcfunction(L, GenL_SDLStatic_CameraBegin);
     lua_setfield(L, -2, "CameraBegin");
+    lua_pushcfunction(L, GenL_SDLStatic_CameraDestroy);
+    lua_setfield(L, -2, "CameraDestroy");
     lua_pushcfunction(L, GenL_SDLStatic_CameraEnd);
     lua_setfield(L, -2, "CameraEnd");
     lua_pushcfunction(L, GenL_SDLStatic_CameraFollow);
@@ -4571,6 +5317,16 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "CameraRect");
     lua_pushcfunction(L, GenL_SDLStatic_CameraScreenToWorld);
     lua_setfield(L, -2, "CameraScreenToWorld");
+    lua_pushcfunction(L, GenL_SDLStatic_CameraSetBounds);
+    lua_setfield(L, -2, "CameraSetBounds");
+    lua_pushcfunction(L, GenL_SDLStatic_CameraSetDeadzone);
+    lua_setfield(L, -2, "CameraSetDeadzone");
+    lua_pushcfunction(L, GenL_SDLStatic_CameraSetSmoothing);
+    lua_setfield(L, -2, "CameraSetSmoothing");
+    lua_pushcfunction(L, GenL_SDLStatic_CameraSetViewport);
+    lua_setfield(L, -2, "CameraSetViewport");
+    lua_pushcfunction(L, GenL_SDLStatic_CameraSetZoom);
+    lua_setfield(L, -2, "CameraSetZoom");
     lua_pushcfunction(L, GenL_SDLStatic_CameraShake);
     lua_setfield(L, -2, "CameraShake");
     lua_pushcfunction(L, GenL_SDLStatic_CameraSnap);
@@ -4581,8 +5337,48 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "CameraUpdate");
     lua_pushcfunction(L, GenL_SDLStatic_CameraVisible);
     lua_setfield(L, -2, "CameraVisible");
+    lua_pushcfunction(L, GenL_SDLStatic_CameraX);
+    lua_setfield(L, -2, "CameraX");
+    lua_pushcfunction(L, GenL_SDLStatic_CameraY);
+    lua_setfield(L, -2, "CameraY");
     lua_pushcfunction(L, GenL_SDLStatic_CompileRegex);
     lua_setfield(L, -2, "CompileRegex");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigCreate);
+    lua_setfield(L, -2, "ConfigCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigDestroy);
+    lua_setfield(L, -2, "ConfigDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetAutoMount);
+    lua_setfield(L, -2, "ConfigSetAutoMount");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetBackend);
+    lua_setfield(L, -2, "ConfigSetBackend");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetDesignSize);
+    lua_setfield(L, -2, "ConfigSetDesignSize");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetFullscreen);
+    lua_setfield(L, -2, "ConfigSetFullscreen");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetGraphics);
+    lua_setfield(L, -2, "ConfigSetGraphics");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetHeadless);
+    lua_setfield(L, -2, "ConfigSetHeadless");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetHighDpi);
+    lua_setfield(L, -2, "ConfigSetHighDpi");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetManualClock);
+    lua_setfield(L, -2, "ConfigSetManualClock");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetMaxFps);
+    lua_setfield(L, -2, "ConfigSetMaxFps");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetMediaPath);
+    lua_setfield(L, -2, "ConfigSetMediaPath");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetPresentation);
+    lua_setfield(L, -2, "ConfigSetPresentation");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetResizable);
+    lua_setfield(L, -2, "ConfigSetResizable");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetTickRate);
+    lua_setfield(L, -2, "ConfigSetTickRate");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetTitle);
+    lua_setfield(L, -2, "ConfigSetTitle");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetVsync);
+    lua_setfield(L, -2, "ConfigSetVsync");
+    lua_pushcfunction(L, GenL_SDLStatic_ConfigSetWindowSize);
+    lua_setfield(L, -2, "ConfigSetWindowSize");
     lua_pushcfunction(L, GenL_SDLStatic_CountSignalConnections);
     lua_setfield(L, -2, "CountSignalConnections");
     lua_pushcfunction(L, GenL_SDLStatic_CreateChipSFX);
@@ -4891,6 +5687,20 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "LightBeginFrame");
     lua_pushcfunction(L, GenL_SDLStatic_LightCount);
     lua_setfield(L, -2, "LightCount");
+    lua_pushcfunction(L, GenL_SDLStatic_LightDefDestroy);
+    lua_setfield(L, -2, "LightDefDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_LightDefSetColor);
+    lua_setfield(L, -2, "LightDefSetColor");
+    lua_pushcfunction(L, GenL_SDLStatic_LightDefSetCone);
+    lua_setfield(L, -2, "LightDefSetCone");
+    lua_pushcfunction(L, GenL_SDLStatic_LightDefSetFlicker);
+    lua_setfield(L, -2, "LightDefSetFlicker");
+    lua_pushcfunction(L, GenL_SDLStatic_LightDefSetOffset);
+    lua_setfield(L, -2, "LightDefSetOffset");
+    lua_pushcfunction(L, GenL_SDLStatic_LightDefSetRadius);
+    lua_setfield(L, -2, "LightDefSetRadius");
+    lua_pushcfunction(L, GenL_SDLStatic_LightDefSetShadows);
+    lua_setfield(L, -2, "LightDefSetShadows");
     lua_pushcfunction(L, GenL_SDLStatic_LightDefault);
     lua_setfield(L, -2, "LightDefault");
     lua_pushcfunction(L, GenL_SDLStatic_LightHour);
@@ -5043,6 +5853,14 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "SceneTransitionTo");
     lua_pushcfunction(L, GenL_SDLStatic_SceneTransitioning);
     lua_setfield(L, -2, "SceneTransitioning");
+    lua_pushcfunction(L, GenL_SDLStatic_ScriptHasHandlers);
+    lua_setfield(L, -2, "ScriptHasHandlers");
+    lua_pushcfunction(L, GenL_SDLStatic_ScriptRun);
+    lua_setfield(L, -2, "ScriptRun");
+    lua_pushcfunction(L, GenL_SDLStatic_ScriptSetHook);
+    lua_setfield(L, -2, "ScriptSetHook");
+    lua_pushcfunction(L, GenL_SDLStatic_ScriptUnbind);
+    lua_setfield(L, -2, "ScriptUnbind");
     lua_pushcfunction(L, GenL_SDLStatic_SetDebugTextSize);
     lua_setfield(L, -2, "SetDebugTextSize");
     lua_pushcfunction(L, GenL_SDLStatic_SetDeviceMotion);
@@ -5077,6 +5895,28 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "ShowOpenFileDialog");
     lua_pushcfunction(L, GenL_SDLStatic_ShowSaveFileDialog);
     lua_setfield(L, -2, "ShowSaveFileDialog");
+    lua_pushcfunction(L, GenL_SDLStatic_SpriteCreate);
+    lua_setfield(L, -2, "SpriteCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_SpriteDestroy);
+    lua_setfield(L, -2, "SpriteDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_SpriteSetColor);
+    lua_setfield(L, -2, "SpriteSetColor");
+    lua_pushcfunction(L, GenL_SDLStatic_SpriteSetLayer);
+    lua_setfield(L, -2, "SpriteSetLayer");
+    lua_pushcfunction(L, GenL_SDLStatic_SpriteSetOrigin);
+    lua_setfield(L, -2, "SpriteSetOrigin");
+    lua_pushcfunction(L, GenL_SDLStatic_SpriteSetScreenSpace);
+    lua_setfield(L, -2, "SpriteSetScreenSpace");
+    lua_pushcfunction(L, GenL_SDLStatic_SpriteSetSize);
+    lua_setfield(L, -2, "SpriteSetSize");
+    lua_pushcfunction(L, GenL_SDLStatic_SpriteSetSortByY);
+    lua_setfield(L, -2, "SpriteSetSortByY");
+    lua_pushcfunction(L, GenL_SDLStatic_SpriteSetSource);
+    lua_setfield(L, -2, "SpriteSetSource");
+    lua_pushcfunction(L, GenL_SDLStatic_SpriteSetTexture);
+    lua_setfield(L, -2, "SpriteSetTexture");
+    lua_pushcfunction(L, GenL_SDLStatic_SpriteSetVisible);
+    lua_setfield(L, -2, "SpriteSetVisible");
     lua_pushcfunction(L, GenL_SDLStatic_Text);
     lua_setfield(L, -2, "Text");
     lua_pushcfunction(L, GenL_SDLStatic_TextCount);
@@ -5397,6 +6237,20 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "SDLSTATIC_TRANSITION_NONE");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_TRANSITION_FADE);
     lua_setfield(L, -2, "SDLSTATIC_TRANSITION_FADE");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_HOOK_LOAD);
+    lua_setfield(L, -2, "SDLSTATIC_HOOK_LOAD");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_HOOK_FIXED_UPDATE);
+    lua_setfield(L, -2, "SDLSTATIC_HOOK_FIXED_UPDATE");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_HOOK_UPDATE);
+    lua_setfield(L, -2, "SDLSTATIC_HOOK_UPDATE");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_HOOK_RENDER);
+    lua_setfield(L, -2, "SDLSTATIC_HOOK_RENDER");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_HOOK_POST_RENDER);
+    lua_setfield(L, -2, "SDLSTATIC_HOOK_POST_RENDER");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_HOOK_UNLOAD);
+    lua_setfield(L, -2, "SDLSTATIC_HOOK_UNLOAD");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_HOOK_COUNT);
+    lua_setfield(L, -2, "SDLSTATIC_HOOK_COUNT");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_SHAPE_BOX);
     lua_setfield(L, -2, "SDLSTATIC_SHAPE_BOX");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_SHAPE_CIRCLE);

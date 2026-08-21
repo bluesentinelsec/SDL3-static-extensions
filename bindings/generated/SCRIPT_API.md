@@ -2426,6 +2426,16 @@ returns as an array.
 | `SDLStaticC.ActorClear(engine: SDLStatic_Engine)` | nil |
 | `SDLStaticC.ActorClearSprite(actor: SDLStatic_Actor)` | nil |
 | `SDLStaticC.ActorCount(engine: SDLStatic_Engine)` | integer |
+| `SDLStaticC.ActorDefCreate()` | SDLStatic_ActorDef|nil |
+| `SDLStaticC.ActorDefDestroy(def: SDLStatic_ActorDef)` | nil |
+| `SDLStaticC.ActorDefSetName(def: SDLStatic_ActorDef, name: string|nil)` | nil |
+| `SDLStaticC.ActorDefSetParent(def: SDLStatic_ActorDef, parent: integer)` | nil |
+| `SDLStaticC.ActorDefSetPosition(def: SDLStatic_ActorDef, x: number, y: number)` | nil |
+| `SDLStaticC.ActorDefSetRotation(def: SDLStatic_ActorDef, degrees: number)` | nil |
+| `SDLStaticC.ActorDefSetScale(def: SDLStatic_ActorDef, x: number, y: number)` | nil |
+| `SDLStaticC.ActorDefSetStateSize(def: SDLStatic_ActorDef, size: integer)` | nil |
+| `SDLStaticC.ActorDefSetTags(def: SDLStatic_ActorDef, tags: integer)` | nil |
+| `SDLStaticC.ActorDefSetType(def: SDLStatic_ActorDef, type: string|nil)` | nil |
 | `SDLStaticC.ActorDestroy(engine: SDLStatic_Engine, id: integer)` | nil |
 | `SDLStaticC.ActorEnabled(actor: SDLStatic_Actor)` | boolean |
 | `SDLStaticC.ActorEngine(actor: SDLStatic_Actor)` | SDLStatic_Engine|nil |
@@ -2481,20 +2491,57 @@ returns as an array.
 | `SDLStaticC.BidiBaseIsRTL(utf8: string|nil, length: integer)` | boolean |
 | `SDLStaticC.BindingFromString(text: string|nil)` | boolean, out: SDLStatic_Binding table |
 | `SDLStaticC.BindingToString(binding: SDLStatic_Binding table, buffer: string, size: integer)` | string|nil |
+| `SDLStaticC.BodyDefDestroy()` | def: SDLStatic_BodyDef table |
+| `SDLStaticC.BodyDefSetBullet(bullet: boolean)` | def: SDLStatic_BodyDef table |
+| `SDLStaticC.BodyDefSetFilter(category: integer, collides_with: integer)` | def: SDLStatic_BodyDef table |
+| `SDLStaticC.BodyDefSetFixedRotation(fixed: boolean)` | def: SDLStatic_BodyDef table |
+| `SDLStaticC.BodyDefSetGravityScale(scale: number)` | def: SDLStatic_BodyDef table |
+| `SDLStaticC.BodyDefSetMaterial(density: number, friction: number, restitution: number)` | def: SDLStatic_BodyDef table |
+| `SDLStaticC.BodyDefSetOffset(x: number, y: number)` | def: SDLStatic_BodyDef table |
+| `SDLStaticC.BodyDefSetSensor(sensor: boolean)` | def: SDLStatic_BodyDef table |
+| `SDLStaticC.BodyDefSetShape(shape: integer)` | def: SDLStatic_BodyDef table |
+| `SDLStaticC.BodyDefSetSize(width: number, height: number)` | def: SDLStatic_BodyDef table |
+| `SDLStaticC.BodyDefSetType(type: integer)` | def: SDLStatic_BodyDef table |
 | `SDLStaticC.BodyDefault()` | SDLStatic_BodyDef table |
 | `SDLStaticC.CameraBegin(engine: SDLStatic_Engine, camera: SDLStatic_Camera table)` | boolean |
+| `SDLStaticC.CameraDestroy()` | camera: SDLStatic_Camera table |
 | `SDLStaticC.CameraEnd(engine: SDLStatic_Engine)` | nil |
 | `SDLStaticC.CameraFollow(world_x: number, world_y: number)` | camera: SDLStatic_Camera table |
 | `SDLStaticC.CameraInit(engine: SDLStatic_Engine)` | camera: SDLStatic_Camera table |
 | `SDLStaticC.CameraPoint(camera: SDLStatic_Camera table, world_x: number, world_y: number, out_x: number, out_y: number)` | out_x: number, out_y: number |
 | `SDLStaticC.CameraRect(camera: SDLStatic_Camera table, world: SDL_FRect table)` | SDL_FRect table |
 | `SDLStaticC.CameraScreenToWorld(camera: SDLStatic_Camera table, screen_x: number, screen_y: number, world_x: number, world_y: number)` | boolean, world_x: number, world_y: number |
+| `SDLStaticC.CameraSetBounds(x: number, y: number, w: number, h: number)` | camera: SDLStatic_Camera table |
+| `SDLStaticC.CameraSetDeadzone(width: number, height: number)` | camera: SDLStatic_Camera table |
+| `SDLStaticC.CameraSetSmoothing(seconds: number)` | camera: SDLStatic_Camera table |
+| `SDLStaticC.CameraSetViewport(x: number, y: number, w: number, h: number)` | camera: SDLStatic_Camera table |
+| `SDLStaticC.CameraSetZoom(zoom: number)` | camera: SDLStatic_Camera table |
 | `SDLStaticC.CameraShake(amount: number, seconds: number)` | camera: SDLStatic_Camera table |
 | `SDLStaticC.CameraSnap(world_x: number, world_y: number)` | camera: SDLStatic_Camera table |
 | `SDLStaticC.CameraSplit(engine: SDLStatic_Engine, mode: integer, count: integer, gap: number)` | integer, cameras: SDLStatic_Camera table |
 | `SDLStaticC.CameraUpdate(engine: SDLStatic_Engine, dt: number)` | camera: SDLStatic_Camera table |
 | `SDLStaticC.CameraVisible(camera: SDLStatic_Camera table, world: SDL_FRect table)` | boolean |
+| `SDLStaticC.CameraX()` | number, camera: SDLStatic_Camera table |
+| `SDLStaticC.CameraY()` | number, camera: SDLStatic_Camera table |
 | `SDLStaticC.CompileRegex(pattern: string|nil, flags: string|nil)` | SDLStatic_Regex|nil |
+| `SDLStaticC.ConfigCreate()` | SDLStatic_EngineConfig|nil |
+| `SDLStaticC.ConfigDestroy(config: SDLStatic_EngineConfig)` | nil |
+| `SDLStaticC.ConfigSetAutoMount(config: SDLStatic_EngineConfig, enabled: boolean)` | nil |
+| `SDLStaticC.ConfigSetBackend(config: SDLStatic_EngineConfig, backend: integer)` | nil |
+| `SDLStaticC.ConfigSetDesignSize(config: SDLStatic_EngineConfig, width: integer, height: integer)` | nil |
+| `SDLStaticC.ConfigSetFullscreen(config: SDLStatic_EngineConfig, fullscreen: boolean)` | nil |
+| `SDLStaticC.ConfigSetGraphics(config: SDLStatic_EngineConfig, graphics: SDLStatic_GraphicsSettings table)` | nil |
+| `SDLStaticC.ConfigSetHeadless(config: SDLStatic_EngineConfig, headless: boolean)` | nil |
+| `SDLStaticC.ConfigSetHighDpi(config: SDLStatic_EngineConfig, high_dpi: boolean)` | nil |
+| `SDLStaticC.ConfigSetManualClock(config: SDLStatic_EngineConfig, manual: boolean)` | nil |
+| `SDLStaticC.ConfigSetMaxFps(config: SDLStatic_EngineConfig, max_fps: integer)` | nil |
+| `SDLStaticC.ConfigSetMediaPath(config: SDLStatic_EngineConfig, path: string|nil)` | nil |
+| `SDLStaticC.ConfigSetPresentation(config: SDLStatic_EngineConfig, presentation: integer)` | nil |
+| `SDLStaticC.ConfigSetResizable(config: SDLStatic_EngineConfig, resizable: boolean)` | nil |
+| `SDLStaticC.ConfigSetTickRate(config: SDLStatic_EngineConfig, ticks_per_second: integer)` | nil |
+| `SDLStaticC.ConfigSetTitle(config: SDLStatic_EngineConfig, title: string|nil)` | nil |
+| `SDLStaticC.ConfigSetVsync(config: SDLStatic_EngineConfig, vsync: boolean)` | nil |
+| `SDLStaticC.ConfigSetWindowSize(config: SDLStatic_EngineConfig, width: integer, height: integer)` | nil |
 | `SDLStaticC.CountSignalConnections(emitter: SDLStatic_SignalEmitter, signal: string|nil)` | integer |
 | `SDLStaticC.CreateChipSFX(mixer: MIX_Mixer, which: integer)` | MIX_Audio|nil |
 | `SDLStaticC.CreateChipTone(mixer: MIX_Mixer, desc: SDLStatic_ChipToneDesc table)` | MIX_Audio|nil |
@@ -2649,6 +2696,13 @@ returns as an array.
 | `SDLStaticC.LightAt(engine: SDLStatic_Engine, x: number, y: number)` | number |
 | `SDLStaticC.LightBeginFrame(scene: SDLStatic_LightScene, camera_x: number, camera_y: number)` | nil |
 | `SDLStaticC.LightCount(engine: SDLStatic_Engine)` | integer |
+| `SDLStaticC.LightDefDestroy()` | def: SDLStatic_LightDef table |
+| `SDLStaticC.LightDefSetColor(r: number, g: number, b: number, a: number)` | def: SDLStatic_LightDef table |
+| `SDLStaticC.LightDefSetCone(direction: number, width: number)` | def: SDLStatic_LightDef table |
+| `SDLStaticC.LightDefSetFlicker(flicker: number)` | def: SDLStatic_LightDef table |
+| `SDLStaticC.LightDefSetOffset(x: number, y: number)` | def: SDLStatic_LightDef table |
+| `SDLStaticC.LightDefSetRadius(radius: number)` | def: SDLStatic_LightDef table |
+| `SDLStaticC.LightDefSetShadows(casts_shadows: boolean)` | def: SDLStatic_LightDef table |
 | `SDLStaticC.LightDefault()` | SDLStatic_LightDef table |
 | `SDLStaticC.LightHour(engine: SDLStatic_Engine)` | number |
 | `SDLStaticC.LightLineOfSight(scene: SDLStatic_LightScene, x1: number, y1: number, x2: number, y2: number)` | boolean |
@@ -2725,6 +2779,10 @@ returns as an array.
 | `SDLStaticC.SceneSetTransitionColor(engine: SDLStatic_Engine, color: SDL_FColor table)` | nil |
 | `SDLStaticC.SceneTransitionTo(engine: SDLStatic_Engine, def: SDLStatic_SceneDef, transition: integer, seconds: number)` | boolean |
 | `SDLStaticC.SceneTransitioning(engine: SDLStatic_Engine)` | boolean |
+| `SDLStaticC.ScriptHasHandlers(engine: SDLStatic_Engine)` | boolean |
+| `SDLStaticC.ScriptRun(engine: SDLStatic_Engine)` | boolean |
+| `SDLStaticC.ScriptSetHook(engine: SDLStatic_Engine, hook: integer, handle: integer)` | boolean |
+| `SDLStaticC.ScriptUnbind(engine: SDLStatic_Engine)` | nil |
 | `SDLStaticC.SetDebugTextSize(ptsize: number)` | nil |
 | `SDLStaticC.SetDeviceMotion(engine: SDLStatic_Engine, enabled: boolean)` | boolean |
 | `SDLStaticC.SetDirectionRepeat(engine: SDLStatic_Engine, delay_seconds: number, interval_seconds: number)` | nil |
@@ -2742,6 +2800,17 @@ returns as an array.
 | `SDLStaticC.SetTriggerThreshold(engine: SDLStatic_Engine, threshold: number)` | nil |
 | `SDLStaticC.ShowOpenFileDialog(window: SDL_Window, filter_name: string|nil, filter_pattern: string|nil, default_location: string|nil)` | boolean |
 | `SDLStaticC.ShowSaveFileDialog(window: SDL_Window, filter_name: string|nil, filter_pattern: string|nil, default_location: string|nil)` | boolean |
+| `SDLStaticC.SpriteCreate()` | SDLStatic_Sprite|nil |
+| `SDLStaticC.SpriteDestroy(sprite: SDLStatic_Sprite)` | nil |
+| `SDLStaticC.SpriteSetColor(sprite: SDLStatic_Sprite, r: number, g: number, b: number, a: number)` | nil |
+| `SDLStaticC.SpriteSetLayer(sprite: SDLStatic_Sprite, layer: integer, order: number)` | nil |
+| `SDLStaticC.SpriteSetOrigin(sprite: SDLStatic_Sprite, x: number, y: number)` | nil |
+| `SDLStaticC.SpriteSetScreenSpace(sprite: SDLStatic_Sprite, enabled: boolean)` | nil |
+| `SDLStaticC.SpriteSetSize(sprite: SDLStatic_Sprite, width: number, height: number)` | nil |
+| `SDLStaticC.SpriteSetSortByY(sprite: SDLStatic_Sprite, enabled: boolean)` | nil |
+| `SDLStaticC.SpriteSetSource(sprite: SDLStatic_Sprite, x: number, y: number, w: number, h: number)` | nil |
+| `SDLStaticC.SpriteSetTexture(sprite: SDLStatic_Sprite, texture: SDL_Texture)` | nil |
+| `SDLStaticC.SpriteSetVisible(sprite: SDLStatic_Sprite, visible: boolean)` | nil |
 | `SDLStaticC.Text(engine: SDLStatic_Engine, key: string|nil)` | string|nil |
 | `SDLStaticC.TextCount(engine: SDLStatic_Engine, language: string|nil)` | integer |
 | `SDLStaticC.TextHas(engine: SDLStatic_Engine, key: string|nil)` | boolean |

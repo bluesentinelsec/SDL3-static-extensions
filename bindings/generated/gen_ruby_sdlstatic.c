@@ -15,6 +15,7 @@
 #include <SDLStatic/engine_assets.h>
 #include <SDLStatic/engine_binding.h>
 #include <SDLStatic/engine_camera.h>
+#include <SDLStatic/engine_config.h>
 #include <SDLStatic/engine_graphics.h>
 #include <SDLStatic/engine_input.h>
 #include <SDLStatic/engine_light.h>
@@ -23,6 +24,7 @@
 #include <SDLStatic/engine_render.h>
 #include <SDLStatic/engine_save.h>
 #include <SDLStatic/engine_scene.h>
+#include <SDLStatic/engine_script.h>
 #include <SDLStatic/engine_text.h>
 #include <SDLStatic/gpu_primitives.h>
 #include <SDLStatic/gui.h>
@@ -1010,6 +1012,145 @@ static mrb_value GenR_SDLStatic_ActorCount(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_ActorDefCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_ActorDef * rv = SDLStatic_ActorDefCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDLStatic_ActorDef");
+    }
+}
+
+static mrb_value GenR_SDLStatic_ActorDefDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_ActorDef");
+    SDLStatic_ActorDefDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ActorDefSetName(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_ActorDef");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ActorDefSetName(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ActorDefSetParent(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_ActorDef");
+    SDLStatic_ActorId a1 = (SDLStatic_ActorId)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ActorDefSetParent(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ActorDefSetPosition(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_ActorDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_ActorDefSetPosition(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ActorDefSetRotation(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_ActorDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ActorDefSetRotation(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ActorDefSetScale(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_ActorDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_ActorDefSetScale(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ActorDefSetStateSize(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_ActorDef");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ActorDefSetStateSize(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ActorDefSetTags(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_ActorDef");
+    SDLStatic_ActorTags a1 = (SDLStatic_ActorTags)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ActorDefSetTags(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ActorDefSetType(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_ActorDef *a0 = (SDLStatic_ActorDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_ActorDef");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ActorDefSetType(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
 static mrb_value GenR_SDLStatic_ActorDestroy(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -1805,6 +1946,175 @@ static mrb_value GenR_SDLStatic_BindingToString(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_BodyDefDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    SDLStatic_BodyDefDestroy(&out0);
+    return GenPush_SDLStatic_BodyDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_BodyDefSetBullet(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 0 ? argv[0] : mrb_nil_value()));
+    SDLStatic_BodyDefSetBullet(&out0, a1);
+    return GenPush_SDLStatic_BodyDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_BodyDefSetFilter(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_BodyDefSetFilter(&out0, a1, a2);
+    return GenPush_SDLStatic_BodyDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_BodyDefSetFixedRotation(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 0 ? argv[0] : mrb_nil_value()));
+    SDLStatic_BodyDefSetFixedRotation(&out0, a1);
+    return GenPush_SDLStatic_BodyDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_BodyDefSetGravityScale(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    SDLStatic_BodyDefSetGravityScale(&out0, a1);
+    return GenPush_SDLStatic_BodyDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_BodyDefSetMaterial(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_BodyDefSetMaterial(&out0, a1, a2, a3);
+    return GenPush_SDLStatic_BodyDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_BodyDefSetOffset(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_BodyDefSetOffset(&out0, a1, a2);
+    return GenPush_SDLStatic_BodyDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_BodyDefSetSensor(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 0 ? argv[0] : mrb_nil_value()));
+    SDLStatic_BodyDefSetSensor(&out0, a1);
+    return GenPush_SDLStatic_BodyDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_BodyDefSetShape(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    SDLStatic_ShapeType a1 = (SDLStatic_ShapeType)SDLStaticGen_RubyToInt(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    SDLStatic_BodyDefSetShape(&out0, a1);
+    return GenPush_SDLStatic_BodyDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_BodyDefSetSize(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_BodyDefSetSize(&out0, a1, a2);
+    return GenPush_SDLStatic_BodyDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_BodyDefSetType(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_BodyDef out0;
+    memset(&out0, 0, sizeof(out0));
+    SDLStatic_BodyType a1 = (SDLStatic_BodyType)SDLStaticGen_RubyToInt(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    SDLStatic_BodyDefSetType(&out0, a1);
+    return GenPush_SDLStatic_BodyDef(mrb, &out0);
+    }
+}
+
 static mrb_value GenR_SDLStatic_BodyDefault(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -1833,6 +2143,20 @@ static mrb_value GenR_SDLStatic_CameraBegin(mrb_state *mrb, mrb_value self)
     }
     bool rv = SDLStatic_CameraBegin(a0, a1);
     return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_CameraDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    SDLStatic_CameraDestroy(&out0);
+    return GenPush_SDLStatic_Camera(mrb, &out0);
     }
 }
 
@@ -1951,6 +2275,88 @@ static mrb_value GenR_SDLStatic_CameraScreenToWorld(mrb_state *mrb, mrb_value se
     }
 }
 
+static mrb_value GenR_SDLStatic_CameraSetBounds(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a4 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    SDLStatic_CameraSetBounds(&out0, a1, a2, a3, a4);
+    return GenPush_SDLStatic_Camera(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_CameraSetDeadzone(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_CameraSetDeadzone(&out0, a1, a2);
+    return GenPush_SDLStatic_Camera(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_CameraSetSmoothing(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    SDLStatic_CameraSetSmoothing(&out0, a1);
+    return GenPush_SDLStatic_Camera(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_CameraSetViewport(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a4 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    SDLStatic_CameraSetViewport(&out0, a1, a2, a3, a4);
+    return GenPush_SDLStatic_Camera(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_CameraSetZoom(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    SDLStatic_CameraSetZoom(&out0, a1);
+    return GenPush_SDLStatic_Camera(mrb, &out0);
+    }
+}
+
 static mrb_value GenR_SDLStatic_CameraShake(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -2040,6 +2446,40 @@ static mrb_value GenR_SDLStatic_CameraVisible(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_CameraX(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    float rv = SDLStatic_CameraX(&out0);
+    mrb_value rets[2];
+    rets[0] = mrb_float_value(mrb, (mrb_float)rv);
+    rets[1] = GenPush_SDLStatic_Camera(mrb, &out0);
+    return mrb_ary_new_from_values(mrb, 2, rets);
+    }
+}
+
+static mrb_value GenR_SDLStatic_CameraY(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Camera out0;
+    memset(&out0, 0, sizeof(out0));
+    float rv = SDLStatic_CameraY(&out0);
+    mrb_value rets[2];
+    rets[0] = mrb_float_value(mrb, (mrb_float)rv);
+    rets[1] = GenPush_SDLStatic_Camera(mrb, &out0);
+    return mrb_ary_new_from_values(mrb, 2, rets);
+    }
+}
+
 static mrb_value GenR_SDLStatic_CompileRegex(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -2051,6 +2491,262 @@ static mrb_value GenR_SDLStatic_CompileRegex(mrb_state *mrb, mrb_value self)
     const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
     SDLStatic_Regex * rv = SDLStatic_CompileRegex(a0, a1);
     return SDLStaticGen_RubyPushOwned(mrb, (void *)rv, "SDLStatic_Regex", GenDtor_SDLStatic_DestroyRegex);
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig * rv = SDLStatic_ConfigCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDLStatic_EngineConfig");
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    SDLStatic_ConfigDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetAutoMount(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ConfigSetAutoMount(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetBackend(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    SDLStatic_EngineBackend a1 = (SDLStatic_EngineBackend)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ConfigSetBackend(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetDesignSize(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    int a2 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_ConfigSetDesignSize(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetFullscreen(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ConfigSetFullscreen(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetGraphics(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    SDLStatic_GraphicsSettings tmp1;
+    const SDLStatic_GraphicsSettings *a1 = NULL;
+    if (argc > 1 && mrb_hash_p(argv[1])) {
+        GenRead_SDLStatic_GraphicsSettings(mrb, argv[1], &tmp1);
+        a1 = &tmp1;
+    }
+    SDLStatic_ConfigSetGraphics(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetHeadless(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ConfigSetHeadless(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetHighDpi(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ConfigSetHighDpi(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetManualClock(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ConfigSetManualClock(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetMaxFps(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ConfigSetMaxFps(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetMediaPath(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ConfigSetMediaPath(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetPresentation(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    SDLStatic_EnginePresentation a1 = (SDLStatic_EnginePresentation)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ConfigSetPresentation(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetResizable(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ConfigSetResizable(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetTickRate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ConfigSetTickRate(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetTitle(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ConfigSetTitle(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetVsync(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_ConfigSetVsync(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_ConfigSetWindowSize(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_EngineConfig *a0 = (SDLStatic_EngineConfig *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_EngineConfig");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    int a2 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_ConfigSetWindowSize(a0, a1, a2);
+    return mrb_nil_value();
     }
 }
 
@@ -4271,6 +4967,115 @@ static mrb_value GenR_SDLStatic_LightCount(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_LightDefDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightDef out0;
+    memset(&out0, 0, sizeof(out0));
+    SDLStatic_LightDefDestroy(&out0);
+    return GenPush_SDLStatic_LightDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_LightDefSetColor(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a4 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    SDLStatic_LightDefSetColor(&out0, a1, a2, a3, a4);
+    return GenPush_SDLStatic_LightDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_LightDefSetCone(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_LightDefSetCone(&out0, a1, a2);
+    return GenPush_SDLStatic_LightDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_LightDefSetFlicker(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    SDLStatic_LightDefSetFlicker(&out0, a1);
+    return GenPush_SDLStatic_LightDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_LightDefSetOffset(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_LightDefSetOffset(&out0, a1, a2);
+    return GenPush_SDLStatic_LightDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_LightDefSetRadius(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightDef out0;
+    memset(&out0, 0, sizeof(out0));
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 0 ? argv[0] : mrb_nil_value()));
+    SDLStatic_LightDefSetRadius(&out0, a1);
+    return GenPush_SDLStatic_LightDef(mrb, &out0);
+    }
+}
+
+static mrb_value GenR_SDLStatic_LightDefSetShadows(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_LightDef out0;
+    memset(&out0, 0, sizeof(out0));
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 0 ? argv[0] : mrb_nil_value()));
+    SDLStatic_LightDefSetShadows(&out0, a1);
+    return GenPush_SDLStatic_LightDef(mrb, &out0);
+    }
+}
+
 static mrb_value GenR_SDLStatic_LightDefault(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -5378,6 +6183,60 @@ static mrb_value GenR_SDLStatic_SceneTransitioning(mrb_state *mrb, mrb_value sel
     }
 }
 
+static mrb_value GenR_SDLStatic_ScriptHasHandlers(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
+    bool rv = SDLStatic_ScriptHasHandlers(a0);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_ScriptRun(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
+    bool rv = SDLStatic_ScriptRun(a0);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_ScriptSetHook(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
+    SDLStatic_ScriptHook a1 = (SDLStatic_ScriptHook)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    Sint64 a2 = (Sint64)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    bool rv = SDLStatic_ScriptSetHook(a0, a1, a2);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_ScriptUnbind(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
+    SDLStatic_ScriptUnbind(a0);
+    return mrb_nil_value();
+    }
+}
+
 static mrb_value GenR_SDLStatic_SetDebugTextSize(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -5619,6 +6478,166 @@ static mrb_value GenR_SDLStatic_ShowSaveFileDialog(mrb_state *mrb, mrb_value sel
     const char *a3 = SDLStaticGen_RubyToStr(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
     bool rv = SDLStatic_ShowSaveFileDialog(a0, a1, a2, a3);
     return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_SpriteCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Sprite * rv = SDLStatic_SpriteCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDLStatic_Sprite");
+    }
+}
+
+static mrb_value GenR_SDLStatic_SpriteDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Sprite");
+    SDLStatic_SpriteDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SpriteSetColor(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Sprite");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    float a4 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    SDLStatic_SpriteSetColor(a0, a1, a2, a3, a4);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SpriteSetLayer(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Sprite");
+    int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_SpriteSetLayer(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SpriteSetOrigin(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Sprite");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_SpriteSetOrigin(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SpriteSetScreenSpace(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Sprite");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_SpriteSetScreenSpace(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SpriteSetSize(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Sprite");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_SpriteSetSize(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SpriteSetSortByY(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Sprite");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_SpriteSetSortByY(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SpriteSetSource(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Sprite");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    float a4 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    SDLStatic_SpriteSetSource(a0, a1, a2, a3, a4);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SpriteSetTexture(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Sprite");
+    SDL_Texture *a1 = (SDL_Texture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_Texture");
+    SDLStatic_SpriteSetTexture(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_SpriteSetVisible(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Sprite *a0 = (SDLStatic_Sprite *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Sprite");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_SpriteSetVisible(a0, a1);
+    return mrb_nil_value();
     }
 }
 
@@ -5970,6 +6989,16 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "ActorClear", GenR_SDLStatic_ActorClear, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ActorClearSprite", GenR_SDLStatic_ActorClearSprite, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ActorCount", GenR_SDLStatic_ActorCount, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ActorDefCreate", GenR_SDLStatic_ActorDefCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ActorDefDestroy", GenR_SDLStatic_ActorDefDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ActorDefSetName", GenR_SDLStatic_ActorDefSetName, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ActorDefSetParent", GenR_SDLStatic_ActorDefSetParent, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ActorDefSetPosition", GenR_SDLStatic_ActorDefSetPosition, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ActorDefSetRotation", GenR_SDLStatic_ActorDefSetRotation, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ActorDefSetScale", GenR_SDLStatic_ActorDefSetScale, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ActorDefSetStateSize", GenR_SDLStatic_ActorDefSetStateSize, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ActorDefSetTags", GenR_SDLStatic_ActorDefSetTags, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ActorDefSetType", GenR_SDLStatic_ActorDefSetType, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ActorDestroy", GenR_SDLStatic_ActorDestroy, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ActorEnabled", GenR_SDLStatic_ActorEnabled, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ActorEngine", GenR_SDLStatic_ActorEngine, MRB_ARGS_ANY());
@@ -6025,20 +7054,57 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "BidiBaseIsRTL", GenR_SDLStatic_BidiBaseIsRTL, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "BindingFromString", GenR_SDLStatic_BindingFromString, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "BindingToString", GenR_SDLStatic_BindingToString, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "BodyDefDestroy", GenR_SDLStatic_BodyDefDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "BodyDefSetBullet", GenR_SDLStatic_BodyDefSetBullet, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "BodyDefSetFilter", GenR_SDLStatic_BodyDefSetFilter, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "BodyDefSetFixedRotation", GenR_SDLStatic_BodyDefSetFixedRotation, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "BodyDefSetGravityScale", GenR_SDLStatic_BodyDefSetGravityScale, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "BodyDefSetMaterial", GenR_SDLStatic_BodyDefSetMaterial, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "BodyDefSetOffset", GenR_SDLStatic_BodyDefSetOffset, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "BodyDefSetSensor", GenR_SDLStatic_BodyDefSetSensor, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "BodyDefSetShape", GenR_SDLStatic_BodyDefSetShape, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "BodyDefSetSize", GenR_SDLStatic_BodyDefSetSize, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "BodyDefSetType", GenR_SDLStatic_BodyDefSetType, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "BodyDefault", GenR_SDLStatic_BodyDefault, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CameraBegin", GenR_SDLStatic_CameraBegin, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "CameraDestroy", GenR_SDLStatic_CameraDestroy, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CameraEnd", GenR_SDLStatic_CameraEnd, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CameraFollow", GenR_SDLStatic_CameraFollow, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CameraInit", GenR_SDLStatic_CameraInit, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CameraPoint", GenR_SDLStatic_CameraPoint, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CameraRect", GenR_SDLStatic_CameraRect, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CameraScreenToWorld", GenR_SDLStatic_CameraScreenToWorld, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "CameraSetBounds", GenR_SDLStatic_CameraSetBounds, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "CameraSetDeadzone", GenR_SDLStatic_CameraSetDeadzone, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "CameraSetSmoothing", GenR_SDLStatic_CameraSetSmoothing, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "CameraSetViewport", GenR_SDLStatic_CameraSetViewport, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "CameraSetZoom", GenR_SDLStatic_CameraSetZoom, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CameraShake", GenR_SDLStatic_CameraShake, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CameraSnap", GenR_SDLStatic_CameraSnap, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CameraSplit", GenR_SDLStatic_CameraSplit, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CameraUpdate", GenR_SDLStatic_CameraUpdate, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CameraVisible", GenR_SDLStatic_CameraVisible, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "CameraX", GenR_SDLStatic_CameraX, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "CameraY", GenR_SDLStatic_CameraY, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CompileRegex", GenR_SDLStatic_CompileRegex, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigCreate", GenR_SDLStatic_ConfigCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigDestroy", GenR_SDLStatic_ConfigDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetAutoMount", GenR_SDLStatic_ConfigSetAutoMount, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetBackend", GenR_SDLStatic_ConfigSetBackend, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetDesignSize", GenR_SDLStatic_ConfigSetDesignSize, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetFullscreen", GenR_SDLStatic_ConfigSetFullscreen, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetGraphics", GenR_SDLStatic_ConfigSetGraphics, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetHeadless", GenR_SDLStatic_ConfigSetHeadless, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetHighDpi", GenR_SDLStatic_ConfigSetHighDpi, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetManualClock", GenR_SDLStatic_ConfigSetManualClock, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetMaxFps", GenR_SDLStatic_ConfigSetMaxFps, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetMediaPath", GenR_SDLStatic_ConfigSetMediaPath, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetPresentation", GenR_SDLStatic_ConfigSetPresentation, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetResizable", GenR_SDLStatic_ConfigSetResizable, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetTickRate", GenR_SDLStatic_ConfigSetTickRate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetTitle", GenR_SDLStatic_ConfigSetTitle, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetVsync", GenR_SDLStatic_ConfigSetVsync, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ConfigSetWindowSize", GenR_SDLStatic_ConfigSetWindowSize, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CountSignalConnections", GenR_SDLStatic_CountSignalConnections, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateChipSFX", GenR_SDLStatic_CreateChipSFX, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "CreateChipTone", GenR_SDLStatic_CreateChipTone, MRB_ARGS_ANY());
@@ -6193,6 +7259,13 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "LightAt", GenR_SDLStatic_LightAt, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "LightBeginFrame", GenR_SDLStatic_LightBeginFrame, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "LightCount", GenR_SDLStatic_LightCount, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "LightDefDestroy", GenR_SDLStatic_LightDefDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "LightDefSetColor", GenR_SDLStatic_LightDefSetColor, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "LightDefSetCone", GenR_SDLStatic_LightDefSetCone, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "LightDefSetFlicker", GenR_SDLStatic_LightDefSetFlicker, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "LightDefSetOffset", GenR_SDLStatic_LightDefSetOffset, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "LightDefSetRadius", GenR_SDLStatic_LightDefSetRadius, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "LightDefSetShadows", GenR_SDLStatic_LightDefSetShadows, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "LightDefault", GenR_SDLStatic_LightDefault, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "LightHour", GenR_SDLStatic_LightHour, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "LightLineOfSight", GenR_SDLStatic_LightLineOfSight, MRB_ARGS_ANY());
@@ -6269,6 +7342,10 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "SceneSetTransitionColor", GenR_SDLStatic_SceneSetTransitionColor, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SceneTransitionTo", GenR_SDLStatic_SceneTransitionTo, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SceneTransitioning", GenR_SDLStatic_SceneTransitioning, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ScriptHasHandlers", GenR_SDLStatic_ScriptHasHandlers, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ScriptRun", GenR_SDLStatic_ScriptRun, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ScriptSetHook", GenR_SDLStatic_ScriptSetHook, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ScriptUnbind", GenR_SDLStatic_ScriptUnbind, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetDebugTextSize", GenR_SDLStatic_SetDebugTextSize, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetDeviceMotion", GenR_SDLStatic_SetDeviceMotion, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetDirectionRepeat", GenR_SDLStatic_SetDirectionRepeat, MRB_ARGS_ANY());
@@ -6286,6 +7363,17 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "SetTriggerThreshold", GenR_SDLStatic_SetTriggerThreshold, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ShowOpenFileDialog", GenR_SDLStatic_ShowOpenFileDialog, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ShowSaveFileDialog", GenR_SDLStatic_ShowSaveFileDialog, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SpriteCreate", GenR_SDLStatic_SpriteCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SpriteDestroy", GenR_SDLStatic_SpriteDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SpriteSetColor", GenR_SDLStatic_SpriteSetColor, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SpriteSetLayer", GenR_SDLStatic_SpriteSetLayer, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SpriteSetOrigin", GenR_SDLStatic_SpriteSetOrigin, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SpriteSetScreenSpace", GenR_SDLStatic_SpriteSetScreenSpace, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SpriteSetSize", GenR_SDLStatic_SpriteSetSize, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SpriteSetSortByY", GenR_SDLStatic_SpriteSetSortByY, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SpriteSetSource", GenR_SDLStatic_SpriteSetSource, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SpriteSetTexture", GenR_SDLStatic_SpriteSetTexture, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SpriteSetVisible", GenR_SDLStatic_SpriteSetVisible, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "Text", GenR_SDLStatic_Text, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "TextCount", GenR_SDLStatic_TextCount, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "TextHas", GenR_SDLStatic_TextHas, MRB_ARGS_ANY());
@@ -6446,6 +7534,13 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_const(mrb, mod, "SDLSTATIC_SCENE_TRANSPARENT", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SCENE_TRANSPARENT));
     mrb_define_const(mrb, mod, "SDLSTATIC_TRANSITION_NONE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_TRANSITION_NONE));
     mrb_define_const(mrb, mod, "SDLSTATIC_TRANSITION_FADE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_TRANSITION_FADE));
+    mrb_define_const(mrb, mod, "SDLSTATIC_HOOK_LOAD", mrb_int_value(mrb, (mrb_int)SDLSTATIC_HOOK_LOAD));
+    mrb_define_const(mrb, mod, "SDLSTATIC_HOOK_FIXED_UPDATE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_HOOK_FIXED_UPDATE));
+    mrb_define_const(mrb, mod, "SDLSTATIC_HOOK_UPDATE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_HOOK_UPDATE));
+    mrb_define_const(mrb, mod, "SDLSTATIC_HOOK_RENDER", mrb_int_value(mrb, (mrb_int)SDLSTATIC_HOOK_RENDER));
+    mrb_define_const(mrb, mod, "SDLSTATIC_HOOK_POST_RENDER", mrb_int_value(mrb, (mrb_int)SDLSTATIC_HOOK_POST_RENDER));
+    mrb_define_const(mrb, mod, "SDLSTATIC_HOOK_UNLOAD", mrb_int_value(mrb, (mrb_int)SDLSTATIC_HOOK_UNLOAD));
+    mrb_define_const(mrb, mod, "SDLSTATIC_HOOK_COUNT", mrb_int_value(mrb, (mrb_int)SDLSTATIC_HOOK_COUNT));
     mrb_define_const(mrb, mod, "SDLSTATIC_SHAPE_BOX", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SHAPE_BOX));
     mrb_define_const(mrb, mod, "SDLSTATIC_SHAPE_CIRCLE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SHAPE_CIRCLE));
     mrb_define_const(mrb, mod, "SDLSTATIC_SHAPE_CAPSULE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SHAPE_CAPSULE));
