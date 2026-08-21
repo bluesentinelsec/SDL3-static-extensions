@@ -25,6 +25,7 @@ which record every vendored version, checksum, deletion, and local fix.
 | `SDLStatic::Tiled` | [Tiled](tiled.html) | Tiled map (.tmj) parsing, VFS-aware |
 | `SDLStatic::Regex` | [Regex](regex.html) | regular expressions (Oniguruma), Ruby syntax, `Regexp` for mruby |
 | `SDLStatic::Light` | [Lighting](lighting.html) | dynamic 2D lighting: day/night ambient, coloured lights, hard shadows |
+| `SDLStatic::Engine` | [Engine](engine.html) | opinionated game engine: loop, scenes, actors, assets |
 | `SDLStatic::VFS` | [VFS](vfs.html) | PhysFS virtual filesystem, encrypted-zip mounting, asset packing |
 | `SDLStatic::Extras` | [Extras](extras.html) | password crypto, DEFLATE compression, base64, signals/events |
 | `SDLStatic::Formats` | [Formats](formats.html) | JSON (cJSON), TOML (tomlc99), YAML (libyaml) |

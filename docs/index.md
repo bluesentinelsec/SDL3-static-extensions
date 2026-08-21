@@ -60,6 +60,7 @@ browser WebAssembly, and all of it is exercised by CI on every platform.
 | Tile maps | [Tiled](tiled.html) | cute_tiled (.tmj) with VFS loading |
 | Regular expressions | [Regex](regex.html) | Oniguruma, Ruby syntax, all four languages |
 | Dynamic lighting | [Lighting](lighting.html) | day/night, torches, shadows; GPU shader with CPU fallback |
+| Game engine | [Engine](engine.html) | fixed-tick loop, interpolation, design resolution, frame limiter |
 | Virtual filesystem | [VFS](vfs.html) | PhysFS, encrypted-zip mounting, asset packing |
 | Crypto, compression, base64, signals | [Extras](extras.html) | original code + sdefl/sinfl |
 | JSON, TOML, YAML | [Formats](formats.html) | cJSON, tomlc99, libyaml |
@@ -67,7 +68,7 @@ browser WebAssembly, and all of it is exercised by CI on every platform.
 
 ## Proof it works
 
-The test suite runs 304 tests across six CI platforms plus an iOS
+The test suite runs 319 tests across six CI platforms plus an iOS
 XCFramework build, with a dedicated AddressSanitizer + UBSan job. The
 repository includes four complete Pong implementations — one each in C,
 C++, Lua, and Ruby — built purely against the public APIs.
