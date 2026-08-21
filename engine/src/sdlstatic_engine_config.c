@@ -564,6 +564,243 @@ void SDLStatic_LightDefSetShadows(SDLStatic_LightDef *def, bool casts_shadows)
     }
 }
 
+/* --- SDL events ------------------------------------------------------------ */
+
+/* SDL_PollEvent fills a caller-allocated event; in C that is a local, which
+   a script cannot make. One allocation plus accessors turns the whole event
+   loop from "bound but uncallable" into something a script can actually
+   write. */
+SDL_Event *SDLStatic_EventCreate(void)
+{
+    return (SDL_Event *)SDL_calloc(1, sizeof(SDL_Event));
+}
+
+void SDLStatic_EventDestroy(SDL_Event *event)
+{
+    SDL_free(event);
+}
+
+Uint32 SDLStatic_EventType(SDL_Event *event)
+{
+    return (event != NULL) ? event->type : 0;
+}
+
+void SDLStatic_EventSetType(SDL_Event *event, Uint32 type)
+{
+    if (event != NULL)
+    {
+        /* Zero the rest: a reused event still holds the previous type's
+           arm of the union, and pushing that would deliver a quit event
+           carrying somebody's mouse coordinates. */
+        SDL_zerop(event);
+        event->type = type;
+    }
+}
+
+Uint32 SDLStatic_EventWindowId(SDL_Event *event)
+{
+    if (event == NULL)
+    {
+        return 0;
+    }
+    switch (event->type)
+    {
+    case SDL_EVENT_KEY_DOWN:
+    case SDL_EVENT_KEY_UP:
+        return event->key.windowID;
+    case SDL_EVENT_MOUSE_MOTION:
+        return event->motion.windowID;
+    case SDL_EVENT_MOUSE_BUTTON_DOWN:
+    case SDL_EVENT_MOUSE_BUTTON_UP:
+        return event->button.windowID;
+    case SDL_EVENT_MOUSE_WHEEL:
+        return event->wheel.windowID;
+    case SDL_EVENT_TEXT_INPUT:
+        return event->text.windowID;
+    default:
+        /* Window events share a layout, and every one of them is in the
+           window range, so this covers all of them at once. */
+        if (event->type >= SDL_EVENT_WINDOW_FIRST && event->type <= SDL_EVENT_WINDOW_LAST)
+        {
+            return event->window.windowID;
+        }
+        return 0;
+    }
+}
+
+/* Each accessor answers for the events it applies to and returns a neutral
+   value otherwise, so a script may read a field without first checking the
+   type — reading the wrong arm of a union is the classic way to get
+   plausible nonsense out of an event. */
+int SDLStatic_EventKeyScancode(SDL_Event *event)
+{
+    if (event == NULL || (event->type != SDL_EVENT_KEY_DOWN && event->type != SDL_EVENT_KEY_UP))
+    {
+        return SDL_SCANCODE_UNKNOWN;
+    }
+    return (int)event->key.scancode;
+}
+
+bool SDLStatic_EventKeyRepeat(SDL_Event *event)
+{
+    return event != NULL && event->type == SDL_EVENT_KEY_DOWN && event->key.repeat;
+}
+
+Uint16 SDLStatic_EventKeyModifiers(SDL_Event *event)
+{
+    if (event == NULL || (event->type != SDL_EVENT_KEY_DOWN && event->type != SDL_EVENT_KEY_UP))
+    {
+        return 0;
+    }
+    return event->key.mod;
+}
+
+float SDLStatic_EventMouseX(SDL_Event *event)
+{
+    if (event == NULL)
+    {
+        return 0.0f;
+    }
+    if (event->type == SDL_EVENT_MOUSE_MOTION)
+    {
+        return event->motion.x;
+    }
+    if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN || event->type == SDL_EVENT_MOUSE_BUTTON_UP)
+    {
+        return event->button.x;
+    }
+    return 0.0f;
+}
+
+float SDLStatic_EventMouseY(SDL_Event *event)
+{
+    if (event == NULL)
+    {
+        return 0.0f;
+    }
+    if (event->type == SDL_EVENT_MOUSE_MOTION)
+    {
+        return event->motion.y;
+    }
+    if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN || event->type == SDL_EVENT_MOUSE_BUTTON_UP)
+    {
+        return event->button.y;
+    }
+    return 0.0f;
+}
+
+float SDLStatic_EventMouseDeltaX(SDL_Event *event)
+{
+    return (event != NULL && event->type == SDL_EVENT_MOUSE_MOTION) ? event->motion.xrel : 0.0f;
+}
+
+float SDLStatic_EventMouseDeltaY(SDL_Event *event)
+{
+    return (event != NULL && event->type == SDL_EVENT_MOUSE_MOTION) ? event->motion.yrel : 0.0f;
+}
+
+int SDLStatic_EventMouseButton(SDL_Event *event)
+{
+    if (event == NULL ||
+        (event->type != SDL_EVENT_MOUSE_BUTTON_DOWN && event->type != SDL_EVENT_MOUSE_BUTTON_UP))
+    {
+        return 0;
+    }
+    return event->button.button;
+}
+
+float SDLStatic_EventWheelX(SDL_Event *event)
+{
+    return (event != NULL && event->type == SDL_EVENT_MOUSE_WHEEL) ? event->wheel.x : 0.0f;
+}
+
+float SDLStatic_EventWheelY(SDL_Event *event)
+{
+    return (event != NULL && event->type == SDL_EVENT_MOUSE_WHEEL) ? event->wheel.y : 0.0f;
+}
+
+Sint32 SDLStatic_EventGamepadWhich(SDL_Event *event)
+{
+    if (event == NULL)
+    {
+        return 0;
+    }
+    switch (event->type)
+    {
+    case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+    case SDL_EVENT_GAMEPAD_BUTTON_UP:
+        return (Sint32)event->gbutton.which;
+    case SDL_EVENT_GAMEPAD_AXIS_MOTION:
+        return (Sint32)event->gaxis.which;
+    case SDL_EVENT_GAMEPAD_ADDED:
+    case SDL_EVENT_GAMEPAD_REMOVED:
+        return (Sint32)event->gdevice.which;
+    default:
+        return 0;
+    }
+}
+
+int SDLStatic_EventGamepadButton(SDL_Event *event)
+{
+    if (event == NULL || (event->type != SDL_EVENT_GAMEPAD_BUTTON_DOWN &&
+                          event->type != SDL_EVENT_GAMEPAD_BUTTON_UP))
+    {
+        return -1;
+    }
+    return event->gbutton.button;
+}
+
+int SDLStatic_EventGamepadAxis(SDL_Event *event)
+{
+    if (event == NULL || event->type != SDL_EVENT_GAMEPAD_AXIS_MOTION)
+    {
+        return -1;
+    }
+    return event->gaxis.axis;
+}
+
+float SDLStatic_EventGamepadAxisValue(SDL_Event *event)
+{
+    if (event == NULL || event->type != SDL_EVENT_GAMEPAD_AXIS_MOTION)
+    {
+        return 0.0f;
+    }
+    /* Normalised, because a script comparing against 32767 is a script
+       that will be wrong on the next controller. */
+    return (float)event->gaxis.value / 32767.0f;
+}
+
+float SDLStatic_EventTouchX(SDL_Event *event)
+{
+    if (event == NULL || (event->type != SDL_EVENT_FINGER_DOWN &&
+                          event->type != SDL_EVENT_FINGER_UP &&
+                          event->type != SDL_EVENT_FINGER_MOTION))
+    {
+        return 0.0f;
+    }
+    return event->tfinger.x;
+}
+
+float SDLStatic_EventTouchY(SDL_Event *event)
+{
+    if (event == NULL || (event->type != SDL_EVENT_FINGER_DOWN &&
+                          event->type != SDL_EVENT_FINGER_UP &&
+                          event->type != SDL_EVENT_FINGER_MOTION))
+    {
+        return 0.0f;
+    }
+    return event->tfinger.y;
+}
+
+const char *SDLStatic_EventText(SDL_Event *event)
+{
+    if (event == NULL || event->type != SDL_EVENT_TEXT_INPUT || event->text.text == NULL)
+    {
+        return "";
+    }
+    return event->text.text;
+}
+
 /* --- cameras --------------------------------------------------------------- */
 
 SDLStatic_Camera *SDLStatic_CameraCreate(SDLStatic_Engine *engine)

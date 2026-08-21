@@ -146,6 +146,80 @@ extern void SDLStatic_LightDefSetCone(SDLStatic_LightDef *def, float direction, 
 extern void SDLStatic_LightDefSetFlicker(SDLStatic_LightDef *def, float flicker);
 extern void SDLStatic_LightDefSetShadows(SDLStatic_LightDef *def, bool casts_shadows);
 
+/* --- SDL events ------------------------------------------------------------ */
+
+/**
+ * An SDL_Event a script can own, and accessors for reading one.
+ *
+ * `SDL_PollEvent` takes a pointer to an event the caller allocated, which
+ * in C is a local. A script has no way to make one, and no way to read the
+ * union afterwards — so the whole event loop was bound and uncallable:
+ * a script could open a window and draw into it, but never learn that the
+ * player had pressed a key or closed it.
+ *
+ *     -- a game loop owned entirely by the script
+ *     local ev = SDLStaticC.EventCreate()
+ *     local running = true
+ *     while running do
+ *       while SDL.PollEvent(ev) do
+ *         local kind = SDLStaticC.EventType(ev)
+ *         if kind == SDL.EVENT_QUIT then running = false end
+ *         if kind == SDL.EVENT_KEY_DOWN then
+ *           handle(SDLStaticC.EventKeyScancode(ev))
+ *         end
+ *       end
+ *       SDL.RenderClear(renderer)
+ *       -- draw
+ *       SDL.RenderPresent(renderer)
+ *     end
+ *
+ * The accessors read the union's common fields. Anything more exotic still
+ * needs C, which is the right trade: these are the fields a game loop
+ * actually branches on.
+ */
+extern SDL_Event *SDLStatic_EventCreate(void);
+extern void SDLStatic_EventDestroy(SDL_Event *event);
+
+/** The event type — compare against SDL's EVENT_* constants, which the
+ *  generator already exposes. */
+extern Uint32 SDLStatic_EventType(SDL_Event *event);
+
+/** Set the type, so a script can synthesise an event and push it with
+ *  SDL_PushEvent — a custom game event, or a test driving its own input. */
+extern void SDLStatic_EventSetType(SDL_Event *event, Uint32 type);
+
+/** Which window it came from, or 0. */
+extern Uint32 SDLStatic_EventWindowId(SDL_Event *event);
+
+/* Keyboard. */
+extern int SDLStatic_EventKeyScancode(SDL_Event *event);
+extern bool SDLStatic_EventKeyRepeat(SDL_Event *event);
+extern Uint16 SDLStatic_EventKeyModifiers(SDL_Event *event);
+
+/* Mouse. Position and motion are in window coordinates, as SDL reports
+   them; a game using the engine's design space converts with
+   SDLStatic_EngineWindowToDesign. */
+extern float SDLStatic_EventMouseX(SDL_Event *event);
+extern float SDLStatic_EventMouseY(SDL_Event *event);
+extern float SDLStatic_EventMouseDeltaX(SDL_Event *event);
+extern float SDLStatic_EventMouseDeltaY(SDL_Event *event);
+extern int SDLStatic_EventMouseButton(SDL_Event *event);
+extern float SDLStatic_EventWheelX(SDL_Event *event);
+extern float SDLStatic_EventWheelY(SDL_Event *event);
+
+/* Gamepads. `which` identifies the controller across every gamepad event. */
+extern Sint32 SDLStatic_EventGamepadWhich(SDL_Event *event);
+extern int SDLStatic_EventGamepadButton(SDL_Event *event);
+extern int SDLStatic_EventGamepadAxis(SDL_Event *event);
+extern float SDLStatic_EventGamepadAxisValue(SDL_Event *event);
+
+/* Touch, normalised 0..1 as SDL reports it. */
+extern float SDLStatic_EventTouchX(SDL_Event *event);
+extern float SDLStatic_EventTouchY(SDL_Event *event);
+
+/* Text input, or "" for any other event. */
+extern const char *SDLStatic_EventText(SDL_Event *event);
+
 /* --- cameras --------------------------------------------------------------- */
 
 /** A camera on the heap. C games keep one in their own struct; a script

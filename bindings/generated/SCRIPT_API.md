@@ -2606,6 +2606,28 @@ returns as an array.
 | `SDLStaticC.EngineViewRect(engine: SDLStatic_Engine)` | SDL_FRect table |
 | `SDLStaticC.EngineWindow(engine: SDLStatic_Engine)` | SDL_Window|nil |
 | `SDLStaticC.EngineWindowToDesign(engine: SDLStatic_Engine, window_x: number, window_y: number, design_x: number, design_y: number)` | design_x: number, design_y: number |
+| `SDLStaticC.EventCreate()` | SDL_Event|nil |
+| `SDLStaticC.EventDestroy(event: SDL_Event)` | nil |
+| `SDLStaticC.EventGamepadAxis(event: SDL_Event)` | integer |
+| `SDLStaticC.EventGamepadAxisValue(event: SDL_Event)` | number |
+| `SDLStaticC.EventGamepadButton(event: SDL_Event)` | integer |
+| `SDLStaticC.EventGamepadWhich(event: SDL_Event)` | integer |
+| `SDLStaticC.EventKeyModifiers(event: SDL_Event)` | integer |
+| `SDLStaticC.EventKeyRepeat(event: SDL_Event)` | boolean |
+| `SDLStaticC.EventKeyScancode(event: SDL_Event)` | integer |
+| `SDLStaticC.EventMouseButton(event: SDL_Event)` | integer |
+| `SDLStaticC.EventMouseDeltaX(event: SDL_Event)` | number |
+| `SDLStaticC.EventMouseDeltaY(event: SDL_Event)` | number |
+| `SDLStaticC.EventMouseX(event: SDL_Event)` | number |
+| `SDLStaticC.EventMouseY(event: SDL_Event)` | number |
+| `SDLStaticC.EventSetType(event: SDL_Event, type: integer)` | nil |
+| `SDLStaticC.EventText(event: SDL_Event)` | string|nil |
+| `SDLStaticC.EventTouchX(event: SDL_Event)` | number |
+| `SDLStaticC.EventTouchY(event: SDL_Event)` | number |
+| `SDLStaticC.EventType(event: SDL_Event)` | integer |
+| `SDLStaticC.EventWheelX(event: SDL_Event)` | number |
+| `SDLStaticC.EventWheelY(event: SDL_Event)` | number |
+| `SDLStaticC.EventWindowId(event: SDL_Event)` | integer |
 | `SDLStaticC.FingerCount(engine: SDLStatic_Engine)` | integer |
 | `SDLStaticC.FreeTiledMap(map: SDLStatic_TiledMap)` | nil |
 | `SDLStaticC.GamepadAccelerometer(engine: SDLStatic_Engine, player: integer, x: number, y: number, z: number)` | x: number, y: number, z: number |

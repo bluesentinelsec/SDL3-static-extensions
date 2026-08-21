@@ -545,6 +545,9 @@ inline Status EngineSetTickRate(SDLStatic_Engine *engine, int ticks_per_second) 
 inline Status EngineTick(SDLStatic_Engine *engine) {
   return ::SDLStatic_EngineTick(engine) ? Status() : Status::FromSdl();
 }
+inline Status EventKeyRepeat(SDL_Event *event) {
+  return ::SDLStatic_EventKeyRepeat(event) ? Status() : Status::FromSdl();
+}
 inline Status GamepadButtonDown(SDLStatic_Engine *engine, int player, SDLStatic_GamepadButton button) {
   return ::SDLStatic_GamepadButtonDown(engine, player, button) ? Status() : Status::FromSdl();
 }
@@ -895,6 +898,27 @@ inline constexpr auto& EngineTimeScale = ::SDLStatic_EngineTimeScale;
 inline constexpr auto& EngineViewRect = ::SDLStatic_EngineViewRect;
 inline constexpr auto& EngineWindow = ::SDLStatic_EngineWindow;
 inline constexpr auto& EngineWindowToDesign = ::SDLStatic_EngineWindowToDesign;
+inline constexpr auto& EventCreate = ::SDLStatic_EventCreate;
+inline constexpr auto& EventDestroy = ::SDLStatic_EventDestroy;
+inline constexpr auto& EventGamepadAxis = ::SDLStatic_EventGamepadAxis;
+inline constexpr auto& EventGamepadAxisValue = ::SDLStatic_EventGamepadAxisValue;
+inline constexpr auto& EventGamepadButton = ::SDLStatic_EventGamepadButton;
+inline constexpr auto& EventGamepadWhich = ::SDLStatic_EventGamepadWhich;
+inline constexpr auto& EventKeyModifiers = ::SDLStatic_EventKeyModifiers;
+inline constexpr auto& EventKeyScancode = ::SDLStatic_EventKeyScancode;
+inline constexpr auto& EventMouseButton = ::SDLStatic_EventMouseButton;
+inline constexpr auto& EventMouseDeltaX = ::SDLStatic_EventMouseDeltaX;
+inline constexpr auto& EventMouseDeltaY = ::SDLStatic_EventMouseDeltaY;
+inline constexpr auto& EventMouseX = ::SDLStatic_EventMouseX;
+inline constexpr auto& EventMouseY = ::SDLStatic_EventMouseY;
+inline constexpr auto& EventSetType = ::SDLStatic_EventSetType;
+inline constexpr auto& EventText = ::SDLStatic_EventText;
+inline constexpr auto& EventTouchX = ::SDLStatic_EventTouchX;
+inline constexpr auto& EventTouchY = ::SDLStatic_EventTouchY;
+inline constexpr auto& EventType = ::SDLStatic_EventType;
+inline constexpr auto& EventWheelX = ::SDLStatic_EventWheelX;
+inline constexpr auto& EventWheelY = ::SDLStatic_EventWheelY;
+inline constexpr auto& EventWindowId = ::SDLStatic_EventWindowId;
 inline constexpr auto& FingerCount = ::SDLStatic_FingerCount;
 inline constexpr auto& FingerHeldInRect = ::SDLStatic_FingerHeldInRect;
 inline constexpr auto& FingerInRect = ::SDLStatic_FingerInRect;

@@ -316,6 +316,94 @@ TEST(GenRuby, JsonTreeWalkAndPhysics)
 namespace
 {
 
+// A whole game loop in Lua with no engine at all: surface, renderer, event
+// pump, draw, present. This is the "structure it however you wish" case —
+// if this works, a script author is not boxed into the opinionated loop.
+//
+// A software renderer over a surface rather than a window, so it runs on a
+// headless CI box; the binding surface exercised is identical, since
+// CreateWindow and CreateRenderer are bound the same way.
+TEST(GenLua, AScriptCanWriteItsOwnGameLoop)
+{
+    // The event subsystem, not just the base: PushEvent and PollEvent need
+    // a queue to exist.
+    ASSERT_TRUE(SDL_Init(SDL_INIT_EVENTS));
+    RunLua(
+        "local surf = SDL.CreateSurface(64, 48, SDL.PIXELFORMAT_RGBA8888)\n"
+        "assert(surf ~= nil, 'surface')\n"
+        "local r = SDL.CreateSoftwareRenderer(surf)\n"
+        "assert(r ~= nil, 'renderer')\n"
+        // The event a script owns: without this the loop below cannot be
+        // written at all.
+        "local ev = SDLStaticC.EventCreate()\n"
+        "assert(ev ~= nil, 'event')\n"
+        // Push a quit so the loop has something real to end on.
+        "local quit = SDLStaticC.EventCreate()\n"
+        "SDLStaticC.EventSetType(quit, SDL.EVENT_QUIT)\n"
+        "SDL.PushEvent(quit)\n"
+        "SDLStaticC.EventDestroy(quit)\n"
+        "local running, frames, saw_quit = true, 0, false\n"
+        "while running and frames < 100 do\n"
+        "  while SDL.PollEvent(ev) do\n"
+        "    local kind = SDLStaticC.EventType(ev)\n"
+        "    if kind == SDL.EVENT_QUIT then running = false; saw_quit = true end\n"
+        "    if kind == SDL.EVENT_KEY_DOWN then\n"
+        "      local _ = SDLStaticC.EventKeyScancode(ev)\n"
+        "    end\n"
+        "  end\n"
+        "  SDL.SetRenderDrawColor(r, 20, 30, 40, 255)\n"
+        "  SDL.RenderClear(r)\n"
+        "  SDL.SetRenderDrawColor(r, 255, 0, 0, 255)\n"
+        "  SDL.RenderFillRect(r, {x = 8, y = 8, w = 16, h = 16})\n"
+        "  SDL.RenderPresent(r)\n"
+        "  frames = frames + 1\n"
+        "end\n"
+        "assert(saw_quit, 'the loop saw the quit event')\n"
+        "assert(frames >= 1, 'and drew at least one frame')\n"
+        "SDLStaticC.EventDestroy(ev)\n"
+        "SDL.DestroyRenderer(r)\n"
+        "SDL.DestroySurface(surf)\n");
+    SDL_Quit();
+}
+
+// The same, in Ruby, to prove the two surfaces really are the same shape.
+TEST(GenRuby, AScriptCanWriteItsOwnGameLoop)
+{
+    ASSERT_TRUE(SDL_Init(SDL_INIT_EVENTS));
+    RunRuby(
+        "surf = SDL.CreateSurface(64, 48, SDL::PIXELFORMAT_RGBA8888)\n"
+        "raise 'surface' if surf.nil?\n"
+        "r = SDL.CreateSoftwareRenderer(surf)\n"
+        "raise 'renderer' if r.nil?\n"
+        "ev = SDLStaticC.EventCreate\n"
+        "q = SDLStaticC.EventCreate\n"
+        "SDLStaticC.EventSetType(q, SDL::EVENT_QUIT)\n"
+        "SDL.PushEvent(q)\n"
+        "SDLStaticC.EventDestroy(q)\n"
+        "running = true\n"
+        "frames = 0\n"
+        "saw_quit = false\n"
+        "while running && frames < 100\n"
+        "  while SDL.PollEvent(ev)\n"
+        // Written out rather than as a one-liner: `a = false and b = true`
+        // short-circuits in Ruby, so the second assignment never runs.
+        "    if SDLStaticC.EventType(ev) == SDL::EVENT_QUIT\n"
+        "      running = false\n"
+        "      saw_quit = true\n"
+        "    end\n"
+        "  end\n"
+        "  SDL.SetRenderDrawColor(r, 20, 30, 40, 255)\n"
+        "  SDL.RenderClear(r)\n"
+        "  SDL.RenderPresent(r)\n"
+        "  frames += 1\n"
+        "end\n"
+        "raise 'quit' unless saw_quit\n"
+        "SDLStaticC.EventDestroy(ev)\n"
+        "SDL.DestroyRenderer(r)\n"
+        "SDL.DestroySurface(surf)\n");
+    SDL_Quit();
+}
+
 TEST(GenLua, AScriptCanCreateAndDriveAnEngine)
 {
     ASSERT_TRUE(SDL_Init(0));

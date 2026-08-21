@@ -3648,6 +3648,292 @@ static mrb_value GenR_SDLStatic_EngineWindowToDesign(mrb_state *mrb, mrb_value s
     }
 }
 
+static mrb_value GenR_SDLStatic_EventCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event * rv = SDLStatic_EventCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_Event");
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    SDLStatic_EventDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventGamepadAxis(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    int rv = SDLStatic_EventGamepadAxis(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventGamepadAxisValue(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    float rv = SDLStatic_EventGamepadAxisValue(a0);
+    return mrb_float_value(mrb, (mrb_float)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventGamepadButton(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    int rv = SDLStatic_EventGamepadButton(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventGamepadWhich(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    Sint32 rv = SDLStatic_EventGamepadWhich(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventKeyModifiers(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    Uint16 rv = SDLStatic_EventKeyModifiers(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventKeyRepeat(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    bool rv = SDLStatic_EventKeyRepeat(a0);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventKeyScancode(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    int rv = SDLStatic_EventKeyScancode(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventMouseButton(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    int rv = SDLStatic_EventMouseButton(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventMouseDeltaX(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    float rv = SDLStatic_EventMouseDeltaX(a0);
+    return mrb_float_value(mrb, (mrb_float)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventMouseDeltaY(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    float rv = SDLStatic_EventMouseDeltaY(a0);
+    return mrb_float_value(mrb, (mrb_float)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventMouseX(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    float rv = SDLStatic_EventMouseX(a0);
+    return mrb_float_value(mrb, (mrb_float)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventMouseY(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    float rv = SDLStatic_EventMouseY(a0);
+    return mrb_float_value(mrb, (mrb_float)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventSetType(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_EventSetType(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventText(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    const char * rv = SDLStatic_EventText(a0);
+    return (rv == NULL ? mrb_nil_value() : mrb_str_new_cstr(mrb, rv));
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventTouchX(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    float rv = SDLStatic_EventTouchX(a0);
+    return mrb_float_value(mrb, (mrb_float)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventTouchY(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    float rv = SDLStatic_EventTouchY(a0);
+    return mrb_float_value(mrb, (mrb_float)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventType(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    Uint32 rv = SDLStatic_EventType(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventWheelX(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    float rv = SDLStatic_EventWheelX(a0);
+    return mrb_float_value(mrb, (mrb_float)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventWheelY(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    float rv = SDLStatic_EventWheelY(a0);
+    return mrb_float_value(mrb, (mrb_float)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_EventWindowId(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
+    Uint32 rv = SDLStatic_EventWindowId(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
 static mrb_value GenR_SDLStatic_FingerCount(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -7169,6 +7455,28 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "EngineViewRect", GenR_SDLStatic_EngineViewRect, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "EngineWindow", GenR_SDLStatic_EngineWindow, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "EngineWindowToDesign", GenR_SDLStatic_EngineWindowToDesign, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventCreate", GenR_SDLStatic_EventCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventDestroy", GenR_SDLStatic_EventDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventGamepadAxis", GenR_SDLStatic_EventGamepadAxis, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventGamepadAxisValue", GenR_SDLStatic_EventGamepadAxisValue, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventGamepadButton", GenR_SDLStatic_EventGamepadButton, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventGamepadWhich", GenR_SDLStatic_EventGamepadWhich, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventKeyModifiers", GenR_SDLStatic_EventKeyModifiers, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventKeyRepeat", GenR_SDLStatic_EventKeyRepeat, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventKeyScancode", GenR_SDLStatic_EventKeyScancode, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventMouseButton", GenR_SDLStatic_EventMouseButton, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventMouseDeltaX", GenR_SDLStatic_EventMouseDeltaX, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventMouseDeltaY", GenR_SDLStatic_EventMouseDeltaY, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventMouseX", GenR_SDLStatic_EventMouseX, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventMouseY", GenR_SDLStatic_EventMouseY, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventSetType", GenR_SDLStatic_EventSetType, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventText", GenR_SDLStatic_EventText, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventTouchX", GenR_SDLStatic_EventTouchX, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventTouchY", GenR_SDLStatic_EventTouchY, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventType", GenR_SDLStatic_EventType, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventWheelX", GenR_SDLStatic_EventWheelX, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventWheelY", GenR_SDLStatic_EventWheelY, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "EventWindowId", GenR_SDLStatic_EventWindowId, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "FingerCount", GenR_SDLStatic_FingerCount, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "FreeTiledMap", GenR_SDLStatic_FreeTiledMap, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GamepadAccelerometer", GenR_SDLStatic_GamepadAccelerometer, MRB_ARGS_ANY());

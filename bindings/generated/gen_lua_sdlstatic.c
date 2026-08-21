@@ -2762,6 +2762,202 @@ static int GenL_SDLStatic_EngineWindowToDesign(lua_State *L)
     return 2;
 }
 
+static int GenL_SDLStatic_EventCreate(lua_State *L)
+{
+    (void)L;
+    SDL_Event * rv = SDLStatic_EventCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_Event");
+    return 1;
+}
+
+static int GenL_SDLStatic_EventDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    SDLStatic_EventDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_EventGamepadAxis(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    int rv = SDLStatic_EventGamepadAxis(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventGamepadAxisValue(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    float rv = SDLStatic_EventGamepadAxisValue(a0);
+    lua_pushnumber(L, (lua_Number)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventGamepadButton(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    int rv = SDLStatic_EventGamepadButton(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventGamepadWhich(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    Sint32 rv = SDLStatic_EventGamepadWhich(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventKeyModifiers(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    Uint16 rv = SDLStatic_EventKeyModifiers(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventKeyRepeat(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    bool rv = SDLStatic_EventKeyRepeat(a0);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventKeyScancode(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    int rv = SDLStatic_EventKeyScancode(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventMouseButton(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    int rv = SDLStatic_EventMouseButton(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventMouseDeltaX(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    float rv = SDLStatic_EventMouseDeltaX(a0);
+    lua_pushnumber(L, (lua_Number)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventMouseDeltaY(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    float rv = SDLStatic_EventMouseDeltaY(a0);
+    lua_pushnumber(L, (lua_Number)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventMouseX(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    float rv = SDLStatic_EventMouseX(a0);
+    lua_pushnumber(L, (lua_Number)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventMouseY(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    float rv = SDLStatic_EventMouseY(a0);
+    lua_pushnumber(L, (lua_Number)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventSetType(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
+    SDLStatic_EventSetType(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_EventText(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    const char * rv = SDLStatic_EventText(a0);
+    if (rv == NULL) { lua_pushnil(L); } else { lua_pushstring(L, rv); }
+    return 1;
+}
+
+static int GenL_SDLStatic_EventTouchX(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    float rv = SDLStatic_EventTouchX(a0);
+    lua_pushnumber(L, (lua_Number)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventTouchY(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    float rv = SDLStatic_EventTouchY(a0);
+    lua_pushnumber(L, (lua_Number)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventType(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    Uint32 rv = SDLStatic_EventType(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventWheelX(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    float rv = SDLStatic_EventWheelX(a0);
+    lua_pushnumber(L, (lua_Number)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventWheelY(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    float rv = SDLStatic_EventWheelY(a0);
+    lua_pushnumber(L, (lua_Number)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_EventWindowId(lua_State *L)
+{
+    (void)L;
+    SDL_Event *a0 = (SDL_Event *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_Event");
+    Uint32 rv = SDLStatic_EventWindowId(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_FingerCount(lua_State *L)
 {
     (void)L;
@@ -5068,7 +5264,7 @@ static int GenL_SDLStatic_TouchRotation(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 446);
+    lua_createtable(L, 0, 468);
     lua_pushcfunction(L, GenL_SDLStatic_ActionBind);
     lua_setfield(L, -2, "ActionBind");
     lua_pushcfunction(L, GenL_SDLStatic_ActionBindAxis);
@@ -5507,6 +5703,50 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "EngineWindow");
     lua_pushcfunction(L, GenL_SDLStatic_EngineWindowToDesign);
     lua_setfield(L, -2, "EngineWindowToDesign");
+    lua_pushcfunction(L, GenL_SDLStatic_EventCreate);
+    lua_setfield(L, -2, "EventCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_EventDestroy);
+    lua_setfield(L, -2, "EventDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_EventGamepadAxis);
+    lua_setfield(L, -2, "EventGamepadAxis");
+    lua_pushcfunction(L, GenL_SDLStatic_EventGamepadAxisValue);
+    lua_setfield(L, -2, "EventGamepadAxisValue");
+    lua_pushcfunction(L, GenL_SDLStatic_EventGamepadButton);
+    lua_setfield(L, -2, "EventGamepadButton");
+    lua_pushcfunction(L, GenL_SDLStatic_EventGamepadWhich);
+    lua_setfield(L, -2, "EventGamepadWhich");
+    lua_pushcfunction(L, GenL_SDLStatic_EventKeyModifiers);
+    lua_setfield(L, -2, "EventKeyModifiers");
+    lua_pushcfunction(L, GenL_SDLStatic_EventKeyRepeat);
+    lua_setfield(L, -2, "EventKeyRepeat");
+    lua_pushcfunction(L, GenL_SDLStatic_EventKeyScancode);
+    lua_setfield(L, -2, "EventKeyScancode");
+    lua_pushcfunction(L, GenL_SDLStatic_EventMouseButton);
+    lua_setfield(L, -2, "EventMouseButton");
+    lua_pushcfunction(L, GenL_SDLStatic_EventMouseDeltaX);
+    lua_setfield(L, -2, "EventMouseDeltaX");
+    lua_pushcfunction(L, GenL_SDLStatic_EventMouseDeltaY);
+    lua_setfield(L, -2, "EventMouseDeltaY");
+    lua_pushcfunction(L, GenL_SDLStatic_EventMouseX);
+    lua_setfield(L, -2, "EventMouseX");
+    lua_pushcfunction(L, GenL_SDLStatic_EventMouseY);
+    lua_setfield(L, -2, "EventMouseY");
+    lua_pushcfunction(L, GenL_SDLStatic_EventSetType);
+    lua_setfield(L, -2, "EventSetType");
+    lua_pushcfunction(L, GenL_SDLStatic_EventText);
+    lua_setfield(L, -2, "EventText");
+    lua_pushcfunction(L, GenL_SDLStatic_EventTouchX);
+    lua_setfield(L, -2, "EventTouchX");
+    lua_pushcfunction(L, GenL_SDLStatic_EventTouchY);
+    lua_setfield(L, -2, "EventTouchY");
+    lua_pushcfunction(L, GenL_SDLStatic_EventType);
+    lua_setfield(L, -2, "EventType");
+    lua_pushcfunction(L, GenL_SDLStatic_EventWheelX);
+    lua_setfield(L, -2, "EventWheelX");
+    lua_pushcfunction(L, GenL_SDLStatic_EventWheelY);
+    lua_setfield(L, -2, "EventWheelY");
+    lua_pushcfunction(L, GenL_SDLStatic_EventWindowId);
+    lua_setfield(L, -2, "EventWindowId");
     lua_pushcfunction(L, GenL_SDLStatic_FingerCount);
     lua_setfield(L, -2, "FingerCount");
     lua_pushcfunction(L, GenL_SDLStatic_FreeTiledMap);
