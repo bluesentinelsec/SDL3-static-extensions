@@ -1477,3 +1477,89 @@ collision is usually exactly what should block light — off with
 `SDLStatic_LightSetAutoOccluders` for a game that disagrees. Only bodies
 near the camera go in: an occluder off screen cannot cast a shadow onto it,
 and the mask has a finite resolution to spend.
+
+## Saves
+
+The engine provides the primitives, not the data model. It knows how to put
+bytes somewhere safe and hand them back; it never learns what a save
+contains. `<SDLStatic/engine_save.h>`.
+
+```c
+SDLStatic_SaveSetIdentity(engine, "acme", "mygame");
+SDLStatic_SaveWrite(engine, 1, &state, sizeof(state), "Cave of Ordeals");
+
+size_t size = 0;
+void *data = SDLStatic_SaveRead(engine, 1, &size);
+if (data != NULL && size == sizeof(state)) SDL_memcpy(&state, data, size);
+SDL_free(data);
+```
+
+A save format is the most game-specific thing a game has, so one imposed
+here would be wrong for every game in a different way.
+
+### Writes are atomic, and that is the whole point
+
+A save goes to a temporary file, is closed, and is then **renamed** over the
+target. Rename is atomic everywhere this runs, so the previous save survives
+intact until the new one is complete on disk.
+
+The obvious implementation — open the save file and write into it — destroys
+the player's progress if the game crashes, the battery dies, or the disk
+fills up halfway through. It fails rarely and takes something irreplaceable
+when it does, which is the worst possible combination, and it is the one
+piece of this that is genuinely worth an engine owning.
+
+### Slots carry a label
+
+`SDLStatic_SaveInfoOf` returns existence, size, modification time and a
+label without reading the payload — so a load menu can draw its rows without
+parsing saves it may not even be able to interpret, such as an older
+version's. Saves from a newer build are refused rather than misread.
+
+## Localisation
+
+```c
+SDLStatic_TextLoadFile(engine, "fr");          /* lang/fr.toml from the archive */
+SDLStatic_TextSetLanguage(engine, "fr");
+
+DrawText(SDLStatic_Text(engine, "menu.start"));
+DrawText(SDLStatic_TextFormat(engine, "hud.score", score));
+```
+
+```toml
+# media/lang/fr.toml
+[strings]
+"menu.start" = "Commencer"
+"hud.score" = "%d points"
+```
+
+### The fallback chain
+
+Current language → **English** → **the key itself**. Each step earns its
+place:
+
+- A translation in progress has gaps *by definition* — translators work from
+  partial files. An English button beats a blank one, because a blank is
+  indistinguishable from a bug.
+- A key with no entry anywhere renders as `menu.start`. That is ugly on
+  purpose: obvious in a screenshot, and it names the thing that needs
+  fixing.
+
+`SDLStatic_TextHas` reports whether a real translation exists, for a
+coverage tool — not for gameplay, which should just draw the string.
+
+### Keys, not English text, are the identifiers
+
+Keying off the English string means every typo fix in English silently
+breaks every translation. Keys cost a little readability at the call site
+and buy the freedom to edit English at all.
+
+### Formatting is the translator's
+
+The looked-up string *is* the format, so `"Score: %d"` and `"%d points"` are
+both expressible. Word order differs between languages, and a translation
+that cannot move its own placeholders is not really a translation.
+
+`SDLStatic_TextFormat` returns one of a small rotating set of buffers, so
+several calls can appear in one expression without the second clobbering the
+first.

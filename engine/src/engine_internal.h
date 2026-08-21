@@ -26,6 +26,8 @@ struct SDLStatic_Input;
 struct SDLStatic_Physics;
 struct SDLStatic_Assets;
 struct SDLStatic_EngineLight;
+struct SDLStatic_Saves;
+struct SDLStatic_Text;
 
 struct SDLStatic_Engine
 {
@@ -100,7 +102,12 @@ struct SDLStatic_Engine
     struct SDLStatic_Physics *physics;
     struct SDLStatic_Assets *assets;
     struct SDLStatic_EngineLight *light;
+    struct SDLStatic_Saves *saves;
+    struct SDLStatic_Text *text;
 };
+
+extern void SDLStatic_EngineSavesDestroy(SDLStatic_Engine *engine);
+extern void SDLStatic_EngineTextDestroy(SDLStatic_Engine *engine);
 
 /* --- lighting ------------------------------------------------------------ */
 

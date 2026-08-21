@@ -9,6 +9,7 @@ add_executable(SDL3_static_extensions_engine_test
   physics_test.cpp
   assets_test.cpp
   light_test.cpp
+  platform_test.cpp
 )
 target_link_libraries(SDL3_static_extensions_engine_test
   PRIVATE

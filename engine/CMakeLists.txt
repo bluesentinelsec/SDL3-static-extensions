@@ -13,6 +13,8 @@
 #   <SDLStatic/engine_physics.h>   Box2D bodies on actors
 #   <SDLStatic/engine_assets.h>    texture loading, blocking and streamed
 #   <SDLStatic/engine_light.h>     lighting presets and actor-attached lights
+#   <SDLStatic/engine_save.h>      atomic save slots
+#   <SDLStatic/engine_text.h>      localisation string tables
 #
 # Original code (zlib), plain C over SDL3. The loop is a fixed simulation
 # tick with interpolated rendering — the arrangement that makes motion look
@@ -35,6 +37,8 @@ add_library(SDLStatic_Engine STATIC
   src/sdlstatic_engine_physics.c
   src/sdlstatic_engine_assets.c
   src/sdlstatic_engine_light.c
+  src/sdlstatic_engine_save.c
+  src/sdlstatic_engine_text.c
 )
 add_library(SDLStatic::Engine ALIAS SDLStatic_Engine)
 

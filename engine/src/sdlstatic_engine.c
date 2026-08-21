@@ -378,6 +378,8 @@ void SDLStatic_DestroyEngine(SDLStatic_Engine *engine)
     /* Assets before the renderer that owns their textures, and before the
        actors that may be holding handles. */
     SDLStatic_EngineLightDestroy(engine);
+    SDLStatic_EngineSavesDestroy(engine);
+    SDLStatic_EngineTextDestroy(engine);
     SDLStatic_EngineAssetsDestroy(engine);
     SDLStatic_EnginePhysicsDestroy(engine);
     SDLStatic_ActorWorldDestroy(engine);
