@@ -22,7 +22,8 @@ target_link_libraries(your_game PRIVATE SDLStatic::Engine)
 
 This page covers the loop and time, presentation and scaling, scenes,
 graphics settings, the camera, actors, engine-owned rendering, input,
-actions, physics and assets. The lighting integration follows.
+actions, physics, assets and lighting. Saves, localisation and the script
+bindings follow.
 
 ## The loop
 
@@ -1386,3 +1387,93 @@ before asking the VFS and falls back to the real filesystem.
 path. A level torn down while it is still loading is not exotic — it is what
 happens when a player quits during a loading screen — so the worker
 re-checks the slot is live after dequeuing it.
+
+## Lighting
+
+The lighting module knows how to light a scene. What it cannot know is
+where the camera is, which actors are carrying lights, or what the player
+set the quality slider to — so the engine supplies those.
+`<SDLStatic/engine_light.h>`.
+
+```c
+SDLStatic_LightSetPreset(engine, SDLSTATIC_LIGHT_NIGHT);
+
+SDLStatic_LightDef torch = SDLStatic_LightDefault();
+torch.radius = 380.0f;
+torch.color = (SDL_FColor){1.0f, 0.72f, 0.36f, 1.0f};
+torch.flicker = 0.15f;
+SDLStatic_ActorAddLight(actor, &torch);
+
+/* in the render hook, after the world and before the HUD */
+SDLStatic_RenderWorld(engine, &camera, alpha);
+SDLStatic_LightRender(engine, &camera, alpha);
+SDLStatic_RenderOverlay(engine, alpha);
+```
+
+Order matters: lighting multiplies over what is already drawn, so anything
+drawn afterwards is unlit — which is what a HUD wants and what the world
+does not.
+
+### Presets and the clock
+
+| | |
+|---|---|
+| `NONE` | no lighting; the world draws at full brightness, and costs nothing |
+| `SUNRISE` / `AFTERNOON` / `SUNSET` / `NIGHT` | points on the day/night curve |
+| `DARK` | a cave: near-black at any hour, but *not* absolute black — a player with no torch should be able to tell the game from a crash |
+
+A preset also sets the hour, so a game that later starts the clock carries
+on from a time that matches what is on screen.
+
+```c
+SDLStatic_LightSetClock(engine, 6.0f, 0.05f);   /* dawn, a 20-minute day */
+if (SDLStatic_LightSunlight(engine) < 0.2f) LightTheStreetlamps();
+```
+
+Setting a custom ambient stops the clock driving it. A game that has said
+what colour it wants should not have it quietly overwritten a frame later.
+
+### Lights ride on actors
+
+A light attached to an actor follows it — through parents, through physics,
+for the actor's whole life — and disappears when the actor does. There is
+nothing to keep in sync, which is the entire reason it lives there rather
+than being submitted by hand.
+
+It is submitted at `SDLStatic_ActorRenderTransform`, the same place the
+sprite is drawn. At the simulation position instead, a torch would lag its
+own flame by up to a tick: a shimmer that is maddening to look at and very
+hard to attribute to its cause.
+
+The offset rides the actor's rotation, so a torch at the end of an arm
+sweeps the room as the character turns.
+
+### The quality budget is applied for you
+
+`dynamic_lights` and `shadows` decide the light-map resolution, the ray
+count, the softness, and how many lights are submitted at all. A player who
+turns lighting off gets ambient only, at no cost, without the game writing a
+single conditional.
+
+When the budget runs out the engine **stops** rather than thinning: a light
+that flickers in and out as the count drifts across the limit is far more
+distracting than one that is consistently absent. `SDLStatic_LightCount`
+reports what actually went in, which is how you notice a budget silently
+dropping half the scene.
+
+### Walls
+
+```c
+SDLStatic_LightAddOccluder(engine, wall_rect);
+```
+
+Occluders and dark zones are buffered and consumed by the next
+`LightRender`, so they can be submitted anywhere in the frame. An API where
+`AddOccluder` only works inside an invisible window is one that fails
+silently when somebody calls it in the wrong place.
+
+**Static physics bodies are submitted automatically**, because a level's
+collision is usually exactly what should block light — off with
+`SDLStatic_LightSetAutoOccluders` for a game that disagrees. Only bodies
+near the camera go in: an occluder off screen cannot cast a shadow onto it,
+and the mask has a finite resolution to spend.

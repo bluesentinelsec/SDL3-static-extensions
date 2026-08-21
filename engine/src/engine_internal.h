@@ -13,6 +13,7 @@
 #include <SDLStatic/engine_graphics.h>
 #include <SDLStatic/engine_media.h>
 #include <SDLStatic/engine_input.h>
+#include <SDLStatic/engine_light.h>
 #include <SDLStatic/engine_render.h>
 #include <SDLStatic/engine_scene.h>
 
@@ -24,6 +25,7 @@ struct SDLStatic_DrawItem;
 struct SDLStatic_Input;
 struct SDLStatic_Physics;
 struct SDLStatic_Assets;
+struct SDLStatic_EngineLight;
 
 struct SDLStatic_Engine
 {
@@ -97,7 +99,19 @@ struct SDLStatic_Engine
     struct SDLStatic_Input *input;
     struct SDLStatic_Physics *physics;
     struct SDLStatic_Assets *assets;
+    struct SDLStatic_EngineLight *light;
 };
+
+/* --- lighting ------------------------------------------------------------ */
+
+/** Advance the day/night clock. Per-frame, because a cycle is scenery. */
+extern void SDLStatic_EngineLightUpdate(SDLStatic_Engine *engine, float dt);
+extern void SDLStatic_EngineLightDestroy(SDLStatic_Engine *engine);
+
+/** The actor's attached light, as with the sprite. */
+extern SDLStatic_LightDef *SDLStatic_ActorLightSlot(SDLStatic_Actor *actor, bool create);
+extern void SDLStatic_ActorLightRemove(SDLStatic_Actor *actor);
+
 
 /* --- assets -------------------------------------------------------------- */
 

@@ -473,6 +473,46 @@ void SDLStatic_ActorWakeBody(SDLStatic_Actor *actor)
     }
 }
 
+/* The body's world-space bounding box, in design units. Used by the
+   lighting integration to treat static bodies as walls — the level's
+   collision is usually exactly what should block light. */
+bool SDLStatic_ActorBodyBounds(SDLStatic_Actor *actor, SDL_FRect *out)
+{
+    struct SDLStatic_Physics *physics = NULL;
+    const b2BodyId body = BodyOf(actor, &physics);
+    if (!b2Body_IsValid(body) || out == NULL || physics == NULL)
+    {
+        return false;
+    }
+    int shape_count = b2Body_GetShapeCount(body);
+    if (shape_count <= 0)
+    {
+        return false;
+    }
+    if (shape_count > 8)
+    {
+        shape_count = 8;
+    }
+    b2ShapeId shapes[8];
+    shape_count = b2Body_GetShapes(body, shapes, shape_count);
+
+    b2AABB total = b2Shape_GetAABB(shapes[0]);
+    for (int i = 1; i < shape_count; ++i)
+    {
+        const b2AABB aabb = b2Shape_GetAABB(shapes[i]);
+        total.lowerBound.x = SDL_min(total.lowerBound.x, aabb.lowerBound.x);
+        total.lowerBound.y = SDL_min(total.lowerBound.y, aabb.lowerBound.y);
+        total.upperBound.x = SDL_max(total.upperBound.x, aabb.upperBound.x);
+        total.upperBound.y = SDL_max(total.upperBound.y, aabb.upperBound.y);
+    }
+
+    out->x = ToPixels(physics, total.lowerBound.x);
+    out->y = ToPixels(physics, total.lowerBound.y);
+    out->w = ToPixels(physics, total.upperBound.x - total.lowerBound.x);
+    out->h = ToPixels(physics, total.upperBound.y - total.lowerBound.y);
+    return true;
+}
+
 /* --- the step ------------------------------------------------------------ */
 
 static SDLStatic_ActorId ActorOfShape(b2ShapeId shape)

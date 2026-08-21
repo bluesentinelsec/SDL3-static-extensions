@@ -377,6 +377,7 @@ void SDLStatic_DestroyEngine(SDLStatic_Engine *engine)
        an actor is holding. */
     /* Assets before the renderer that owns their textures, and before the
        actors that may be holding handles. */
+    SDLStatic_EngineLightDestroy(engine);
     SDLStatic_EngineAssetsDestroy(engine);
     SDLStatic_EnginePhysicsDestroy(engine);
     SDLStatic_ActorWorldDestroy(engine);
@@ -577,6 +578,7 @@ bool SDLStatic_EngineTick(SDLStatic_Engine *engine)
     /* Assets decoded by the workers become textures here, inside a time
        budget, so a batch landing together cannot hitch the frame. */
     SDLStatic_EngineAssetsPump(engine);
+    SDLStatic_EngineLightUpdate(engine, engine->delta_seconds);
 
     /* Messages after every update and before anything is drawn, so a
        message sent this frame is handled this frame and the frame is drawn

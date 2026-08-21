@@ -12,6 +12,7 @@
 #   <SDLStatic/engine_binding.h>   actions and rebindable controls
 #   <SDLStatic/engine_physics.h>   Box2D bodies on actors
 #   <SDLStatic/engine_assets.h>    texture loading, blocking and streamed
+#   <SDLStatic/engine_light.h>     lighting presets and actor-attached lights
 #
 # Original code (zlib), plain C over SDL3. The loop is a fixed simulation
 # tick with interpolated rendering — the arrangement that makes motion look
@@ -33,6 +34,7 @@ add_library(SDLStatic_Engine STATIC
   src/sdlstatic_engine_binding.c
   src/sdlstatic_engine_physics.c
   src/sdlstatic_engine_assets.c
+  src/sdlstatic_engine_light.c
 )
 add_library(SDLStatic::Engine ALIAS SDLStatic_Engine)
 
@@ -57,7 +59,7 @@ target_include_directories(SDLStatic_Engine
 # opinionated engine that made you mount your own assets would not be one.
 target_link_libraries(SDLStatic_Engine
   PUBLIC SDL3::SDL3
-  PRIVATE SDLStatic::Formats SDLStatic::VFS SDLStatic::Physics SDLStatic::Image
+  PRIVATE SDLStatic::Formats SDLStatic::VFS SDLStatic::Physics SDLStatic::Image SDLStatic::Light
 )
 if(UNIX AND NOT APPLE)
   target_link_libraries(SDLStatic_Engine PRIVATE m)
