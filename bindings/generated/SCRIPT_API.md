@@ -2677,6 +2677,8 @@ returns as an array.
 | `SDLStaticC.GuiGridCellOwned(gui: SDLStatic_Gui)` | nil |
 | `SDLStaticC.GuiGridCellSpan(grid: SDLStatic_GuiGrid, span: integer)` | nil |
 | `SDLStaticC.GuiGridCellSpanOwned(gui: SDLStatic_Gui, span: integer)` | nil |
+| `SDLStaticC.GuiGridCreate()` | SDLStatic_GuiGrid|nil |
+| `SDLStaticC.GuiGridDestroy(grid: SDLStatic_GuiGrid)` | nil |
 | `SDLStaticC.GuiGridEnd(grid: SDLStatic_GuiGrid)` | nil |
 | `SDLStaticC.GuiGridEndOwned(gui: SDLStatic_Gui)` | nil |
 | `SDLStaticC.GuiGridNextRow(grid: SDLStatic_GuiGrid)` | nil |

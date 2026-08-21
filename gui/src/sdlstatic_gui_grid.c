@@ -88,3 +88,18 @@ void SDLStatic_GuiGridEnd(SDLStatic_GuiGrid *grid)
         grid->ctx = NULL;
     }
 }
+
+/* --- heap allocation, for callers without a stack ------------------------- */
+
+/* C code declares a grid as a local; a script cannot. Without this every
+   grid function was bound into Lua and Ruby and none of them was callable,
+   because there was no way to produce the first argument. */
+SDLStatic_GuiGrid *SDLStatic_GuiGridCreate(void)
+{
+    return (SDLStatic_GuiGrid *)SDL_calloc(1, sizeof(SDLStatic_GuiGrid));
+}
+
+void SDLStatic_GuiGridDestroy(SDLStatic_GuiGrid *grid)
+{
+    SDL_free(grid);
+}

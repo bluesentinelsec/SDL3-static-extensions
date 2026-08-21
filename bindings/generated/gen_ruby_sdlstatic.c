@@ -4674,6 +4674,31 @@ static mrb_value GenR_SDLStatic_GuiGridCellSpanOwned(mrb_state *mrb, mrb_value s
     }
 }
 
+static mrb_value GenR_SDLStatic_GuiGridCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_GuiGrid * rv = SDLStatic_GuiGridCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDLStatic_GuiGrid");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GuiGridDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_GuiGrid *a0 = (SDLStatic_GuiGrid *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_GuiGrid");
+    SDLStatic_GuiGridDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
 static mrb_value GenR_SDLStatic_GuiGridEnd(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -7526,6 +7551,8 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "GuiGridCellOwned", GenR_SDLStatic_GuiGridCellOwned, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridCellSpan", GenR_SDLStatic_GuiGridCellSpan, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridCellSpanOwned", GenR_SDLStatic_GuiGridCellSpanOwned, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiGridCreate", GenR_SDLStatic_GuiGridCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GuiGridDestroy", GenR_SDLStatic_GuiGridDestroy, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridEnd", GenR_SDLStatic_GuiGridEnd, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridEndOwned", GenR_SDLStatic_GuiGridEndOwned, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GuiGridNextRow", GenR_SDLStatic_GuiGridNextRow, MRB_ARGS_ANY());

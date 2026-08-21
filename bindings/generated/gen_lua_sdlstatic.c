@@ -3482,6 +3482,22 @@ static int GenL_SDLStatic_GuiGridCellSpanOwned(lua_State *L)
     return 0;
 }
 
+static int GenL_SDLStatic_GuiGridCreate(lua_State *L)
+{
+    (void)L;
+    SDLStatic_GuiGrid * rv = SDLStatic_GuiGridCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDLStatic_GuiGrid");
+    return 1;
+}
+
+static int GenL_SDLStatic_GuiGridDestroy(lua_State *L)
+{
+    (void)L;
+    SDLStatic_GuiGrid *a0 = (SDLStatic_GuiGrid *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_GuiGrid");
+    SDLStatic_GuiGridDestroy(a0);
+    return 0;
+}
+
 static int GenL_SDLStatic_GuiGridEnd(lua_State *L)
 {
     (void)L;
@@ -5264,7 +5280,7 @@ static int GenL_SDLStatic_TouchRotation(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 468);
+    lua_createtable(L, 0, 470);
     lua_pushcfunction(L, GenL_SDLStatic_ActionBind);
     lua_setfield(L, -2, "ActionBind");
     lua_pushcfunction(L, GenL_SDLStatic_ActionBindAxis);
@@ -5845,6 +5861,10 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "GuiGridCellSpan");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridCellSpanOwned);
     lua_setfield(L, -2, "GuiGridCellSpanOwned");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiGridCreate);
+    lua_setfield(L, -2, "GuiGridCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GuiGridDestroy);
+    lua_setfield(L, -2, "GuiGridDestroy");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridEnd);
     lua_setfield(L, -2, "GuiGridEnd");
     lua_pushcfunction(L, GenL_SDLStatic_GuiGridEndOwned);
