@@ -2642,6 +2642,89 @@ returns as an array.
 | `SDLStaticC.FilterJointDefSetBodies(def: b2FilterJointDef, a: b2BodyId table, b: b2BodyId table)` | nil |
 | `SDLStaticC.FingerCount(engine: SDLStatic_Engine)` | integer |
 | `SDLStaticC.FreeTiledMap(map: SDLStatic_TiledMap)` | nil |
+| `SDLStaticC.GPUAcquireSwapchain(command_buffer: SDL_GPUCommandBuffer, window: SDL_Window)` | SDL_GPUTexture|nil |
+| `SDLStaticC.GPUBeginComputePass(command_buffer: SDL_GPUCommandBuffer, bindings: SDLStatic_GPUComputeBindings)` | SDL_GPUComputePass|nil |
+| `SDLStaticC.GPUBindComputeStorageBuffer(pass: SDL_GPUComputePass, slot: integer, buffer: SDL_GPUBuffer)` | nil |
+| `SDLStaticC.GPUBindComputeStorageTexture(pass: SDL_GPUComputePass, slot: integer, texture: SDL_GPUTexture)` | nil |
+| `SDLStaticC.GPUBindFragmentStorageBuffer(pass: SDL_GPURenderPass, slot: integer, buffer: SDL_GPUBuffer)` | nil |
+| `SDLStaticC.GPUBindFragmentStorageTexture(pass: SDL_GPURenderPass, slot: integer, texture: SDL_GPUTexture)` | nil |
+| `SDLStaticC.GPUBindVertexStorageBuffer(pass: SDL_GPURenderPass, slot: integer, buffer: SDL_GPUBuffer)` | nil |
+| `SDLStaticC.GPUBindVertexStorageTexture(pass: SDL_GPURenderPass, slot: integer, texture: SDL_GPUTexture)` | nil |
+| `SDLStaticC.GPUBlitInfoCreate()` | SDL_GPUBlitInfo|nil |
+| `SDLStaticC.GPUBlitInfoDestroy(info: SDL_GPUBlitInfo)` | nil |
+| `SDLStaticC.GPUBlitInfoSetDestination(info: SDL_GPUBlitInfo, texture: SDL_GPUTexture, x: integer, y: integer, w: integer, h: integer)` | nil |
+| `SDLStaticC.GPUBlitInfoSetFilter(info: SDL_GPUBlitInfo, filter: integer)` | nil |
+| `SDLStaticC.GPUBlitInfoSetSource(info: SDL_GPUBlitInfo, texture: SDL_GPUTexture, x: integer, y: integer, w: integer, h: integer)` | nil |
+| `SDLStaticC.GPUBufferBindingCreate()` | SDL_GPUBufferBinding|nil |
+| `SDLStaticC.GPUBufferBindingDestroy(binding: SDL_GPUBufferBinding)` | nil |
+| `SDLStaticC.GPUBufferBindingSet(binding: SDL_GPUBufferBinding, buffer: SDL_GPUBuffer, offset: integer)` | nil |
+| `SDLStaticC.GPUBufferLocationCreate()` | SDL_GPUBufferLocation|nil |
+| `SDLStaticC.GPUBufferLocationDestroy(location: SDL_GPUBufferLocation)` | nil |
+| `SDLStaticC.GPUBufferLocationSet(location: SDL_GPUBufferLocation, buffer: SDL_GPUBuffer, offset: integer)` | nil |
+| `SDLStaticC.GPUBufferRegionCreate()` | SDL_GPUBufferRegion|nil |
+| `SDLStaticC.GPUBufferRegionDestroy(region: SDL_GPUBufferRegion)` | nil |
+| `SDLStaticC.GPUBufferRegionSet(region: SDL_GPUBufferRegion, buffer: SDL_GPUBuffer, offset: integer, size: integer)` | nil |
+| `SDLStaticC.GPUColorTargetInfoCreate()` | SDL_GPUColorTargetInfo|nil |
+| `SDLStaticC.GPUColorTargetInfoDestroy(info: SDL_GPUColorTargetInfo)` | nil |
+| `SDLStaticC.GPUColorTargetInfoSetClearColor(info: SDL_GPUColorTargetInfo, r: number, g: number, b: number, a: number)` | nil |
+| `SDLStaticC.GPUColorTargetInfoSetCycle(info: SDL_GPUColorTargetInfo, cycle: boolean)` | nil |
+| `SDLStaticC.GPUColorTargetInfoSetMipLayer(info: SDL_GPUColorTargetInfo, mip: integer, layer_or_depth: integer)` | nil |
+| `SDLStaticC.GPUColorTargetInfoSetOps(info: SDL_GPUColorTargetInfo, load_op: integer, store_op: integer)` | nil |
+| `SDLStaticC.GPUColorTargetInfoSetTexture(info: SDL_GPUColorTargetInfo, texture: SDL_GPUTexture)` | nil |
+| `SDLStaticC.GPUComputeBindingsAddBuffer(bindings: SDLStatic_GPUComputeBindings, buffer: SDL_GPUBuffer, cycle: boolean)` | boolean |
+| `SDLStaticC.GPUComputeBindingsAddTexture(bindings: SDLStatic_GPUComputeBindings, texture: SDL_GPUTexture, mip_level: integer, layer: integer, cycle: boolean)` | boolean |
+| `SDLStaticC.GPUComputeBindingsCreate()` | SDLStatic_GPUComputeBindings|nil |
+| `SDLStaticC.GPUComputeBindingsDestroy(bindings: SDLStatic_GPUComputeBindings)` | nil |
+| `SDLStaticC.GPUComputePipelineInfoCreate()` | SDL_GPUComputePipelineCreateInfo|nil |
+| `SDLStaticC.GPUComputePipelineInfoDestroy(info: SDL_GPUComputePipelineCreateInfo)` | nil |
+| `SDLStaticC.GPUComputePipelineInfoSetCode(info: SDL_GPUComputePipelineCreateInfo, code: string|nil)` | nil |
+| `SDLStaticC.GPUComputePipelineInfoSetEntrypoint(info: SDL_GPUComputePipelineCreateInfo, entrypoint: string|nil)` | nil |
+| `SDLStaticC.GPUComputePipelineInfoSetFormat(info: SDL_GPUComputePipelineCreateInfo, format: integer)` | nil |
+| `SDLStaticC.GPUComputePipelineInfoSetThreadCount(info: SDL_GPUComputePipelineCreateInfo, x: integer, y: integer, z: integer)` | nil |
+| `SDLStaticC.GPUDepthStencilTargetInfoCreate()` | SDL_GPUDepthStencilTargetInfo|nil |
+| `SDLStaticC.GPUDepthStencilTargetInfoDestroy(info: SDL_GPUDepthStencilTargetInfo)` | nil |
+| `SDLStaticC.GPUDepthStencilTargetInfoSetClear(info: SDL_GPUDepthStencilTargetInfo, depth: number, stencil: integer)` | nil |
+| `SDLStaticC.GPUDepthStencilTargetInfoSetOps(info: SDL_GPUDepthStencilTargetInfo, load_op: integer, store_op: integer)` | nil |
+| `SDLStaticC.GPUDepthStencilTargetInfoSetTexture(info: SDL_GPUDepthStencilTargetInfo, texture: SDL_GPUTexture)` | nil |
+| `SDLStaticC.GPUPipelineInfoAddColorTarget(info: SDL_GPUGraphicsPipelineCreateInfo, format: integer)` | boolean |
+| `SDLStaticC.GPUPipelineInfoAddVertexAttribute(info: SDL_GPUGraphicsPipelineCreateInfo, location: integer, buffer_slot: integer, format: integer, offset: integer)` | boolean |
+| `SDLStaticC.GPUPipelineInfoAddVertexBuffer(info: SDL_GPUGraphicsPipelineCreateInfo, slot: integer, pitch: integer, input_rate: integer)` | boolean |
+| `SDLStaticC.GPUPipelineInfoCreate()` | SDL_GPUGraphicsPipelineCreateInfo|nil |
+| `SDLStaticC.GPUPipelineInfoDestroy(info: SDL_GPUGraphicsPipelineCreateInfo)` | nil |
+| `SDLStaticC.GPUPipelineInfoSetDepthStencil(info: SDL_GPUGraphicsPipelineCreateInfo, format: integer, enabled: boolean)` | nil |
+| `SDLStaticC.GPUPipelineInfoSetFillMode(info: SDL_GPUGraphicsPipelineCreateInfo, fill: integer, cull: integer)` | nil |
+| `SDLStaticC.GPUPipelineInfoSetPrimitive(info: SDL_GPUGraphicsPipelineCreateInfo, primitive: integer)` | nil |
+| `SDLStaticC.GPUPipelineInfoSetShaders(info: SDL_GPUGraphicsPipelineCreateInfo, vertex: SDL_GPUShader, fragment: SDL_GPUShader)` | nil |
+| `SDLStaticC.GPURenderStateInfoAddSampler(info: SDL_GPURenderStateCreateInfo, texture: SDL_GPUTexture, sampler: SDL_GPUSampler)` | boolean |
+| `SDLStaticC.GPURenderStateInfoCreate()` | SDL_GPURenderStateCreateInfo|nil |
+| `SDLStaticC.GPURenderStateInfoDestroy(info: SDL_GPURenderStateCreateInfo)` | nil |
+| `SDLStaticC.GPURenderStateInfoSetShader(info: SDL_GPURenderStateCreateInfo, fragment_shader: SDL_GPUShader)` | nil |
+| `SDLStaticC.GPUShaderCreateInfoCreate()` | SDL_GPUShaderCreateInfo|nil |
+| `SDLStaticC.GPUShaderCreateInfoDestroy(info: SDL_GPUShaderCreateInfo)` | nil |
+| `SDLStaticC.GPUShaderCreateInfoSetCode(info: SDL_GPUShaderCreateInfo, code: string|nil)` | nil |
+| `SDLStaticC.GPUShaderCreateInfoSetCounts(info: SDL_GPUShaderCreateInfo, samplers: integer, storage_textures: integer, storage_buffers: integer, uniform_buffers: integer)` | nil |
+| `SDLStaticC.GPUShaderCreateInfoSetEntrypoint(info: SDL_GPUShaderCreateInfo, entrypoint: string|nil)` | nil |
+| `SDLStaticC.GPUShaderCreateInfoSetFormat(info: SDL_GPUShaderCreateInfo, format: integer, stage: integer)` | nil |
+| `SDLStaticC.GPUSwapchainHeight()` | integer |
+| `SDLStaticC.GPUSwapchainWidth()` | integer |
+| `SDLStaticC.GPUTextureLocationCreate()` | SDL_GPUTextureLocation|nil |
+| `SDLStaticC.GPUTextureLocationDestroy(location: SDL_GPUTextureLocation)` | nil |
+| `SDLStaticC.GPUTextureLocationSet(location: SDL_GPUTextureLocation, texture: SDL_GPUTexture, x: integer, y: integer, z: integer)` | nil |
+| `SDLStaticC.GPUTextureRegionCreate()` | SDL_GPUTextureRegion|nil |
+| `SDLStaticC.GPUTextureRegionDestroy(region: SDL_GPUTextureRegion)` | nil |
+| `SDLStaticC.GPUTextureRegionSet(region: SDL_GPUTextureRegion, texture: SDL_GPUTexture, x: integer, y: integer, w: integer, h: integer)` | nil |
+| `SDLStaticC.GPUTextureSamplerBindingCreate()` | SDL_GPUTextureSamplerBinding|nil |
+| `SDLStaticC.GPUTextureSamplerBindingDestroy(binding: SDL_GPUTextureSamplerBinding)` | nil |
+| `SDLStaticC.GPUTextureSamplerBindingSet(binding: SDL_GPUTextureSamplerBinding, texture: SDL_GPUTexture, sampler: SDL_GPUSampler)` | nil |
+| `SDLStaticC.GPUTextureTransferInfoCreate()` | SDL_GPUTextureTransferInfo|nil |
+| `SDLStaticC.GPUTextureTransferInfoDestroy(info: SDL_GPUTextureTransferInfo)` | nil |
+| `SDLStaticC.GPUTextureTransferInfoSet(info: SDL_GPUTextureTransferInfo, buffer: SDL_GPUTransferBuffer, offset: integer, pixels_per_row: integer, rows_per_layer: integer)` | nil |
+| `SDLStaticC.GPUTransferBufferLocationCreate()` | SDL_GPUTransferBufferLocation|nil |
+| `SDLStaticC.GPUTransferBufferLocationDestroy(location: SDL_GPUTransferBufferLocation)` | nil |
+| `SDLStaticC.GPUTransferBufferLocationSet(location: SDL_GPUTransferBufferLocation, buffer: SDL_GPUTransferBuffer, offset: integer)` | nil |
+| `SDLStaticC.GPUUploadToTransferBuffer(device: SDL_GPUDevice, buffer: SDL_GPUTransferBuffer, offset: integer, data: string|nil, cycle: boolean)` | boolean |
+| `SDLStaticC.GPUWaitAndAcquireSwapchain(command_buffer: SDL_GPUCommandBuffer, window: SDL_Window)` | SDL_GPUTexture|nil |
+| `SDLStaticC.GPUWaitForFence(device: SDL_GPUDevice, fence: SDL_GPUFence)` | boolean |
 | `SDLStaticC.GamepadAccelerometer(engine: SDLStatic_Engine, player: integer, x: number, y: number, z: number)` | x: number, y: number, z: number |
 | `SDLStaticC.GamepadAxisValue(engine: SDLStatic_Engine, player: integer, axis: integer)` | number |
 | `SDLStaticC.GamepadButtonDown(engine: SDLStatic_Engine, player: integer, button: integer)` | boolean |

@@ -28,6 +28,7 @@
 #include <SDLStatic/engine_scene.h>
 #include <SDLStatic/engine_script.h>
 #include <SDLStatic/engine_text.h>
+#include <SDLStatic/gpu_build.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/light.h>
@@ -553,6 +554,30 @@ inline Status EngineTick(SDLStatic_Engine *engine) {
 inline Status EventKeyRepeat(SDL_Event *event) {
   return ::SDLStatic_EventKeyRepeat(event) ? Status() : Status::FromSdl();
 }
+inline Status GPUComputeBindingsAddBuffer(SDLStatic_GPUComputeBindings *bindings, SDL_GPUBuffer *buffer, bool cycle) {
+  return ::SDLStatic_GPUComputeBindingsAddBuffer(bindings, buffer, cycle) ? Status() : Status::FromSdl();
+}
+inline Status GPUComputeBindingsAddTexture(SDLStatic_GPUComputeBindings *bindings, SDL_GPUTexture *texture, Uint32 mip_level, Uint32 layer, bool cycle) {
+  return ::SDLStatic_GPUComputeBindingsAddTexture(bindings, texture, mip_level, layer, cycle) ? Status() : Status::FromSdl();
+}
+inline Status GPUPipelineInfoAddColorTarget(SDL_GPUGraphicsPipelineCreateInfo *info, SDL_GPUTextureFormat format) {
+  return ::SDLStatic_GPUPipelineInfoAddColorTarget(info, format) ? Status() : Status::FromSdl();
+}
+inline Status GPUPipelineInfoAddVertexAttribute(SDL_GPUGraphicsPipelineCreateInfo *info, Uint32 location, Uint32 buffer_slot, SDL_GPUVertexElementFormat format, Uint32 offset) {
+  return ::SDLStatic_GPUPipelineInfoAddVertexAttribute(info, location, buffer_slot, format, offset) ? Status() : Status::FromSdl();
+}
+inline Status GPUPipelineInfoAddVertexBuffer(SDL_GPUGraphicsPipelineCreateInfo *info, Uint32 slot, Uint32 pitch, SDL_GPUVertexInputRate input_rate) {
+  return ::SDLStatic_GPUPipelineInfoAddVertexBuffer(info, slot, pitch, input_rate) ? Status() : Status::FromSdl();
+}
+inline Status GPURenderStateInfoAddSampler(SDL_GPURenderStateCreateInfo *info, SDL_GPUTexture *texture, SDL_GPUSampler *sampler) {
+  return ::SDLStatic_GPURenderStateInfoAddSampler(info, texture, sampler) ? Status() : Status::FromSdl();
+}
+inline Status GPUUploadToTransferBuffer(SDL_GPUDevice *device, SDL_GPUTransferBuffer *buffer, Uint32 offset, const void *data, int size, bool cycle) {
+  return ::SDLStatic_GPUUploadToTransferBuffer(device, buffer, offset, data, size, cycle) ? Status() : Status::FromSdl();
+}
+inline Status GPUWaitForFence(SDL_GPUDevice *device, SDL_GPUFence *fence) {
+  return ::SDLStatic_GPUWaitForFence(device, fence) ? Status() : Status::FromSdl();
+}
 inline Status GamepadButtonDown(SDLStatic_Engine *engine, int player, SDLStatic_GamepadButton button) {
   return ::SDLStatic_GamepadButtonDown(engine, player, button) ? Status() : Status::FromSdl();
 }
@@ -938,6 +963,82 @@ inline constexpr auto& FilterJointDefSetBodies = ::SDLStatic_FilterJointDefSetBo
 inline constexpr auto& FingerCount = ::SDLStatic_FingerCount;
 inline constexpr auto& FingerHeldInRect = ::SDLStatic_FingerHeldInRect;
 inline constexpr auto& FingerInRect = ::SDLStatic_FingerInRect;
+inline constexpr auto& GPUAcquireSwapchain = ::SDLStatic_GPUAcquireSwapchain;
+inline constexpr auto& GPUBeginComputePass = ::SDLStatic_GPUBeginComputePass;
+inline constexpr auto& GPUBindComputeStorageBuffer = ::SDLStatic_GPUBindComputeStorageBuffer;
+inline constexpr auto& GPUBindComputeStorageTexture = ::SDLStatic_GPUBindComputeStorageTexture;
+inline constexpr auto& GPUBindFragmentStorageBuffer = ::SDLStatic_GPUBindFragmentStorageBuffer;
+inline constexpr auto& GPUBindFragmentStorageTexture = ::SDLStatic_GPUBindFragmentStorageTexture;
+inline constexpr auto& GPUBindVertexStorageBuffer = ::SDLStatic_GPUBindVertexStorageBuffer;
+inline constexpr auto& GPUBindVertexStorageTexture = ::SDLStatic_GPUBindVertexStorageTexture;
+inline constexpr auto& GPUBlitInfoCreate = ::SDLStatic_GPUBlitInfoCreate;
+inline constexpr auto& GPUBlitInfoDestroy = ::SDLStatic_GPUBlitInfoDestroy;
+inline constexpr auto& GPUBlitInfoSetDestination = ::SDLStatic_GPUBlitInfoSetDestination;
+inline constexpr auto& GPUBlitInfoSetFilter = ::SDLStatic_GPUBlitInfoSetFilter;
+inline constexpr auto& GPUBlitInfoSetSource = ::SDLStatic_GPUBlitInfoSetSource;
+inline constexpr auto& GPUBufferBindingCreate = ::SDLStatic_GPUBufferBindingCreate;
+inline constexpr auto& GPUBufferBindingDestroy = ::SDLStatic_GPUBufferBindingDestroy;
+inline constexpr auto& GPUBufferBindingSet = ::SDLStatic_GPUBufferBindingSet;
+inline constexpr auto& GPUBufferLocationCreate = ::SDLStatic_GPUBufferLocationCreate;
+inline constexpr auto& GPUBufferLocationDestroy = ::SDLStatic_GPUBufferLocationDestroy;
+inline constexpr auto& GPUBufferLocationSet = ::SDLStatic_GPUBufferLocationSet;
+inline constexpr auto& GPUBufferRegionCreate = ::SDLStatic_GPUBufferRegionCreate;
+inline constexpr auto& GPUBufferRegionDestroy = ::SDLStatic_GPUBufferRegionDestroy;
+inline constexpr auto& GPUBufferRegionSet = ::SDLStatic_GPUBufferRegionSet;
+inline constexpr auto& GPUColorTargetInfoCreate = ::SDLStatic_GPUColorTargetInfoCreate;
+inline constexpr auto& GPUColorTargetInfoDestroy = ::SDLStatic_GPUColorTargetInfoDestroy;
+inline constexpr auto& GPUColorTargetInfoSetClearColor = ::SDLStatic_GPUColorTargetInfoSetClearColor;
+inline constexpr auto& GPUColorTargetInfoSetCycle = ::SDLStatic_GPUColorTargetInfoSetCycle;
+inline constexpr auto& GPUColorTargetInfoSetMipLayer = ::SDLStatic_GPUColorTargetInfoSetMipLayer;
+inline constexpr auto& GPUColorTargetInfoSetOps = ::SDLStatic_GPUColorTargetInfoSetOps;
+inline constexpr auto& GPUColorTargetInfoSetTexture = ::SDLStatic_GPUColorTargetInfoSetTexture;
+inline constexpr auto& GPUComputeBindingsCreate = ::SDLStatic_GPUComputeBindingsCreate;
+inline constexpr auto& GPUComputeBindingsDestroy = ::SDLStatic_GPUComputeBindingsDestroy;
+inline constexpr auto& GPUComputePipelineInfoCreate = ::SDLStatic_GPUComputePipelineInfoCreate;
+inline constexpr auto& GPUComputePipelineInfoDestroy = ::SDLStatic_GPUComputePipelineInfoDestroy;
+inline constexpr auto& GPUComputePipelineInfoSetCode = ::SDLStatic_GPUComputePipelineInfoSetCode;
+inline constexpr auto& GPUComputePipelineInfoSetEntrypoint = ::SDLStatic_GPUComputePipelineInfoSetEntrypoint;
+inline constexpr auto& GPUComputePipelineInfoSetFormat = ::SDLStatic_GPUComputePipelineInfoSetFormat;
+inline constexpr auto& GPUComputePipelineInfoSetThreadCount = ::SDLStatic_GPUComputePipelineInfoSetThreadCount;
+inline constexpr auto& GPUDepthStencilTargetInfoCreate = ::SDLStatic_GPUDepthStencilTargetInfoCreate;
+inline constexpr auto& GPUDepthStencilTargetInfoDestroy = ::SDLStatic_GPUDepthStencilTargetInfoDestroy;
+inline constexpr auto& GPUDepthStencilTargetInfoSetClear = ::SDLStatic_GPUDepthStencilTargetInfoSetClear;
+inline constexpr auto& GPUDepthStencilTargetInfoSetOps = ::SDLStatic_GPUDepthStencilTargetInfoSetOps;
+inline constexpr auto& GPUDepthStencilTargetInfoSetTexture = ::SDLStatic_GPUDepthStencilTargetInfoSetTexture;
+inline constexpr auto& GPUPipelineInfoCreate = ::SDLStatic_GPUPipelineInfoCreate;
+inline constexpr auto& GPUPipelineInfoDestroy = ::SDLStatic_GPUPipelineInfoDestroy;
+inline constexpr auto& GPUPipelineInfoSetDepthStencil = ::SDLStatic_GPUPipelineInfoSetDepthStencil;
+inline constexpr auto& GPUPipelineInfoSetFillMode = ::SDLStatic_GPUPipelineInfoSetFillMode;
+inline constexpr auto& GPUPipelineInfoSetPrimitive = ::SDLStatic_GPUPipelineInfoSetPrimitive;
+inline constexpr auto& GPUPipelineInfoSetShaders = ::SDLStatic_GPUPipelineInfoSetShaders;
+inline constexpr auto& GPUReadTransferBuffer = ::SDLStatic_GPUReadTransferBuffer;
+inline constexpr auto& GPURenderStateInfoCreate = ::SDLStatic_GPURenderStateInfoCreate;
+inline constexpr auto& GPURenderStateInfoDestroy = ::SDLStatic_GPURenderStateInfoDestroy;
+inline constexpr auto& GPURenderStateInfoSetShader = ::SDLStatic_GPURenderStateInfoSetShader;
+inline constexpr auto& GPUShaderCreateInfoCreate = ::SDLStatic_GPUShaderCreateInfoCreate;
+inline constexpr auto& GPUShaderCreateInfoDestroy = ::SDLStatic_GPUShaderCreateInfoDestroy;
+inline constexpr auto& GPUShaderCreateInfoSetCode = ::SDLStatic_GPUShaderCreateInfoSetCode;
+inline constexpr auto& GPUShaderCreateInfoSetCounts = ::SDLStatic_GPUShaderCreateInfoSetCounts;
+inline constexpr auto& GPUShaderCreateInfoSetEntrypoint = ::SDLStatic_GPUShaderCreateInfoSetEntrypoint;
+inline constexpr auto& GPUShaderCreateInfoSetFormat = ::SDLStatic_GPUShaderCreateInfoSetFormat;
+inline constexpr auto& GPUSwapchainHeight = ::SDLStatic_GPUSwapchainHeight;
+inline constexpr auto& GPUSwapchainWidth = ::SDLStatic_GPUSwapchainWidth;
+inline constexpr auto& GPUTextureLocationCreate = ::SDLStatic_GPUTextureLocationCreate;
+inline constexpr auto& GPUTextureLocationDestroy = ::SDLStatic_GPUTextureLocationDestroy;
+inline constexpr auto& GPUTextureLocationSet = ::SDLStatic_GPUTextureLocationSet;
+inline constexpr auto& GPUTextureRegionCreate = ::SDLStatic_GPUTextureRegionCreate;
+inline constexpr auto& GPUTextureRegionDestroy = ::SDLStatic_GPUTextureRegionDestroy;
+inline constexpr auto& GPUTextureRegionSet = ::SDLStatic_GPUTextureRegionSet;
+inline constexpr auto& GPUTextureSamplerBindingCreate = ::SDLStatic_GPUTextureSamplerBindingCreate;
+inline constexpr auto& GPUTextureSamplerBindingDestroy = ::SDLStatic_GPUTextureSamplerBindingDestroy;
+inline constexpr auto& GPUTextureSamplerBindingSet = ::SDLStatic_GPUTextureSamplerBindingSet;
+inline constexpr auto& GPUTextureTransferInfoCreate = ::SDLStatic_GPUTextureTransferInfoCreate;
+inline constexpr auto& GPUTextureTransferInfoDestroy = ::SDLStatic_GPUTextureTransferInfoDestroy;
+inline constexpr auto& GPUTextureTransferInfoSet = ::SDLStatic_GPUTextureTransferInfoSet;
+inline constexpr auto& GPUTransferBufferLocationCreate = ::SDLStatic_GPUTransferBufferLocationCreate;
+inline constexpr auto& GPUTransferBufferLocationDestroy = ::SDLStatic_GPUTransferBufferLocationDestroy;
+inline constexpr auto& GPUTransferBufferLocationSet = ::SDLStatic_GPUTransferBufferLocationSet;
+inline constexpr auto& GPUWaitAndAcquireSwapchain = ::SDLStatic_GPUWaitAndAcquireSwapchain;
 inline constexpr auto& GamepadAccelerometer = ::SDLStatic_GamepadAccelerometer;
 inline constexpr auto& GamepadAxisValue = ::SDLStatic_GamepadAxisValue;
 inline constexpr auto& GamepadCount = ::SDLStatic_GamepadCount;

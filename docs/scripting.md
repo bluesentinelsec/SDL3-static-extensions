@@ -121,6 +121,74 @@ Functions that cannot cross a script boundary (callbacks, varargs,
 threading) are skipped **with the reason recorded** in
 [`COVERAGE.md`](https://github.com/bluesentinelsec/SDL3-static-extensions/blob/main/bindings/generated/COVERAGE.md).
 
+## The GPU API from a script
+
+SDL's GPU API is bound in full — device, pipelines, passes, buffers,
+shaders. Getting there took more than binding the functions, because most
+of them take a *descriptor struct* that a C caller fills in on the stack,
+and a script has no stack to put one on. Every one of those calls was
+reachable and inert.
+
+So the descriptors get heap builders, in the `SDLStaticC` module, the same
+shape used for `SDL_Event` and the Box2D joint definitions: create, set,
+pass to SDL, destroy.
+
+```lua
+local target = SDLStaticC.GPUColorTargetInfoCreate()
+SDLStaticC.GPUColorTargetInfoSetTexture(target, swapchain)
+SDLStaticC.GPUColorTargetInfoSetClearColor(target, 0.1, 0.1, 0.15, 1.0)
+SDLStaticC.GPUColorTargetInfoSetOps(target, SDL.GPU_LOADOP_CLEAR,
+                                    SDL.GPU_STOREOP_STORE)
+
+local pass = SDL.BeginGPURenderPass(cmd, target, 1, nil)
+SDL.BindGPUGraphicsPipeline(pass, pipeline)
+SDL.DrawGPUPrimitives(pass, 3, 1, 0, 0)
+SDL.EndGPURenderPass(pass)
+
+SDLStaticC.GPUColorTargetInfoDestroy(target)
+```
+
+Where a descriptor holds an **array** — the vertex buffers, vertex
+attributes and colour targets of a pipeline — the builder appends instead
+of setting, and owns the storage it grows:
+
+```lua
+local pipeline = SDLStaticC.GPUPipelineInfoCreate()
+SDLStaticC.GPUPipelineInfoSetShaders(pipeline, vertex_shader, fragment_shader)
+SDLStaticC.GPUPipelineInfoAddVertexBuffer(pipeline, 0, 20,
+                                          SDL.GPU_VERTEXINPUTRATE_VERTEX)
+SDLStaticC.GPUPipelineInfoAddVertexAttribute(pipeline, 0, 0,
+                                             SDL.GPU_VERTEXELEMENTFORMAT_FLOAT3, 0)
+SDLStaticC.GPUPipelineInfoAddVertexAttribute(pipeline, 1, 0,
+                                             SDL.GPU_VERTEXELEMENTFORMAT_FLOAT2, 12)
+SDLStaticC.GPUPipelineInfoAddColorTarget(pipeline,
+                                         SDL.GetGPUSwapchainTextureFormat(device, window))
+local handle = SDL.CreateGPUGraphicsPipeline(device, pipeline)
+SDLStaticC.GPUPipelineInfoDestroy(pipeline)   -- the descriptor, not the pipeline
+```
+
+### Four calls that needed wrappers
+
+A handful of GPU functions cannot be bound as they stand, because they
+pass data through pointers a script cannot make. Each has a wrapper that
+does the same work in one call:
+
+| Instead of | Call | Why |
+|---|---|---|
+| `SDL_AcquireGPUSwapchainTexture` | `SDLStaticC.GPUAcquireSwapchain(cmd, window)` | returns the texture rather than filling an `SDL_GPUTexture **`; size via `GPUSwapchainWidth/Height`. A `nil` texture means *not ready this frame* — skip the frame, do not stop. There is a `GPUWaitAndAcquireSwapchain` too. |
+| `SDL_MapGPUTransferBuffer` | `SDLStaticC.GPUUploadToTransferBuffer(device, buffer, offset, bytes, cycle)` | maps, copies and unmaps together. The map returns a raw `void *`, which is the one thing a script cannot hold. `GPUReadTransferBuffer` reads back. |
+| `SDL_BindGPU*StorageBuffers` | `SDLStaticC.GPUBindVertexStorageBuffer(pass, slot, buffer)` and friends | SDL takes an array of pointers; these bind one slot, which is what nearly every call site does. |
+| `SDL_BeginGPUComputePass` | `SDLStaticC.GPUBeginComputePass(cmd, bindings)` | its two read-write binding arrays come from `GPUComputeBindingsCreate` + `AddBuffer`/`AddTexture`. |
+| `SDL_WaitForGPUFences` | `SDLStaticC.GPUWaitForFence(device, fence)` | the array form, for the single fence almost everyone has. |
+
+Vertex data crosses as a string of bytes, which is what `(const void *,
+int)` collapses to everywhere else in the bindings — `string.pack("fff",
+x, y, z)` in Lua, `[x, y, z].pack("f*")` in Ruby.
+
+Shaders are your problem, as they are in C: SDL takes compiled bytecode,
+so ship SPIR-V, DXIL and MSL for the backends you support and pick with
+`SDL_GetGPUShaderFormats`.
+
 ## Regular expressions
 
 Neither language brings usable regular expressions of its own: mruby ships

@@ -26,6 +26,7 @@
 #include <SDLStatic/engine_scene.h>
 #include <SDLStatic/engine_script.h>
 #include <SDLStatic/engine_text.h>
+#include <SDLStatic/gpu_build.h>
 #include <SDLStatic/gpu_primitives.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
@@ -4171,6 +4172,1178 @@ static mrb_value GenR_SDLStatic_FreeTiledMap(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_GPUAcquireSwapchain(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUCommandBuffer *a0 = (SDL_GPUCommandBuffer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUCommandBuffer");
+    SDL_Window *a1 = (SDL_Window *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_Window");
+    SDL_GPUTexture * rv = SDLStatic_GPUAcquireSwapchain(a0, a1);
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUTexture");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBeginComputePass(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUCommandBuffer *a0 = (SDL_GPUCommandBuffer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUCommandBuffer");
+    SDLStatic_GPUComputeBindings *a1 = (SDLStatic_GPUComputeBindings *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDLStatic_GPUComputeBindings");
+    SDL_GPUComputePass * rv = SDLStatic_GPUBeginComputePass(a0, a1);
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUComputePass");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBindComputeStorageBuffer(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUComputePass *a0 = (SDL_GPUComputePass *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUComputePass");
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDL_GPUBuffer *a2 = (SDL_GPUBuffer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), "SDL_GPUBuffer");
+    SDLStatic_GPUBindComputeStorageBuffer(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBindComputeStorageTexture(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUComputePass *a0 = (SDL_GPUComputePass *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUComputePass");
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDL_GPUTexture *a2 = (SDL_GPUTexture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), "SDL_GPUTexture");
+    SDLStatic_GPUBindComputeStorageTexture(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBindFragmentStorageBuffer(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPURenderPass *a0 = (SDL_GPURenderPass *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPURenderPass");
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDL_GPUBuffer *a2 = (SDL_GPUBuffer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), "SDL_GPUBuffer");
+    SDLStatic_GPUBindFragmentStorageBuffer(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBindFragmentStorageTexture(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPURenderPass *a0 = (SDL_GPURenderPass *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPURenderPass");
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDL_GPUTexture *a2 = (SDL_GPUTexture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), "SDL_GPUTexture");
+    SDLStatic_GPUBindFragmentStorageTexture(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBindVertexStorageBuffer(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPURenderPass *a0 = (SDL_GPURenderPass *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPURenderPass");
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDL_GPUBuffer *a2 = (SDL_GPUBuffer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), "SDL_GPUBuffer");
+    SDLStatic_GPUBindVertexStorageBuffer(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBindVertexStorageTexture(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPURenderPass *a0 = (SDL_GPURenderPass *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPURenderPass");
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDL_GPUTexture *a2 = (SDL_GPUTexture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), "SDL_GPUTexture");
+    SDLStatic_GPUBindVertexStorageTexture(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBlitInfoCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUBlitInfo * rv = SDLStatic_GPUBlitInfoCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUBlitInfo");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBlitInfoDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUBlitInfo *a0 = (SDL_GPUBlitInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUBlitInfo");
+    SDLStatic_GPUBlitInfoDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBlitInfoSetDestination(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUBlitInfo *a0 = (SDL_GPUBlitInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUBlitInfo");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUTexture");
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    Uint32 a3 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    Uint32 a4 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    Uint32 a5 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 5 ? argv[5] : mrb_nil_value()));
+    SDLStatic_GPUBlitInfoSetDestination(a0, a1, a2, a3, a4, a5);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBlitInfoSetFilter(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUBlitInfo *a0 = (SDL_GPUBlitInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUBlitInfo");
+    SDL_GPUFilter a1 = (SDL_GPUFilter)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_GPUBlitInfoSetFilter(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBlitInfoSetSource(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUBlitInfo *a0 = (SDL_GPUBlitInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUBlitInfo");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUTexture");
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    Uint32 a3 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    Uint32 a4 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    Uint32 a5 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 5 ? argv[5] : mrb_nil_value()));
+    SDLStatic_GPUBlitInfoSetSource(a0, a1, a2, a3, a4, a5);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBufferBindingCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUBufferBinding * rv = SDLStatic_GPUBufferBindingCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUBufferBinding");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBufferBindingDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUBufferBinding *a0 = (SDL_GPUBufferBinding *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUBufferBinding");
+    SDLStatic_GPUBufferBindingDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBufferBindingSet(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUBufferBinding *a0 = (SDL_GPUBufferBinding *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUBufferBinding");
+    SDL_GPUBuffer *a1 = (SDL_GPUBuffer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUBuffer");
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_GPUBufferBindingSet(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBufferLocationCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUBufferLocation * rv = SDLStatic_GPUBufferLocationCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUBufferLocation");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBufferLocationDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUBufferLocation *a0 = (SDL_GPUBufferLocation *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUBufferLocation");
+    SDLStatic_GPUBufferLocationDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBufferLocationSet(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUBufferLocation *a0 = (SDL_GPUBufferLocation *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUBufferLocation");
+    SDL_GPUBuffer *a1 = (SDL_GPUBuffer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUBuffer");
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_GPUBufferLocationSet(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBufferRegionCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUBufferRegion * rv = SDLStatic_GPUBufferRegionCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUBufferRegion");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBufferRegionDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUBufferRegion *a0 = (SDL_GPUBufferRegion *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUBufferRegion");
+    SDLStatic_GPUBufferRegionDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUBufferRegionSet(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUBufferRegion *a0 = (SDL_GPUBufferRegion *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUBufferRegion");
+    SDL_GPUBuffer *a1 = (SDL_GPUBuffer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUBuffer");
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    Uint32 a3 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    SDLStatic_GPUBufferRegionSet(a0, a1, a2, a3);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUColorTargetInfoCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUColorTargetInfo * rv = SDLStatic_GPUColorTargetInfoCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUColorTargetInfo");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUColorTargetInfoDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUColorTargetInfo *a0 = (SDL_GPUColorTargetInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUColorTargetInfo");
+    SDLStatic_GPUColorTargetInfoDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUColorTargetInfoSetClearColor(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUColorTargetInfo *a0 = (SDL_GPUColorTargetInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUColorTargetInfo");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    float a4 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    SDLStatic_GPUColorTargetInfoSetClearColor(a0, a1, a2, a3, a4);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUColorTargetInfoSetCycle(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUColorTargetInfo *a0 = (SDL_GPUColorTargetInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUColorTargetInfo");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_GPUColorTargetInfoSetCycle(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUColorTargetInfoSetMipLayer(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUColorTargetInfo *a0 = (SDL_GPUColorTargetInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUColorTargetInfo");
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_GPUColorTargetInfoSetMipLayer(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUColorTargetInfoSetOps(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUColorTargetInfo *a0 = (SDL_GPUColorTargetInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUColorTargetInfo");
+    SDL_GPULoadOp a1 = (SDL_GPULoadOp)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDL_GPUStoreOp a2 = (SDL_GPUStoreOp)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_GPUColorTargetInfoSetOps(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUColorTargetInfoSetTexture(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUColorTargetInfo *a0 = (SDL_GPUColorTargetInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUColorTargetInfo");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUTexture");
+    SDLStatic_GPUColorTargetInfoSetTexture(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUComputeBindingsAddBuffer(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_GPUComputeBindings *a0 = (SDLStatic_GPUComputeBindings *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_GPUComputeBindings");
+    SDL_GPUBuffer *a1 = (SDL_GPUBuffer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUBuffer");
+    bool a2 = (bool)SDLStaticGen_RubyToBool((argc > 2 ? argv[2] : mrb_nil_value()));
+    bool rv = SDLStatic_GPUComputeBindingsAddBuffer(a0, a1, a2);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUComputeBindingsAddTexture(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_GPUComputeBindings *a0 = (SDLStatic_GPUComputeBindings *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_GPUComputeBindings");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUTexture");
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    Uint32 a3 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    bool a4 = (bool)SDLStaticGen_RubyToBool((argc > 4 ? argv[4] : mrb_nil_value()));
+    bool rv = SDLStatic_GPUComputeBindingsAddTexture(a0, a1, a2, a3, a4);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUComputeBindingsCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_GPUComputeBindings * rv = SDLStatic_GPUComputeBindingsCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDLStatic_GPUComputeBindings");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUComputeBindingsDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_GPUComputeBindings *a0 = (SDLStatic_GPUComputeBindings *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_GPUComputeBindings");
+    SDLStatic_GPUComputeBindingsDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUComputePipelineInfoCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUComputePipelineCreateInfo * rv = SDLStatic_GPUComputePipelineInfoCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUComputePipelineCreateInfo");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUComputePipelineInfoDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUComputePipelineCreateInfo *a0 = (SDL_GPUComputePipelineCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUComputePipelineCreateInfo");
+    SDLStatic_GPUComputePipelineInfoDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUComputePipelineInfoSetCode(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUComputePipelineCreateInfo *a0 = (SDL_GPUComputePipelineCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUComputePipelineCreateInfo");
+    size_t len1 = 0;
+    const char *a1 = SDLStaticGen_RubyToBlob(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &len1);
+    SDLStatic_GPUComputePipelineInfoSetCode(a0, (const void *)a1, (int)len1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUComputePipelineInfoSetEntrypoint(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUComputePipelineCreateInfo *a0 = (SDL_GPUComputePipelineCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUComputePipelineCreateInfo");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_GPUComputePipelineInfoSetEntrypoint(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUComputePipelineInfoSetFormat(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUComputePipelineCreateInfo *a0 = (SDL_GPUComputePipelineCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUComputePipelineCreateInfo");
+    SDL_GPUShaderFormat a1 = (SDL_GPUShaderFormat)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_GPUComputePipelineInfoSetFormat(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUComputePipelineInfoSetThreadCount(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUComputePipelineCreateInfo *a0 = (SDL_GPUComputePipelineCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUComputePipelineCreateInfo");
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    Uint32 a3 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    SDLStatic_GPUComputePipelineInfoSetThreadCount(a0, a1, a2, a3);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUDepthStencilTargetInfoCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUDepthStencilTargetInfo * rv = SDLStatic_GPUDepthStencilTargetInfoCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUDepthStencilTargetInfo");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUDepthStencilTargetInfoDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUDepthStencilTargetInfo *a0 = (SDL_GPUDepthStencilTargetInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUDepthStencilTargetInfo");
+    SDLStatic_GPUDepthStencilTargetInfoDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUDepthStencilTargetInfoSetClear(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUDepthStencilTargetInfo *a0 = (SDL_GPUDepthStencilTargetInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUDepthStencilTargetInfo");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    Uint8 a2 = (Uint8)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_GPUDepthStencilTargetInfoSetClear(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUDepthStencilTargetInfoSetOps(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUDepthStencilTargetInfo *a0 = (SDL_GPUDepthStencilTargetInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUDepthStencilTargetInfo");
+    SDL_GPULoadOp a1 = (SDL_GPULoadOp)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDL_GPUStoreOp a2 = (SDL_GPUStoreOp)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_GPUDepthStencilTargetInfoSetOps(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUDepthStencilTargetInfoSetTexture(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUDepthStencilTargetInfo *a0 = (SDL_GPUDepthStencilTargetInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUDepthStencilTargetInfo");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUTexture");
+    SDLStatic_GPUDepthStencilTargetInfoSetTexture(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUPipelineInfoAddColorTarget(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUGraphicsPipelineCreateInfo");
+    SDL_GPUTextureFormat a1 = (SDL_GPUTextureFormat)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool rv = SDLStatic_GPUPipelineInfoAddColorTarget(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUPipelineInfoAddVertexAttribute(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUGraphicsPipelineCreateInfo");
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDL_GPUVertexElementFormat a3 = (SDL_GPUVertexElementFormat)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    Uint32 a4 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    bool rv = SDLStatic_GPUPipelineInfoAddVertexAttribute(a0, a1, a2, a3, a4);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUPipelineInfoAddVertexBuffer(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUGraphicsPipelineCreateInfo");
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDL_GPUVertexInputRate a3 = (SDL_GPUVertexInputRate)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    bool rv = SDLStatic_GPUPipelineInfoAddVertexBuffer(a0, a1, a2, a3);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUPipelineInfoCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUGraphicsPipelineCreateInfo * rv = SDLStatic_GPUPipelineInfoCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUGraphicsPipelineCreateInfo");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUPipelineInfoDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUGraphicsPipelineCreateInfo");
+    SDLStatic_GPUPipelineInfoDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUPipelineInfoSetDepthStencil(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUGraphicsPipelineCreateInfo");
+    SDL_GPUTextureFormat a1 = (SDL_GPUTextureFormat)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool a2 = (bool)SDLStaticGen_RubyToBool((argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_GPUPipelineInfoSetDepthStencil(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUPipelineInfoSetFillMode(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUGraphicsPipelineCreateInfo");
+    SDL_GPUFillMode a1 = (SDL_GPUFillMode)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDL_GPUCullMode a2 = (SDL_GPUCullMode)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_GPUPipelineInfoSetFillMode(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUPipelineInfoSetPrimitive(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUGraphicsPipelineCreateInfo");
+    SDL_GPUPrimitiveType a1 = (SDL_GPUPrimitiveType)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_GPUPipelineInfoSetPrimitive(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUPipelineInfoSetShaders(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUGraphicsPipelineCreateInfo");
+    SDL_GPUShader *a1 = (SDL_GPUShader *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUShader");
+    SDL_GPUShader *a2 = (SDL_GPUShader *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), "SDL_GPUShader");
+    SDLStatic_GPUPipelineInfoSetShaders(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPURenderStateInfoAddSampler(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPURenderStateCreateInfo *a0 = (SDL_GPURenderStateCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPURenderStateCreateInfo");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUTexture");
+    SDL_GPUSampler *a2 = (SDL_GPUSampler *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), "SDL_GPUSampler");
+    bool rv = SDLStatic_GPURenderStateInfoAddSampler(a0, a1, a2);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPURenderStateInfoCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPURenderStateCreateInfo * rv = SDLStatic_GPURenderStateInfoCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPURenderStateCreateInfo");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPURenderStateInfoDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPURenderStateCreateInfo *a0 = (SDL_GPURenderStateCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPURenderStateCreateInfo");
+    SDLStatic_GPURenderStateInfoDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPURenderStateInfoSetShader(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPURenderStateCreateInfo *a0 = (SDL_GPURenderStateCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPURenderStateCreateInfo");
+    SDL_GPUShader *a1 = (SDL_GPUShader *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUShader");
+    SDLStatic_GPURenderStateInfoSetShader(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUShaderCreateInfoCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUShaderCreateInfo * rv = SDLStatic_GPUShaderCreateInfoCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUShaderCreateInfo");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUShaderCreateInfoDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUShaderCreateInfo *a0 = (SDL_GPUShaderCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUShaderCreateInfo");
+    SDLStatic_GPUShaderCreateInfoDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUShaderCreateInfoSetCode(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUShaderCreateInfo *a0 = (SDL_GPUShaderCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUShaderCreateInfo");
+    size_t len1 = 0;
+    const char *a1 = SDLStaticGen_RubyToBlob(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &len1);
+    SDLStatic_GPUShaderCreateInfoSetCode(a0, (const void *)a1, (int)len1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUShaderCreateInfoSetCounts(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUShaderCreateInfo *a0 = (SDL_GPUShaderCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUShaderCreateInfo");
+    Uint32 a1 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    Uint32 a3 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    Uint32 a4 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    SDLStatic_GPUShaderCreateInfoSetCounts(a0, a1, a2, a3, a4);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUShaderCreateInfoSetEntrypoint(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUShaderCreateInfo *a0 = (SDL_GPUShaderCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUShaderCreateInfo");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_GPUShaderCreateInfoSetEntrypoint(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUShaderCreateInfoSetFormat(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUShaderCreateInfo *a0 = (SDL_GPUShaderCreateInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUShaderCreateInfo");
+    SDL_GPUShaderFormat a1 = (SDL_GPUShaderFormat)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDL_GPUShaderStage a2 = (SDL_GPUShaderStage)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_GPUShaderCreateInfoSetFormat(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUSwapchainHeight(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    Uint32 rv = SDLStatic_GPUSwapchainHeight();
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUSwapchainWidth(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    Uint32 rv = SDLStatic_GPUSwapchainWidth();
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTextureLocationCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTextureLocation * rv = SDLStatic_GPUTextureLocationCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUTextureLocation");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTextureLocationDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTextureLocation *a0 = (SDL_GPUTextureLocation *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUTextureLocation");
+    SDLStatic_GPUTextureLocationDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTextureLocationSet(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTextureLocation *a0 = (SDL_GPUTextureLocation *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUTextureLocation");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUTexture");
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    Uint32 a3 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    Uint32 a4 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    SDLStatic_GPUTextureLocationSet(a0, a1, a2, a3, a4);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTextureRegionCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTextureRegion * rv = SDLStatic_GPUTextureRegionCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUTextureRegion");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTextureRegionDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTextureRegion *a0 = (SDL_GPUTextureRegion *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUTextureRegion");
+    SDLStatic_GPUTextureRegionDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTextureRegionSet(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTextureRegion *a0 = (SDL_GPUTextureRegion *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUTextureRegion");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUTexture");
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    Uint32 a3 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    Uint32 a4 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    Uint32 a5 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 5 ? argv[5] : mrb_nil_value()));
+    SDLStatic_GPUTextureRegionSet(a0, a1, a2, a3, a4, a5);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTextureSamplerBindingCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTextureSamplerBinding * rv = SDLStatic_GPUTextureSamplerBindingCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUTextureSamplerBinding");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTextureSamplerBindingDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTextureSamplerBinding *a0 = (SDL_GPUTextureSamplerBinding *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUTextureSamplerBinding");
+    SDLStatic_GPUTextureSamplerBindingDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTextureSamplerBindingSet(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTextureSamplerBinding *a0 = (SDL_GPUTextureSamplerBinding *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUTextureSamplerBinding");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUTexture");
+    SDL_GPUSampler *a2 = (SDL_GPUSampler *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), "SDL_GPUSampler");
+    SDLStatic_GPUTextureSamplerBindingSet(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTextureTransferInfoCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTextureTransferInfo * rv = SDLStatic_GPUTextureTransferInfoCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUTextureTransferInfo");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTextureTransferInfoDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTextureTransferInfo *a0 = (SDL_GPUTextureTransferInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUTextureTransferInfo");
+    SDLStatic_GPUTextureTransferInfoDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTextureTransferInfoSet(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTextureTransferInfo *a0 = (SDL_GPUTextureTransferInfo *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUTextureTransferInfo");
+    SDL_GPUTransferBuffer *a1 = (SDL_GPUTransferBuffer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUTransferBuffer");
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    Uint32 a3 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    Uint32 a4 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    SDLStatic_GPUTextureTransferInfoSet(a0, a1, a2, a3, a4);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTransferBufferLocationCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTransferBufferLocation * rv = SDLStatic_GPUTransferBufferLocationCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUTransferBufferLocation");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTransferBufferLocationDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTransferBufferLocation *a0 = (SDL_GPUTransferBufferLocation *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUTransferBufferLocation");
+    SDLStatic_GPUTransferBufferLocationDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUTransferBufferLocationSet(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUTransferBufferLocation *a0 = (SDL_GPUTransferBufferLocation *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUTransferBufferLocation");
+    SDL_GPUTransferBuffer *a1 = (SDL_GPUTransferBuffer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUTransferBuffer");
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_GPUTransferBufferLocationSet(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUUploadToTransferBuffer(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUDevice *a0 = (SDL_GPUDevice *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUDevice");
+    SDL_GPUTransferBuffer *a1 = (SDL_GPUTransferBuffer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUTransferBuffer");
+    Uint32 a2 = (Uint32)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    size_t len3 = 0;
+    const char *a3 = SDLStaticGen_RubyToBlob(mrb, (argc > 3 ? argv[3] : mrb_nil_value()), &len3);
+    bool a5 = (bool)SDLStaticGen_RubyToBool((argc > 4 ? argv[4] : mrb_nil_value()));
+    bool rv = SDLStatic_GPUUploadToTransferBuffer(a0, a1, a2, (const void *)a3, (int)len3, a5);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUWaitAndAcquireSwapchain(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUCommandBuffer *a0 = (SDL_GPUCommandBuffer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUCommandBuffer");
+    SDL_Window *a1 = (SDL_Window *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_Window");
+    SDL_GPUTexture * rv = SDLStatic_GPUWaitAndAcquireSwapchain(a0, a1);
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "SDL_GPUTexture");
+    }
+}
+
+static mrb_value GenR_SDLStatic_GPUWaitForFence(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDL_GPUDevice *a0 = (SDL_GPUDevice *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_GPUDevice");
+    SDL_GPUFence *a1 = (SDL_GPUFence *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_GPUFence");
+    bool rv = SDLStatic_GPUWaitForFence(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
 static mrb_value GenR_SDLStatic_GamepadAccelerometer(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -8248,6 +9421,89 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "FilterJointDefSetBodies", GenR_SDLStatic_FilterJointDefSetBodies, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "FingerCount", GenR_SDLStatic_FingerCount, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "FreeTiledMap", GenR_SDLStatic_FreeTiledMap, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUAcquireSwapchain", GenR_SDLStatic_GPUAcquireSwapchain, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBeginComputePass", GenR_SDLStatic_GPUBeginComputePass, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBindComputeStorageBuffer", GenR_SDLStatic_GPUBindComputeStorageBuffer, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBindComputeStorageTexture", GenR_SDLStatic_GPUBindComputeStorageTexture, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBindFragmentStorageBuffer", GenR_SDLStatic_GPUBindFragmentStorageBuffer, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBindFragmentStorageTexture", GenR_SDLStatic_GPUBindFragmentStorageTexture, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBindVertexStorageBuffer", GenR_SDLStatic_GPUBindVertexStorageBuffer, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBindVertexStorageTexture", GenR_SDLStatic_GPUBindVertexStorageTexture, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBlitInfoCreate", GenR_SDLStatic_GPUBlitInfoCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBlitInfoDestroy", GenR_SDLStatic_GPUBlitInfoDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBlitInfoSetDestination", GenR_SDLStatic_GPUBlitInfoSetDestination, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBlitInfoSetFilter", GenR_SDLStatic_GPUBlitInfoSetFilter, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBlitInfoSetSource", GenR_SDLStatic_GPUBlitInfoSetSource, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBufferBindingCreate", GenR_SDLStatic_GPUBufferBindingCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBufferBindingDestroy", GenR_SDLStatic_GPUBufferBindingDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBufferBindingSet", GenR_SDLStatic_GPUBufferBindingSet, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBufferLocationCreate", GenR_SDLStatic_GPUBufferLocationCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBufferLocationDestroy", GenR_SDLStatic_GPUBufferLocationDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBufferLocationSet", GenR_SDLStatic_GPUBufferLocationSet, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBufferRegionCreate", GenR_SDLStatic_GPUBufferRegionCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBufferRegionDestroy", GenR_SDLStatic_GPUBufferRegionDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUBufferRegionSet", GenR_SDLStatic_GPUBufferRegionSet, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUColorTargetInfoCreate", GenR_SDLStatic_GPUColorTargetInfoCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUColorTargetInfoDestroy", GenR_SDLStatic_GPUColorTargetInfoDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUColorTargetInfoSetClearColor", GenR_SDLStatic_GPUColorTargetInfoSetClearColor, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUColorTargetInfoSetCycle", GenR_SDLStatic_GPUColorTargetInfoSetCycle, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUColorTargetInfoSetMipLayer", GenR_SDLStatic_GPUColorTargetInfoSetMipLayer, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUColorTargetInfoSetOps", GenR_SDLStatic_GPUColorTargetInfoSetOps, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUColorTargetInfoSetTexture", GenR_SDLStatic_GPUColorTargetInfoSetTexture, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUComputeBindingsAddBuffer", GenR_SDLStatic_GPUComputeBindingsAddBuffer, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUComputeBindingsAddTexture", GenR_SDLStatic_GPUComputeBindingsAddTexture, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUComputeBindingsCreate", GenR_SDLStatic_GPUComputeBindingsCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUComputeBindingsDestroy", GenR_SDLStatic_GPUComputeBindingsDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUComputePipelineInfoCreate", GenR_SDLStatic_GPUComputePipelineInfoCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUComputePipelineInfoDestroy", GenR_SDLStatic_GPUComputePipelineInfoDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUComputePipelineInfoSetCode", GenR_SDLStatic_GPUComputePipelineInfoSetCode, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUComputePipelineInfoSetEntrypoint", GenR_SDLStatic_GPUComputePipelineInfoSetEntrypoint, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUComputePipelineInfoSetFormat", GenR_SDLStatic_GPUComputePipelineInfoSetFormat, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUComputePipelineInfoSetThreadCount", GenR_SDLStatic_GPUComputePipelineInfoSetThreadCount, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUDepthStencilTargetInfoCreate", GenR_SDLStatic_GPUDepthStencilTargetInfoCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUDepthStencilTargetInfoDestroy", GenR_SDLStatic_GPUDepthStencilTargetInfoDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUDepthStencilTargetInfoSetClear", GenR_SDLStatic_GPUDepthStencilTargetInfoSetClear, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUDepthStencilTargetInfoSetOps", GenR_SDLStatic_GPUDepthStencilTargetInfoSetOps, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUDepthStencilTargetInfoSetTexture", GenR_SDLStatic_GPUDepthStencilTargetInfoSetTexture, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUPipelineInfoAddColorTarget", GenR_SDLStatic_GPUPipelineInfoAddColorTarget, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUPipelineInfoAddVertexAttribute", GenR_SDLStatic_GPUPipelineInfoAddVertexAttribute, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUPipelineInfoAddVertexBuffer", GenR_SDLStatic_GPUPipelineInfoAddVertexBuffer, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUPipelineInfoCreate", GenR_SDLStatic_GPUPipelineInfoCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUPipelineInfoDestroy", GenR_SDLStatic_GPUPipelineInfoDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUPipelineInfoSetDepthStencil", GenR_SDLStatic_GPUPipelineInfoSetDepthStencil, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUPipelineInfoSetFillMode", GenR_SDLStatic_GPUPipelineInfoSetFillMode, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUPipelineInfoSetPrimitive", GenR_SDLStatic_GPUPipelineInfoSetPrimitive, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUPipelineInfoSetShaders", GenR_SDLStatic_GPUPipelineInfoSetShaders, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPURenderStateInfoAddSampler", GenR_SDLStatic_GPURenderStateInfoAddSampler, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPURenderStateInfoCreate", GenR_SDLStatic_GPURenderStateInfoCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPURenderStateInfoDestroy", GenR_SDLStatic_GPURenderStateInfoDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPURenderStateInfoSetShader", GenR_SDLStatic_GPURenderStateInfoSetShader, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUShaderCreateInfoCreate", GenR_SDLStatic_GPUShaderCreateInfoCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUShaderCreateInfoDestroy", GenR_SDLStatic_GPUShaderCreateInfoDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUShaderCreateInfoSetCode", GenR_SDLStatic_GPUShaderCreateInfoSetCode, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUShaderCreateInfoSetCounts", GenR_SDLStatic_GPUShaderCreateInfoSetCounts, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUShaderCreateInfoSetEntrypoint", GenR_SDLStatic_GPUShaderCreateInfoSetEntrypoint, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUShaderCreateInfoSetFormat", GenR_SDLStatic_GPUShaderCreateInfoSetFormat, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUSwapchainHeight", GenR_SDLStatic_GPUSwapchainHeight, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUSwapchainWidth", GenR_SDLStatic_GPUSwapchainWidth, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTextureLocationCreate", GenR_SDLStatic_GPUTextureLocationCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTextureLocationDestroy", GenR_SDLStatic_GPUTextureLocationDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTextureLocationSet", GenR_SDLStatic_GPUTextureLocationSet, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTextureRegionCreate", GenR_SDLStatic_GPUTextureRegionCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTextureRegionDestroy", GenR_SDLStatic_GPUTextureRegionDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTextureRegionSet", GenR_SDLStatic_GPUTextureRegionSet, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTextureSamplerBindingCreate", GenR_SDLStatic_GPUTextureSamplerBindingCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTextureSamplerBindingDestroy", GenR_SDLStatic_GPUTextureSamplerBindingDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTextureSamplerBindingSet", GenR_SDLStatic_GPUTextureSamplerBindingSet, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTextureTransferInfoCreate", GenR_SDLStatic_GPUTextureTransferInfoCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTextureTransferInfoDestroy", GenR_SDLStatic_GPUTextureTransferInfoDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTextureTransferInfoSet", GenR_SDLStatic_GPUTextureTransferInfoSet, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTransferBufferLocationCreate", GenR_SDLStatic_GPUTransferBufferLocationCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTransferBufferLocationDestroy", GenR_SDLStatic_GPUTransferBufferLocationDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUTransferBufferLocationSet", GenR_SDLStatic_GPUTransferBufferLocationSet, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUUploadToTransferBuffer", GenR_SDLStatic_GPUUploadToTransferBuffer, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUWaitAndAcquireSwapchain", GenR_SDLStatic_GPUWaitAndAcquireSwapchain, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "GPUWaitForFence", GenR_SDLStatic_GPUWaitForFence, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GamepadAccelerometer", GenR_SDLStatic_GamepadAccelerometer, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GamepadAxisValue", GenR_SDLStatic_GamepadAxisValue, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GamepadButtonDown", GenR_SDLStatic_GamepadButtonDown, MRB_ARGS_ANY());

@@ -25,13 +25,13 @@ types). The full C API additionally stays reachable from C/C++.
 | libyaml | 48 | 0 | 0 | 48 | 2 | 46 |
 | mog HTTP/S | 69 | 54 | 0 | 12 | 67 | 2 |
 | cJSON | 78 | 57 | 0 | 20 | 70 | 8 |
-| SDLStatic modules | 550 | 75 | 98 | 373 | 517 | 33 |
-| **Total** | 3442 | 1093 | 322 | 1980 | 2815 | 627 |
+| SDLStatic modules | 634 | 75 | 106 | 449 | 600 | 34 |
+| **Total** | 3526 | 1093 | 330 | 2056 | 2898 | 628 |
 
 ## Script-surface skip reasons
 
 - 298: unmarshalable parameter type
-- 141: unmarshalable return type
+- 142: unmarshalable return type
 - 76: stdlib clone
 - 53: math clone
 - 47: threading
@@ -700,7 +700,7 @@ types). The full C API additionally stays reachable from C/C++.
 
 </details>
 
-<details><summary>SDLStatic modules (33)</summary>
+<details><summary>SDLStatic modules (34)</summary>
 
 - `SDLStatic_ActorEach` — param visit: <funcptr>*
 - `SDLStatic_ActorLight` — returns struct pointer
@@ -719,6 +719,7 @@ types). The full C API additionally stays reachable from C/C++.
 - `SDLStatic_EngineSetHooks` — param user: void*
 - `SDLStatic_FingerHeldInRect` — returns struct pointer
 - `SDLStatic_FingerInRect` — returns struct pointer
+- `SDLStatic_GPUReadTransferBuffer` — return type void*
 - `SDLStatic_GetFinger` — returns struct pointer
 - `SDLStatic_GraphicsArgsConfigPath` — param argv: char**
 - `SDLStatic_GraphicsLoadArgs` — param argv: char**

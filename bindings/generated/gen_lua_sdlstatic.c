@@ -26,6 +26,7 @@
 #include <SDLStatic/engine_scene.h>
 #include <SDLStatic/engine_script.h>
 #include <SDLStatic/engine_text.h>
+#include <SDLStatic/gpu_build.h>
 #include <SDLStatic/gpu_primitives.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
@@ -3129,6 +3130,792 @@ static int GenL_SDLStatic_FreeTiledMap(lua_State *L)
     return 0;
 }
 
+static int GenL_SDLStatic_GPUAcquireSwapchain(lua_State *L)
+{
+    (void)L;
+    SDL_GPUCommandBuffer *a0 = (SDL_GPUCommandBuffer *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUCommandBuffer");
+    SDL_Window *a1 = (SDL_Window *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_Window");
+    SDL_GPUTexture * rv = SDLStatic_GPUAcquireSwapchain(a0, a1);
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUTexture");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUBeginComputePass(lua_State *L)
+{
+    (void)L;
+    SDL_GPUCommandBuffer *a0 = (SDL_GPUCommandBuffer *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUCommandBuffer");
+    SDLStatic_GPUComputeBindings *a1 = (SDLStatic_GPUComputeBindings *)SDLStaticGen_LuaCheckHandle(L, 2, "SDLStatic_GPUComputeBindings");
+    SDL_GPUComputePass * rv = SDLStatic_GPUBeginComputePass(a0, a1);
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUComputePass");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUBindComputeStorageBuffer(lua_State *L)
+{
+    (void)L;
+    SDL_GPUComputePass *a0 = (SDL_GPUComputePass *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUComputePass");
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
+    SDL_GPUBuffer *a2 = (SDL_GPUBuffer *)SDLStaticGen_LuaCheckHandle(L, 3, "SDL_GPUBuffer");
+    SDLStatic_GPUBindComputeStorageBuffer(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBindComputeStorageTexture(lua_State *L)
+{
+    (void)L;
+    SDL_GPUComputePass *a0 = (SDL_GPUComputePass *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUComputePass");
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
+    SDL_GPUTexture *a2 = (SDL_GPUTexture *)SDLStaticGen_LuaCheckHandle(L, 3, "SDL_GPUTexture");
+    SDLStatic_GPUBindComputeStorageTexture(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBindFragmentStorageBuffer(lua_State *L)
+{
+    (void)L;
+    SDL_GPURenderPass *a0 = (SDL_GPURenderPass *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPURenderPass");
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
+    SDL_GPUBuffer *a2 = (SDL_GPUBuffer *)SDLStaticGen_LuaCheckHandle(L, 3, "SDL_GPUBuffer");
+    SDLStatic_GPUBindFragmentStorageBuffer(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBindFragmentStorageTexture(lua_State *L)
+{
+    (void)L;
+    SDL_GPURenderPass *a0 = (SDL_GPURenderPass *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPURenderPass");
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
+    SDL_GPUTexture *a2 = (SDL_GPUTexture *)SDLStaticGen_LuaCheckHandle(L, 3, "SDL_GPUTexture");
+    SDLStatic_GPUBindFragmentStorageTexture(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBindVertexStorageBuffer(lua_State *L)
+{
+    (void)L;
+    SDL_GPURenderPass *a0 = (SDL_GPURenderPass *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPURenderPass");
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
+    SDL_GPUBuffer *a2 = (SDL_GPUBuffer *)SDLStaticGen_LuaCheckHandle(L, 3, "SDL_GPUBuffer");
+    SDLStatic_GPUBindVertexStorageBuffer(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBindVertexStorageTexture(lua_State *L)
+{
+    (void)L;
+    SDL_GPURenderPass *a0 = (SDL_GPURenderPass *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPURenderPass");
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
+    SDL_GPUTexture *a2 = (SDL_GPUTexture *)SDLStaticGen_LuaCheckHandle(L, 3, "SDL_GPUTexture");
+    SDLStatic_GPUBindVertexStorageTexture(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBlitInfoCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPUBlitInfo * rv = SDLStatic_GPUBlitInfoCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUBlitInfo");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUBlitInfoDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPUBlitInfo *a0 = (SDL_GPUBlitInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUBlitInfo");
+    SDLStatic_GPUBlitInfoDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBlitInfoSetDestination(lua_State *L)
+{
+    (void)L;
+    SDL_GPUBlitInfo *a0 = (SDL_GPUBlitInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUBlitInfo");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUTexture");
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    Uint32 a3 = (Uint32)luaL_checkinteger(L, 4);
+    Uint32 a4 = (Uint32)luaL_checkinteger(L, 5);
+    Uint32 a5 = (Uint32)luaL_checkinteger(L, 6);
+    SDLStatic_GPUBlitInfoSetDestination(a0, a1, a2, a3, a4, a5);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBlitInfoSetFilter(lua_State *L)
+{
+    (void)L;
+    SDL_GPUBlitInfo *a0 = (SDL_GPUBlitInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUBlitInfo");
+    SDL_GPUFilter a1 = (SDL_GPUFilter)luaL_checkinteger(L, 2);
+    SDLStatic_GPUBlitInfoSetFilter(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBlitInfoSetSource(lua_State *L)
+{
+    (void)L;
+    SDL_GPUBlitInfo *a0 = (SDL_GPUBlitInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUBlitInfo");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUTexture");
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    Uint32 a3 = (Uint32)luaL_checkinteger(L, 4);
+    Uint32 a4 = (Uint32)luaL_checkinteger(L, 5);
+    Uint32 a5 = (Uint32)luaL_checkinteger(L, 6);
+    SDLStatic_GPUBlitInfoSetSource(a0, a1, a2, a3, a4, a5);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBufferBindingCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPUBufferBinding * rv = SDLStatic_GPUBufferBindingCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUBufferBinding");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUBufferBindingDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPUBufferBinding *a0 = (SDL_GPUBufferBinding *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUBufferBinding");
+    SDLStatic_GPUBufferBindingDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBufferBindingSet(lua_State *L)
+{
+    (void)L;
+    SDL_GPUBufferBinding *a0 = (SDL_GPUBufferBinding *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUBufferBinding");
+    SDL_GPUBuffer *a1 = (SDL_GPUBuffer *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUBuffer");
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    SDLStatic_GPUBufferBindingSet(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBufferLocationCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPUBufferLocation * rv = SDLStatic_GPUBufferLocationCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUBufferLocation");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUBufferLocationDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPUBufferLocation *a0 = (SDL_GPUBufferLocation *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUBufferLocation");
+    SDLStatic_GPUBufferLocationDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBufferLocationSet(lua_State *L)
+{
+    (void)L;
+    SDL_GPUBufferLocation *a0 = (SDL_GPUBufferLocation *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUBufferLocation");
+    SDL_GPUBuffer *a1 = (SDL_GPUBuffer *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUBuffer");
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    SDLStatic_GPUBufferLocationSet(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBufferRegionCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPUBufferRegion * rv = SDLStatic_GPUBufferRegionCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUBufferRegion");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUBufferRegionDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPUBufferRegion *a0 = (SDL_GPUBufferRegion *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUBufferRegion");
+    SDLStatic_GPUBufferRegionDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUBufferRegionSet(lua_State *L)
+{
+    (void)L;
+    SDL_GPUBufferRegion *a0 = (SDL_GPUBufferRegion *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUBufferRegion");
+    SDL_GPUBuffer *a1 = (SDL_GPUBuffer *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUBuffer");
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    Uint32 a3 = (Uint32)luaL_checkinteger(L, 4);
+    SDLStatic_GPUBufferRegionSet(a0, a1, a2, a3);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUColorTargetInfoCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPUColorTargetInfo * rv = SDLStatic_GPUColorTargetInfoCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUColorTargetInfo");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUColorTargetInfoDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPUColorTargetInfo *a0 = (SDL_GPUColorTargetInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUColorTargetInfo");
+    SDLStatic_GPUColorTargetInfoDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUColorTargetInfoSetClearColor(lua_State *L)
+{
+    (void)L;
+    SDL_GPUColorTargetInfo *a0 = (SDL_GPUColorTargetInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUColorTargetInfo");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    float a4 = (float)luaL_checknumber(L, 5);
+    SDLStatic_GPUColorTargetInfoSetClearColor(a0, a1, a2, a3, a4);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUColorTargetInfoSetCycle(lua_State *L)
+{
+    (void)L;
+    SDL_GPUColorTargetInfo *a0 = (SDL_GPUColorTargetInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUColorTargetInfo");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_GPUColorTargetInfoSetCycle(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUColorTargetInfoSetMipLayer(lua_State *L)
+{
+    (void)L;
+    SDL_GPUColorTargetInfo *a0 = (SDL_GPUColorTargetInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUColorTargetInfo");
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    SDLStatic_GPUColorTargetInfoSetMipLayer(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUColorTargetInfoSetOps(lua_State *L)
+{
+    (void)L;
+    SDL_GPUColorTargetInfo *a0 = (SDL_GPUColorTargetInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUColorTargetInfo");
+    SDL_GPULoadOp a1 = (SDL_GPULoadOp)luaL_checkinteger(L, 2);
+    SDL_GPUStoreOp a2 = (SDL_GPUStoreOp)luaL_checkinteger(L, 3);
+    SDLStatic_GPUColorTargetInfoSetOps(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUColorTargetInfoSetTexture(lua_State *L)
+{
+    (void)L;
+    SDL_GPUColorTargetInfo *a0 = (SDL_GPUColorTargetInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUColorTargetInfo");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUTexture");
+    SDLStatic_GPUColorTargetInfoSetTexture(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUComputeBindingsAddBuffer(lua_State *L)
+{
+    (void)L;
+    SDLStatic_GPUComputeBindings *a0 = (SDLStatic_GPUComputeBindings *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_GPUComputeBindings");
+    SDL_GPUBuffer *a1 = (SDL_GPUBuffer *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUBuffer");
+    bool a2 = (bool)lua_toboolean(L, 3);
+    bool rv = SDLStatic_GPUComputeBindingsAddBuffer(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUComputeBindingsAddTexture(lua_State *L)
+{
+    (void)L;
+    SDLStatic_GPUComputeBindings *a0 = (SDLStatic_GPUComputeBindings *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_GPUComputeBindings");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUTexture");
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    Uint32 a3 = (Uint32)luaL_checkinteger(L, 4);
+    bool a4 = (bool)lua_toboolean(L, 5);
+    bool rv = SDLStatic_GPUComputeBindingsAddTexture(a0, a1, a2, a3, a4);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUComputeBindingsCreate(lua_State *L)
+{
+    (void)L;
+    SDLStatic_GPUComputeBindings * rv = SDLStatic_GPUComputeBindingsCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDLStatic_GPUComputeBindings");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUComputeBindingsDestroy(lua_State *L)
+{
+    (void)L;
+    SDLStatic_GPUComputeBindings *a0 = (SDLStatic_GPUComputeBindings *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_GPUComputeBindings");
+    SDLStatic_GPUComputeBindingsDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUComputePipelineInfoCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPUComputePipelineCreateInfo * rv = SDLStatic_GPUComputePipelineInfoCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUComputePipelineCreateInfo");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUComputePipelineInfoDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPUComputePipelineCreateInfo *a0 = (SDL_GPUComputePipelineCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUComputePipelineCreateInfo");
+    SDLStatic_GPUComputePipelineInfoDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUComputePipelineInfoSetCode(lua_State *L)
+{
+    (void)L;
+    SDL_GPUComputePipelineCreateInfo *a0 = (SDL_GPUComputePipelineCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUComputePipelineCreateInfo");
+    size_t len1 = 0;
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
+    SDLStatic_GPUComputePipelineInfoSetCode(a0, (const void *)a1, (int)len1);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUComputePipelineInfoSetEntrypoint(lua_State *L)
+{
+    (void)L;
+    SDL_GPUComputePipelineCreateInfo *a0 = (SDL_GPUComputePipelineCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUComputePipelineCreateInfo");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    SDLStatic_GPUComputePipelineInfoSetEntrypoint(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUComputePipelineInfoSetFormat(lua_State *L)
+{
+    (void)L;
+    SDL_GPUComputePipelineCreateInfo *a0 = (SDL_GPUComputePipelineCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUComputePipelineCreateInfo");
+    SDL_GPUShaderFormat a1 = (SDL_GPUShaderFormat)luaL_checkinteger(L, 2);
+    SDLStatic_GPUComputePipelineInfoSetFormat(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUComputePipelineInfoSetThreadCount(lua_State *L)
+{
+    (void)L;
+    SDL_GPUComputePipelineCreateInfo *a0 = (SDL_GPUComputePipelineCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUComputePipelineCreateInfo");
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    Uint32 a3 = (Uint32)luaL_checkinteger(L, 4);
+    SDLStatic_GPUComputePipelineInfoSetThreadCount(a0, a1, a2, a3);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUDepthStencilTargetInfoCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPUDepthStencilTargetInfo * rv = SDLStatic_GPUDepthStencilTargetInfoCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUDepthStencilTargetInfo");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUDepthStencilTargetInfoDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPUDepthStencilTargetInfo *a0 = (SDL_GPUDepthStencilTargetInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUDepthStencilTargetInfo");
+    SDLStatic_GPUDepthStencilTargetInfoDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUDepthStencilTargetInfoSetClear(lua_State *L)
+{
+    (void)L;
+    SDL_GPUDepthStencilTargetInfo *a0 = (SDL_GPUDepthStencilTargetInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUDepthStencilTargetInfo");
+    float a1 = (float)luaL_checknumber(L, 2);
+    Uint8 a2 = (Uint8)luaL_checkinteger(L, 3);
+    SDLStatic_GPUDepthStencilTargetInfoSetClear(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUDepthStencilTargetInfoSetOps(lua_State *L)
+{
+    (void)L;
+    SDL_GPUDepthStencilTargetInfo *a0 = (SDL_GPUDepthStencilTargetInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUDepthStencilTargetInfo");
+    SDL_GPULoadOp a1 = (SDL_GPULoadOp)luaL_checkinteger(L, 2);
+    SDL_GPUStoreOp a2 = (SDL_GPUStoreOp)luaL_checkinteger(L, 3);
+    SDLStatic_GPUDepthStencilTargetInfoSetOps(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUDepthStencilTargetInfoSetTexture(lua_State *L)
+{
+    (void)L;
+    SDL_GPUDepthStencilTargetInfo *a0 = (SDL_GPUDepthStencilTargetInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUDepthStencilTargetInfo");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUTexture");
+    SDLStatic_GPUDepthStencilTargetInfoSetTexture(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUPipelineInfoAddColorTarget(lua_State *L)
+{
+    (void)L;
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUGraphicsPipelineCreateInfo");
+    SDL_GPUTextureFormat a1 = (SDL_GPUTextureFormat)luaL_checkinteger(L, 2);
+    bool rv = SDLStatic_GPUPipelineInfoAddColorTarget(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUPipelineInfoAddVertexAttribute(lua_State *L)
+{
+    (void)L;
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUGraphicsPipelineCreateInfo");
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    SDL_GPUVertexElementFormat a3 = (SDL_GPUVertexElementFormat)luaL_checkinteger(L, 4);
+    Uint32 a4 = (Uint32)luaL_checkinteger(L, 5);
+    bool rv = SDLStatic_GPUPipelineInfoAddVertexAttribute(a0, a1, a2, a3, a4);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUPipelineInfoAddVertexBuffer(lua_State *L)
+{
+    (void)L;
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUGraphicsPipelineCreateInfo");
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    SDL_GPUVertexInputRate a3 = (SDL_GPUVertexInputRate)luaL_checkinteger(L, 4);
+    bool rv = SDLStatic_GPUPipelineInfoAddVertexBuffer(a0, a1, a2, a3);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUPipelineInfoCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPUGraphicsPipelineCreateInfo * rv = SDLStatic_GPUPipelineInfoCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUGraphicsPipelineCreateInfo");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUPipelineInfoDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUGraphicsPipelineCreateInfo");
+    SDLStatic_GPUPipelineInfoDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUPipelineInfoSetDepthStencil(lua_State *L)
+{
+    (void)L;
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUGraphicsPipelineCreateInfo");
+    SDL_GPUTextureFormat a1 = (SDL_GPUTextureFormat)luaL_checkinteger(L, 2);
+    bool a2 = (bool)lua_toboolean(L, 3);
+    SDLStatic_GPUPipelineInfoSetDepthStencil(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUPipelineInfoSetFillMode(lua_State *L)
+{
+    (void)L;
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUGraphicsPipelineCreateInfo");
+    SDL_GPUFillMode a1 = (SDL_GPUFillMode)luaL_checkinteger(L, 2);
+    SDL_GPUCullMode a2 = (SDL_GPUCullMode)luaL_checkinteger(L, 3);
+    SDLStatic_GPUPipelineInfoSetFillMode(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUPipelineInfoSetPrimitive(lua_State *L)
+{
+    (void)L;
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUGraphicsPipelineCreateInfo");
+    SDL_GPUPrimitiveType a1 = (SDL_GPUPrimitiveType)luaL_checkinteger(L, 2);
+    SDLStatic_GPUPipelineInfoSetPrimitive(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUPipelineInfoSetShaders(lua_State *L)
+{
+    (void)L;
+    SDL_GPUGraphicsPipelineCreateInfo *a0 = (SDL_GPUGraphicsPipelineCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUGraphicsPipelineCreateInfo");
+    SDL_GPUShader *a1 = (SDL_GPUShader *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUShader");
+    SDL_GPUShader *a2 = (SDL_GPUShader *)SDLStaticGen_LuaCheckHandle(L, 3, "SDL_GPUShader");
+    SDLStatic_GPUPipelineInfoSetShaders(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPURenderStateInfoAddSampler(lua_State *L)
+{
+    (void)L;
+    SDL_GPURenderStateCreateInfo *a0 = (SDL_GPURenderStateCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPURenderStateCreateInfo");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUTexture");
+    SDL_GPUSampler *a2 = (SDL_GPUSampler *)SDLStaticGen_LuaCheckHandle(L, 3, "SDL_GPUSampler");
+    bool rv = SDLStatic_GPURenderStateInfoAddSampler(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GPURenderStateInfoCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPURenderStateCreateInfo * rv = SDLStatic_GPURenderStateInfoCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPURenderStateCreateInfo");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPURenderStateInfoDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPURenderStateCreateInfo *a0 = (SDL_GPURenderStateCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPURenderStateCreateInfo");
+    SDLStatic_GPURenderStateInfoDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPURenderStateInfoSetShader(lua_State *L)
+{
+    (void)L;
+    SDL_GPURenderStateCreateInfo *a0 = (SDL_GPURenderStateCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPURenderStateCreateInfo");
+    SDL_GPUShader *a1 = (SDL_GPUShader *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUShader");
+    SDLStatic_GPURenderStateInfoSetShader(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUShaderCreateInfoCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPUShaderCreateInfo * rv = SDLStatic_GPUShaderCreateInfoCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUShaderCreateInfo");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUShaderCreateInfoDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPUShaderCreateInfo *a0 = (SDL_GPUShaderCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUShaderCreateInfo");
+    SDLStatic_GPUShaderCreateInfoDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUShaderCreateInfoSetCode(lua_State *L)
+{
+    (void)L;
+    SDL_GPUShaderCreateInfo *a0 = (SDL_GPUShaderCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUShaderCreateInfo");
+    size_t len1 = 0;
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checklstring(L, 2, &len1);
+    SDLStatic_GPUShaderCreateInfoSetCode(a0, (const void *)a1, (int)len1);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUShaderCreateInfoSetCounts(lua_State *L)
+{
+    (void)L;
+    SDL_GPUShaderCreateInfo *a0 = (SDL_GPUShaderCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUShaderCreateInfo");
+    Uint32 a1 = (Uint32)luaL_checkinteger(L, 2);
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    Uint32 a3 = (Uint32)luaL_checkinteger(L, 4);
+    Uint32 a4 = (Uint32)luaL_checkinteger(L, 5);
+    SDLStatic_GPUShaderCreateInfoSetCounts(a0, a1, a2, a3, a4);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUShaderCreateInfoSetEntrypoint(lua_State *L)
+{
+    (void)L;
+    SDL_GPUShaderCreateInfo *a0 = (SDL_GPUShaderCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUShaderCreateInfo");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    SDLStatic_GPUShaderCreateInfoSetEntrypoint(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUShaderCreateInfoSetFormat(lua_State *L)
+{
+    (void)L;
+    SDL_GPUShaderCreateInfo *a0 = (SDL_GPUShaderCreateInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUShaderCreateInfo");
+    SDL_GPUShaderFormat a1 = (SDL_GPUShaderFormat)luaL_checkinteger(L, 2);
+    SDL_GPUShaderStage a2 = (SDL_GPUShaderStage)luaL_checkinteger(L, 3);
+    SDLStatic_GPUShaderCreateInfoSetFormat(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUSwapchainHeight(lua_State *L)
+{
+    (void)L;
+    Uint32 rv = SDLStatic_GPUSwapchainHeight();
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUSwapchainWidth(lua_State *L)
+{
+    (void)L;
+    Uint32 rv = SDLStatic_GPUSwapchainWidth();
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUTextureLocationCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTextureLocation * rv = SDLStatic_GPUTextureLocationCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUTextureLocation");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUTextureLocationDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTextureLocation *a0 = (SDL_GPUTextureLocation *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUTextureLocation");
+    SDLStatic_GPUTextureLocationDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUTextureLocationSet(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTextureLocation *a0 = (SDL_GPUTextureLocation *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUTextureLocation");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUTexture");
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    Uint32 a3 = (Uint32)luaL_checkinteger(L, 4);
+    Uint32 a4 = (Uint32)luaL_checkinteger(L, 5);
+    SDLStatic_GPUTextureLocationSet(a0, a1, a2, a3, a4);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUTextureRegionCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTextureRegion * rv = SDLStatic_GPUTextureRegionCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUTextureRegion");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUTextureRegionDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTextureRegion *a0 = (SDL_GPUTextureRegion *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUTextureRegion");
+    SDLStatic_GPUTextureRegionDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUTextureRegionSet(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTextureRegion *a0 = (SDL_GPUTextureRegion *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUTextureRegion");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUTexture");
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    Uint32 a3 = (Uint32)luaL_checkinteger(L, 4);
+    Uint32 a4 = (Uint32)luaL_checkinteger(L, 5);
+    Uint32 a5 = (Uint32)luaL_checkinteger(L, 6);
+    SDLStatic_GPUTextureRegionSet(a0, a1, a2, a3, a4, a5);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUTextureSamplerBindingCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTextureSamplerBinding * rv = SDLStatic_GPUTextureSamplerBindingCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUTextureSamplerBinding");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUTextureSamplerBindingDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTextureSamplerBinding *a0 = (SDL_GPUTextureSamplerBinding *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUTextureSamplerBinding");
+    SDLStatic_GPUTextureSamplerBindingDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUTextureSamplerBindingSet(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTextureSamplerBinding *a0 = (SDL_GPUTextureSamplerBinding *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUTextureSamplerBinding");
+    SDL_GPUTexture *a1 = (SDL_GPUTexture *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUTexture");
+    SDL_GPUSampler *a2 = (SDL_GPUSampler *)SDLStaticGen_LuaCheckHandle(L, 3, "SDL_GPUSampler");
+    SDLStatic_GPUTextureSamplerBindingSet(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUTextureTransferInfoCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTextureTransferInfo * rv = SDLStatic_GPUTextureTransferInfoCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUTextureTransferInfo");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUTextureTransferInfoDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTextureTransferInfo *a0 = (SDL_GPUTextureTransferInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUTextureTransferInfo");
+    SDLStatic_GPUTextureTransferInfoDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUTextureTransferInfoSet(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTextureTransferInfo *a0 = (SDL_GPUTextureTransferInfo *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUTextureTransferInfo");
+    SDL_GPUTransferBuffer *a1 = (SDL_GPUTransferBuffer *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUTransferBuffer");
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    Uint32 a3 = (Uint32)luaL_checkinteger(L, 4);
+    Uint32 a4 = (Uint32)luaL_checkinteger(L, 5);
+    SDLStatic_GPUTextureTransferInfoSet(a0, a1, a2, a3, a4);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUTransferBufferLocationCreate(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTransferBufferLocation * rv = SDLStatic_GPUTransferBufferLocationCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUTransferBufferLocation");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUTransferBufferLocationDestroy(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTransferBufferLocation *a0 = (SDL_GPUTransferBufferLocation *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUTransferBufferLocation");
+    SDLStatic_GPUTransferBufferLocationDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUTransferBufferLocationSet(lua_State *L)
+{
+    (void)L;
+    SDL_GPUTransferBufferLocation *a0 = (SDL_GPUTransferBufferLocation *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUTransferBufferLocation");
+    SDL_GPUTransferBuffer *a1 = (SDL_GPUTransferBuffer *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUTransferBuffer");
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    SDLStatic_GPUTransferBufferLocationSet(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_GPUUploadToTransferBuffer(lua_State *L)
+{
+    (void)L;
+    SDL_GPUDevice *a0 = (SDL_GPUDevice *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUDevice");
+    SDL_GPUTransferBuffer *a1 = (SDL_GPUTransferBuffer *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUTransferBuffer");
+    Uint32 a2 = (Uint32)luaL_checkinteger(L, 3);
+    size_t len3 = 0;
+    const char *a3 = lua_isnoneornil(L, 4) ? NULL : luaL_checklstring(L, 4, &len3);
+    bool a5 = (bool)lua_toboolean(L, 5);
+    bool rv = SDLStatic_GPUUploadToTransferBuffer(a0, a1, a2, (const void *)a3, (int)len3, a5);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUWaitAndAcquireSwapchain(lua_State *L)
+{
+    (void)L;
+    SDL_GPUCommandBuffer *a0 = (SDL_GPUCommandBuffer *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUCommandBuffer");
+    SDL_Window *a1 = (SDL_Window *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_Window");
+    SDL_GPUTexture * rv = SDLStatic_GPUWaitAndAcquireSwapchain(a0, a1);
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "SDL_GPUTexture");
+    return 1;
+}
+
+static int GenL_SDLStatic_GPUWaitForFence(lua_State *L)
+{
+    (void)L;
+    SDL_GPUDevice *a0 = (SDL_GPUDevice *)SDLStaticGen_LuaCheckHandle(L, 1, "SDL_GPUDevice");
+    SDL_GPUFence *a1 = (SDL_GPUFence *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_GPUFence");
+    bool rv = SDLStatic_GPUWaitForFence(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_GamepadAccelerometer(lua_State *L)
 {
     (void)L;
@@ -5786,7 +6573,7 @@ static int GenL_SDLStatic_WheelJointDefSetSpring(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 517);
+    lua_createtable(L, 0, 600);
     lua_pushcfunction(L, GenL_SDLStatic_ActionBind);
     lua_setfield(L, -2, "ActionBind");
     lua_pushcfunction(L, GenL_SDLStatic_ActionBindAxis);
@@ -6297,6 +7084,172 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "FingerCount");
     lua_pushcfunction(L, GenL_SDLStatic_FreeTiledMap);
     lua_setfield(L, -2, "FreeTiledMap");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUAcquireSwapchain);
+    lua_setfield(L, -2, "GPUAcquireSwapchain");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBeginComputePass);
+    lua_setfield(L, -2, "GPUBeginComputePass");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBindComputeStorageBuffer);
+    lua_setfield(L, -2, "GPUBindComputeStorageBuffer");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBindComputeStorageTexture);
+    lua_setfield(L, -2, "GPUBindComputeStorageTexture");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBindFragmentStorageBuffer);
+    lua_setfield(L, -2, "GPUBindFragmentStorageBuffer");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBindFragmentStorageTexture);
+    lua_setfield(L, -2, "GPUBindFragmentStorageTexture");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBindVertexStorageBuffer);
+    lua_setfield(L, -2, "GPUBindVertexStorageBuffer");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBindVertexStorageTexture);
+    lua_setfield(L, -2, "GPUBindVertexStorageTexture");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBlitInfoCreate);
+    lua_setfield(L, -2, "GPUBlitInfoCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBlitInfoDestroy);
+    lua_setfield(L, -2, "GPUBlitInfoDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBlitInfoSetDestination);
+    lua_setfield(L, -2, "GPUBlitInfoSetDestination");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBlitInfoSetFilter);
+    lua_setfield(L, -2, "GPUBlitInfoSetFilter");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBlitInfoSetSource);
+    lua_setfield(L, -2, "GPUBlitInfoSetSource");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBufferBindingCreate);
+    lua_setfield(L, -2, "GPUBufferBindingCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBufferBindingDestroy);
+    lua_setfield(L, -2, "GPUBufferBindingDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBufferBindingSet);
+    lua_setfield(L, -2, "GPUBufferBindingSet");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBufferLocationCreate);
+    lua_setfield(L, -2, "GPUBufferLocationCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBufferLocationDestroy);
+    lua_setfield(L, -2, "GPUBufferLocationDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBufferLocationSet);
+    lua_setfield(L, -2, "GPUBufferLocationSet");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBufferRegionCreate);
+    lua_setfield(L, -2, "GPUBufferRegionCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBufferRegionDestroy);
+    lua_setfield(L, -2, "GPUBufferRegionDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUBufferRegionSet);
+    lua_setfield(L, -2, "GPUBufferRegionSet");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUColorTargetInfoCreate);
+    lua_setfield(L, -2, "GPUColorTargetInfoCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUColorTargetInfoDestroy);
+    lua_setfield(L, -2, "GPUColorTargetInfoDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUColorTargetInfoSetClearColor);
+    lua_setfield(L, -2, "GPUColorTargetInfoSetClearColor");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUColorTargetInfoSetCycle);
+    lua_setfield(L, -2, "GPUColorTargetInfoSetCycle");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUColorTargetInfoSetMipLayer);
+    lua_setfield(L, -2, "GPUColorTargetInfoSetMipLayer");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUColorTargetInfoSetOps);
+    lua_setfield(L, -2, "GPUColorTargetInfoSetOps");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUColorTargetInfoSetTexture);
+    lua_setfield(L, -2, "GPUColorTargetInfoSetTexture");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUComputeBindingsAddBuffer);
+    lua_setfield(L, -2, "GPUComputeBindingsAddBuffer");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUComputeBindingsAddTexture);
+    lua_setfield(L, -2, "GPUComputeBindingsAddTexture");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUComputeBindingsCreate);
+    lua_setfield(L, -2, "GPUComputeBindingsCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUComputeBindingsDestroy);
+    lua_setfield(L, -2, "GPUComputeBindingsDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUComputePipelineInfoCreate);
+    lua_setfield(L, -2, "GPUComputePipelineInfoCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUComputePipelineInfoDestroy);
+    lua_setfield(L, -2, "GPUComputePipelineInfoDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUComputePipelineInfoSetCode);
+    lua_setfield(L, -2, "GPUComputePipelineInfoSetCode");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUComputePipelineInfoSetEntrypoint);
+    lua_setfield(L, -2, "GPUComputePipelineInfoSetEntrypoint");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUComputePipelineInfoSetFormat);
+    lua_setfield(L, -2, "GPUComputePipelineInfoSetFormat");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUComputePipelineInfoSetThreadCount);
+    lua_setfield(L, -2, "GPUComputePipelineInfoSetThreadCount");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUDepthStencilTargetInfoCreate);
+    lua_setfield(L, -2, "GPUDepthStencilTargetInfoCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUDepthStencilTargetInfoDestroy);
+    lua_setfield(L, -2, "GPUDepthStencilTargetInfoDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUDepthStencilTargetInfoSetClear);
+    lua_setfield(L, -2, "GPUDepthStencilTargetInfoSetClear");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUDepthStencilTargetInfoSetOps);
+    lua_setfield(L, -2, "GPUDepthStencilTargetInfoSetOps");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUDepthStencilTargetInfoSetTexture);
+    lua_setfield(L, -2, "GPUDepthStencilTargetInfoSetTexture");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUPipelineInfoAddColorTarget);
+    lua_setfield(L, -2, "GPUPipelineInfoAddColorTarget");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUPipelineInfoAddVertexAttribute);
+    lua_setfield(L, -2, "GPUPipelineInfoAddVertexAttribute");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUPipelineInfoAddVertexBuffer);
+    lua_setfield(L, -2, "GPUPipelineInfoAddVertexBuffer");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUPipelineInfoCreate);
+    lua_setfield(L, -2, "GPUPipelineInfoCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUPipelineInfoDestroy);
+    lua_setfield(L, -2, "GPUPipelineInfoDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUPipelineInfoSetDepthStencil);
+    lua_setfield(L, -2, "GPUPipelineInfoSetDepthStencil");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUPipelineInfoSetFillMode);
+    lua_setfield(L, -2, "GPUPipelineInfoSetFillMode");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUPipelineInfoSetPrimitive);
+    lua_setfield(L, -2, "GPUPipelineInfoSetPrimitive");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUPipelineInfoSetShaders);
+    lua_setfield(L, -2, "GPUPipelineInfoSetShaders");
+    lua_pushcfunction(L, GenL_SDLStatic_GPURenderStateInfoAddSampler);
+    lua_setfield(L, -2, "GPURenderStateInfoAddSampler");
+    lua_pushcfunction(L, GenL_SDLStatic_GPURenderStateInfoCreate);
+    lua_setfield(L, -2, "GPURenderStateInfoCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPURenderStateInfoDestroy);
+    lua_setfield(L, -2, "GPURenderStateInfoDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPURenderStateInfoSetShader);
+    lua_setfield(L, -2, "GPURenderStateInfoSetShader");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUShaderCreateInfoCreate);
+    lua_setfield(L, -2, "GPUShaderCreateInfoCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUShaderCreateInfoDestroy);
+    lua_setfield(L, -2, "GPUShaderCreateInfoDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUShaderCreateInfoSetCode);
+    lua_setfield(L, -2, "GPUShaderCreateInfoSetCode");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUShaderCreateInfoSetCounts);
+    lua_setfield(L, -2, "GPUShaderCreateInfoSetCounts");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUShaderCreateInfoSetEntrypoint);
+    lua_setfield(L, -2, "GPUShaderCreateInfoSetEntrypoint");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUShaderCreateInfoSetFormat);
+    lua_setfield(L, -2, "GPUShaderCreateInfoSetFormat");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUSwapchainHeight);
+    lua_setfield(L, -2, "GPUSwapchainHeight");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUSwapchainWidth);
+    lua_setfield(L, -2, "GPUSwapchainWidth");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTextureLocationCreate);
+    lua_setfield(L, -2, "GPUTextureLocationCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTextureLocationDestroy);
+    lua_setfield(L, -2, "GPUTextureLocationDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTextureLocationSet);
+    lua_setfield(L, -2, "GPUTextureLocationSet");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTextureRegionCreate);
+    lua_setfield(L, -2, "GPUTextureRegionCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTextureRegionDestroy);
+    lua_setfield(L, -2, "GPUTextureRegionDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTextureRegionSet);
+    lua_setfield(L, -2, "GPUTextureRegionSet");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTextureSamplerBindingCreate);
+    lua_setfield(L, -2, "GPUTextureSamplerBindingCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTextureSamplerBindingDestroy);
+    lua_setfield(L, -2, "GPUTextureSamplerBindingDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTextureSamplerBindingSet);
+    lua_setfield(L, -2, "GPUTextureSamplerBindingSet");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTextureTransferInfoCreate);
+    lua_setfield(L, -2, "GPUTextureTransferInfoCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTextureTransferInfoDestroy);
+    lua_setfield(L, -2, "GPUTextureTransferInfoDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTextureTransferInfoSet);
+    lua_setfield(L, -2, "GPUTextureTransferInfoSet");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTransferBufferLocationCreate);
+    lua_setfield(L, -2, "GPUTransferBufferLocationCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTransferBufferLocationDestroy);
+    lua_setfield(L, -2, "GPUTransferBufferLocationDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUTransferBufferLocationSet);
+    lua_setfield(L, -2, "GPUTransferBufferLocationSet");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUUploadToTransferBuffer);
+    lua_setfield(L, -2, "GPUUploadToTransferBuffer");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUWaitAndAcquireSwapchain);
+    lua_setfield(L, -2, "GPUWaitAndAcquireSwapchain");
+    lua_pushcfunction(L, GenL_SDLStatic_GPUWaitForFence);
+    lua_setfield(L, -2, "GPUWaitForFence");
     lua_pushcfunction(L, GenL_SDLStatic_GamepadAccelerometer);
     lua_setfield(L, -2, "GamepadAccelerometer");
     lua_pushcfunction(L, GenL_SDLStatic_GamepadAxisValue);

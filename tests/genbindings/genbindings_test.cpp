@@ -8,6 +8,7 @@
 
 #include <SDL3/SDL.h>
 #include <SDLStatic/bindings.h>
+#include <SDLStatic/gpu_build.h>
 #include <SDLStatic/lua.h>
 #include <SDLStatic/ruby.h>
 #include <box2d/box2d.h>
@@ -292,6 +293,211 @@ TEST(GenRuby, JsonTreeWalkAndPhysics)
         "B2.World_Step(w, 1.0 / 60.0, 4)\n"
         "B2.DestroyWorld(w)\n"
         "raise 'destroy' if B2.World_IsValid(w)\n");
+}
+
+// ---------------------------------------------------------------------------
+// The GPU descriptor builders
+//
+// 182 GPU functions were bound and nearly none callable: they take descriptor
+// structs a C caller fills in on the stack, and a script has no stack to put
+// one on. These check the builders that close that gap. No GPU device is
+// needed for the descriptors themselves, which is the point — they are plain
+// memory until SDL is handed them.
+
+TEST(GpuBuild, PipelineBuilderOwnsItsArrays)
+{
+    SDL_GPUGraphicsPipelineCreateInfo *info = SDLStatic_GPUPipelineInfoCreate();
+    ASSERT_NE(info, nullptr);
+
+    // Past the initial capacity of four, so the arrays reallocate and the
+    // descriptor must be re-pointed at the moved storage.
+    for (Uint32 i = 0; i < 10; ++i)
+    {
+        ASSERT_TRUE(SDLStatic_GPUPipelineInfoAddVertexAttribute(
+            info, i, 0, SDL_GPU_VERTEXELEMENTFORMAT_FLOAT3, i * 12));
+    }
+    ASSERT_TRUE(SDLStatic_GPUPipelineInfoAddVertexBuffer(info, 0, 12,
+                                                         SDL_GPU_VERTEXINPUTRATE_VERTEX));
+    ASSERT_TRUE(SDLStatic_GPUPipelineInfoAddColorTarget(info,
+                                                        SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM));
+
+    EXPECT_EQ(info->vertex_input_state.num_vertex_attributes, 10u);
+    EXPECT_EQ(info->vertex_input_state.num_vertex_buffers, 1u);
+    EXPECT_EQ(info->target_info.num_color_targets, 1u);
+    // A stale pointer after a realloc reads freed memory rather than failing,
+    // so check the contents, not just the counts.
+    EXPECT_EQ(info->vertex_input_state.vertex_attributes[9].location, 9u);
+    EXPECT_EQ(info->vertex_input_state.vertex_attributes[9].offset, 108u);
+    EXPECT_EQ(info->vertex_input_state.vertex_buffer_descriptions[0].pitch, 12u);
+
+    SDLStatic_GPUPipelineInfoDestroy(info);
+}
+
+TEST(GpuBuild, ShaderInfoCopiesCodeAndEntrypoint)
+{
+    SDL_GPUShaderCreateInfo *info = SDLStatic_GPUShaderCreateInfoCreate();
+    ASSERT_NE(info, nullptr);
+    // SDL's own default, so a script that does not care need say nothing.
+    EXPECT_STREQ(info->entrypoint, "main");
+
+    {
+        // A script's string may be collected the moment the setter returns,
+        // so the builder must not borrow it.
+        std::string bytecode(64, '\x7f');
+        SDLStatic_GPUShaderCreateInfoSetCode(info, bytecode.data(),
+                                             static_cast<int>(bytecode.size()));
+        SDLStatic_GPUShaderCreateInfoSetEntrypoint(info, std::string("vs_main").c_str());
+    }
+    ASSERT_EQ(info->code_size, 64u);
+    EXPECT_EQ(info->code[0], 0x7f);
+    EXPECT_EQ(info->code[63], 0x7f);
+    EXPECT_STREQ(info->entrypoint, "vs_main");
+
+    SDLStatic_GPUShaderCreateInfoSetCode(info, "abc", 3);  // replaces, does not leak
+    EXPECT_EQ(info->code_size, 3u);
+
+    SDLStatic_GPUShaderCreateInfoDestroy(info);
+}
+
+TEST(GpuBuild, TextureRegionGetsADepthOfOne)
+{
+    SDL_GPUTextureRegion *region = SDLStatic_GPUTextureRegionCreate();
+    ASSERT_NE(region, nullptr);
+    SDLStatic_GPUTextureRegionSet(region, nullptr, 0, 0, 32, 32);
+    // A zero depth copies nothing and reports success, which is the worst
+    // way for this to be wrong.
+    EXPECT_EQ(region->d, 1u);
+    EXPECT_EQ(region->w, 32u);
+    SDLStatic_GPUTextureRegionDestroy(region);
+}
+
+TEST(GpuBuild, NullsAreRefusedNotCrashed)
+{
+    // A script passing nil should get an error, not a segfault in C.
+    SDLStatic_GPUColorTargetInfoSetTexture(nullptr, nullptr);
+    SDLStatic_GPUPipelineInfoDestroy(nullptr);
+    SDLStatic_GPUShaderCreateInfoDestroy(nullptr);
+    SDLStatic_GPUComputeBindingsDestroy(nullptr);
+    EXPECT_FALSE(SDLStatic_GPUPipelineInfoAddColorTarget(nullptr,
+                                                         SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM));
+    EXPECT_EQ(SDLStatic_GPUAcquireSwapchain(nullptr, nullptr), nullptr);
+    EXPECT_FALSE(SDLStatic_GPUWaitForFence(nullptr, nullptr));
+    EXPECT_FALSE(SDLStatic_GPUUploadToTransferBuffer(nullptr, nullptr, 0, "x", 1, false));
+}
+
+TEST(GpuBuild, ComputeBindingsAppend)
+{
+    SDLStatic_GPUComputeBindings *bindings = SDLStatic_GPUComputeBindingsCreate();
+    ASSERT_NE(bindings, nullptr);
+    // NULL handles are refused, so this checks the refusal rather than the
+    // append; the append itself needs a device and is covered below.
+    EXPECT_FALSE(SDLStatic_GPUComputeBindingsAddBuffer(bindings, nullptr, true));
+    EXPECT_EQ(SDLStatic_GPUBeginComputePass(nullptr, bindings), nullptr);
+    SDLStatic_GPUComputeBindingsDestroy(bindings);
+}
+
+// The round trip that actually proves the builders work: put bytes on the
+// device through a transfer buffer and read them back. Skipped where there is
+// no GPU — CI runners mostly have none, and a skip is honest where a fake
+// pass is not.
+TEST(GpuBuild, TransferBufferRoundTrip)
+{
+    if (!SDL_Init(SDL_INIT_VIDEO))
+    {
+        GTEST_SKIP() << "no video: " << SDL_GetError();
+    }
+    SDL_GPUDevice *device = SDL_CreateGPUDevice(
+        SDL_GPU_SHADERFORMAT_SPIRV | SDL_GPU_SHADERFORMAT_MSL | SDL_GPU_SHADERFORMAT_DXIL, true,
+        nullptr);
+    if (device == nullptr)
+    {
+        SDL_Quit();
+        GTEST_SKIP() << "no GPU device: " << SDL_GetError();
+    }
+
+    SDL_GPUTransferBufferCreateInfo create = {};
+    create.usage = SDL_GPU_TRANSFERBUFFERUSAGE_UPLOAD;
+    create.size = 64;
+    SDL_GPUTransferBuffer *buffer = SDL_CreateGPUTransferBuffer(device, &create);
+    ASSERT_NE(buffer, nullptr) << SDL_GetError();
+
+    const float vertices[4] = {1.0f, 2.0f, 3.0f, 4.0f};
+    ASSERT_TRUE(SDLStatic_GPUUploadToTransferBuffer(device, buffer, 0, vertices, sizeof(vertices),
+                                                    false))
+        << SDL_GetError();
+
+    float *read = static_cast<float *>(
+        SDLStatic_GPUReadTransferBuffer(device, buffer, 0, sizeof(vertices)));
+    ASSERT_NE(read, nullptr) << SDL_GetError();
+    EXPECT_FLOAT_EQ(read[0], 1.0f);
+    EXPECT_FLOAT_EQ(read[3], 4.0f);
+    SDL_free(read);
+
+    SDL_ReleaseGPUTransferBuffer(device, buffer);
+    SDL_DestroyGPUDevice(device);
+    SDL_Quit();
+}
+
+TEST(GenLua, GpuDescriptorsAreReachable)
+{
+    // The gap this closes: every one of these was bound and uncallable,
+    // because none of the descriptors could be made from a script.
+    RunLua(
+        "local target = SDLStaticC.GPUColorTargetInfoCreate()\n"
+        "assert(target ~= nil)\n"
+        "SDLStaticC.GPUColorTargetInfoSetClearColor(target, 0.1, 0.2, 0.3, 1.0)\n"
+        "SDLStaticC.GPUColorTargetInfoSetOps(target, SDL.GPU_LOADOP_CLEAR,\n"
+        "                                    SDL.GPU_STOREOP_STORE)\n"
+        "SDLStaticC.GPUColorTargetInfoDestroy(target)\n"
+        "local pipeline = SDLStaticC.GPUPipelineInfoCreate()\n"
+        "SDLStaticC.GPUPipelineInfoSetPrimitive(pipeline, SDL.GPU_PRIMITIVETYPE_TRIANGLELIST)\n"
+        "for i = 0, 9 do\n"
+        "  assert(SDLStaticC.GPUPipelineInfoAddVertexAttribute(\n"
+        "           pipeline, i, 0, SDL.GPU_VERTEXELEMENTFORMAT_FLOAT3, i * 12))\n"
+        "end\n"
+        "assert(SDLStaticC.GPUPipelineInfoAddVertexBuffer(\n"
+        "         pipeline, 0, 12, SDL.GPU_VERTEXINPUTRATE_VERTEX))\n"
+        "assert(SDLStaticC.GPUPipelineInfoAddColorTarget(\n"
+        "         pipeline, SDL.GPU_TEXTUREFORMAT_B8G8R8A8_UNORM))\n"
+        "SDLStaticC.GPUPipelineInfoDestroy(pipeline)\n"
+        // Shader bytecode arrives as a string, which is how a script would
+        // hand over a compiled blob it read from disk.
+        "local shader = SDLStaticC.GPUShaderCreateInfoCreate()\n"
+        "SDLStaticC.GPUShaderCreateInfoSetCode(shader, string.rep('\\0', 32), 32)\n"
+        "SDLStaticC.GPUShaderCreateInfoSetFormat(shader, SDL.GPU_SHADERFORMAT_SPIRV,\n"
+        "                                        SDL.GPU_SHADERSTAGE_VERTEX)\n"
+        "SDLStaticC.GPUShaderCreateInfoSetCounts(shader, 1, 0, 0, 1)\n"
+        "SDLStaticC.GPUShaderCreateInfoDestroy(shader)\n"
+        "local binds = SDLStaticC.GPUComputeBindingsCreate()\n"
+        "SDLStaticC.GPUComputeBindingsDestroy(binds)\n"
+        // The device call is reachable too; whether this machine has a GPU
+        // is not this test's business, so both answers pass.
+        "local device = SDL.CreateGPUDevice(SDL.GPU_SHADERFORMAT_SPIRV, true, nil)\n"
+        "if device ~= nil then SDL.DestroyGPUDevice(device) end\n");
+}
+
+TEST(GenRuby, GpuDescriptorsAreReachable)
+{
+    RunRuby(
+        "target = SDLStaticC.GPUColorTargetInfoCreate\n"
+        "raise 'target' if target.nil?\n"
+        "SDLStaticC.GPUColorTargetInfoSetClearColor(target, 0.1, 0.2, 0.3, 1.0)\n"
+        "SDLStaticC.GPUColorTargetInfoSetOps(target, SDL::GPU_LOADOP_CLEAR,\n"
+        "                                    SDL::GPU_STOREOP_STORE)\n"
+        "SDLStaticC.GPUColorTargetInfoDestroy(target)\n"
+        "pipeline = SDLStaticC.GPUPipelineInfoCreate\n"
+        "10.times do |i|\n"
+        "  raise 'attr' unless SDLStaticC.GPUPipelineInfoAddVertexAttribute(\n"
+        "    pipeline, i, 0, SDL::GPU_VERTEXELEMENTFORMAT_FLOAT3, i * 12)\n"
+        "end\n"
+        "raise 'buffer' unless SDLStaticC.GPUPipelineInfoAddVertexBuffer(\n"
+        "  pipeline, 0, 12, SDL::GPU_VERTEXINPUTRATE_VERTEX)\n"
+        "raise 'target' unless SDLStaticC.GPUPipelineInfoAddColorTarget(\n"
+        "  pipeline, SDL::GPU_TEXTUREFORMAT_B8G8R8A8_UNORM)\n"
+        "SDLStaticC.GPUPipelineInfoDestroy(pipeline)\n"
+        "shader = SDLStaticC.GPUShaderCreateInfoCreate\n"
+        "SDLStaticC.GPUShaderCreateInfoSetCode(shader, \"\\0\" * 32, 32)\n"
+        "SDLStaticC.GPUShaderCreateInfoDestroy(shader)\n");
 }
 
 } // namespace

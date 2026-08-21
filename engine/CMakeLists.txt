@@ -43,6 +43,7 @@ add_library(SDLStatic_Engine STATIC
   src/sdlstatic_engine_text.c
   src/sdlstatic_engine_config.c
   src/sdlstatic_engine_script.c
+  src/sdlstatic_gpu_build.c
 )
 add_library(SDLStatic::Engine ALIAS SDLStatic_Engine)
 
