@@ -404,6 +404,106 @@ TEST(GenRuby, AScriptCanWriteItsOwnGameLoop)
     SDL_Quit();
 }
 
+// The opinionated loop, used from inside the script's own loop. This is
+// the arrangement that needed hand-written glue: turning a Lua function
+// into something C can hold is the one thing the generator cannot do.
+//
+// Hooks fire from EngineTick as well as from Run, so a script gets the
+// fixed tick, the interpolation and the asset pump while still owning the
+// `while` — which is the point.
+TEST(GenLua, HooksFireInsideAScriptsOwnLoop)
+{
+    ASSERT_TRUE(SDL_Init(0));
+    RunLua(
+        "local cfg = SDLStaticC.ConfigCreate()\n"
+        "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
+        "SDLStaticC.ConfigSetManualClock(cfg, true)\n"
+        "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
+        "local e = SDLStaticC.CreateEngine(cfg)\n"
+        "SDLStaticC.ConfigDestroy(cfg)\n"
+        "assert(e ~= nil)\n"
+        "local steps, frames, alphas = 0, 0, {}\n"
+        "SDLStaticC.OnFixedUpdate(e, function(step)\n"
+        "  steps = steps + 1\n"
+        "  assert(step > 0, 'the fixed step is a real duration')\n"
+        "end)\n"
+        "SDLStaticC.OnUpdate(e, function(dt) frames = frames + 1 end)\n"
+        "SDLStaticC.OnRender(e, function(alpha) alphas[#alphas + 1] = alpha end)\n"
+        // The script still owns the loop.
+        "for i = 1, 5 do\n"
+        "  SDLStaticC.EngineAdvance(e, 16666667)\n"
+        "  SDLStaticC.EngineTick(e)\n"
+        "end\n"
+        "assert(frames == 5, 'update ran once a frame, got ' .. frames)\n"
+        "assert(steps >= 4, 'the fixed tick ran, got ' .. steps)\n"
+        "assert(#alphas == 5, 'render ran once a frame')\n"
+        "for _, a in ipairs(alphas) do\n"
+        "  assert(a >= 0 and a <= 1, 'alpha is an interpolation factor')\n"
+        "end\n"
+        // Replacing a handler releases the old one rather than stacking.
+        "SDLStaticC.OnUpdate(e, function(dt) end)\n"
+        "local before = frames\n"
+        "SDLStaticC.EngineAdvance(e, 16666667)\n"
+        "SDLStaticC.EngineTick(e)\n"
+        "assert(frames == before, 'the replaced handler no longer runs')\n"
+        "SDLStaticC.DestroyEngine(e)\n");
+    SDL_Quit();
+}
+
+// An error inside a hook must not unwind through the engine's C frames:
+// one bad frame should not take the game down mid-loop.
+TEST(GenLua, AnErrorInAHookDoesNotKillTheLoop)
+{
+    ASSERT_TRUE(SDL_Init(0));
+    RunLua(
+        "local cfg = SDLStaticC.ConfigCreate()\n"
+        "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
+        "SDLStaticC.ConfigSetManualClock(cfg, true)\n"
+        "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
+        "local e = SDLStaticC.CreateEngine(cfg)\n"
+        "SDLStaticC.ConfigDestroy(cfg)\n"
+        "SDLStaticC.OnUpdate(e, function(dt) error('deliberate') end)\n"
+        "for i = 1, 3 do\n"
+        "  SDLStaticC.EngineAdvance(e, 16666667)\n"
+        "  assert(SDLStaticC.EngineTick(e), 'the loop survived')\n"
+        "end\n"
+        "SDLStaticC.DestroyEngine(e)\n");
+    SDL_Quit();
+}
+
+// Joints, which were bound and uncallable before the builders: no
+// ragdolls, vehicles, ropes or hinged doors from script.
+TEST(GenLua, JointsCanBeBuiltAndCreatedFromLua)
+{
+    RunLua(
+        "local wd = B2.DefaultWorldDef()\n"
+        "local world = B2.CreateWorld(wd)\n"
+        "assert(world ~= nil)\n"
+        "local bd = B2.DefaultBodyDef()\n"
+        "local a = B2.CreateBody(world, bd)\n"
+        "local b = B2.CreateBody(world, bd)\n"
+        "assert(a ~= nil and b ~= nil)\n"
+        // A hinge with a limit and a motor, entirely from script.
+        "local rd = SDLStaticC.RevoluteJointDefCreate()\n"
+        "assert(rd ~= nil, 'the def a script could not make before')\n"
+        "SDLStaticC.RevoluteJointDefSetBodies(rd, a, b)\n"
+        "SDLStaticC.RevoluteJointDefSetAnchors(rd, 0, 0, 1, 0)\n"
+        "SDLStaticC.RevoluteJointDefSetLimit(rd, -90, 90)\n"
+        "SDLStaticC.RevoluteJointDefSetMotor(rd, true, 45, 10)\n"
+        "local hinge = B2.CreateRevoluteJoint(world, rd)\n"
+        "assert(hinge ~= nil, 'hinge created')\n"
+        "SDLStaticC.RevoluteJointDefDestroy(rd)\n"
+        // And a rope, to show the other builders work the same way.
+        "local dd = SDLStaticC.DistanceJointDefCreate()\n"
+        "SDLStaticC.DistanceJointDefSetBodies(dd, a, b)\n"
+        "SDLStaticC.DistanceJointDefSetLength(dd, 2.0)\n"
+        "SDLStaticC.DistanceJointDefSetSpring(dd, true, 4.0, 0.5)\n"
+        "local rope = B2.CreateDistanceJoint(world, dd)\n"
+        "assert(rope ~= nil, 'rope created')\n"
+        "SDLStaticC.DistanceJointDefDestroy(dd)\n"
+        "B2.DestroyWorld(world)\n");
+}
+
 TEST(GenLua, AScriptCanCreateAndDriveAnEngine)
 {
     ASSERT_TRUE(SDL_Init(0));
@@ -444,6 +544,49 @@ TEST(GenLua, AScriptCanCreateAndDriveAnEngine)
         "assert(SDLStaticC.Text(e, 'hi') == 'Hello')\n"
         "SDLStaticC.DestroyEngine(e)\n");
     SDL_Quit();
+}
+
+// The Ruby half of the same contract.
+TEST(GenRuby, HooksFireInsideAScriptsOwnLoop)
+{
+    ASSERT_TRUE(SDL_Init(0));
+    RunRuby(
+        "cfg = SDLStaticC.ConfigCreate\n"
+        "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
+        "SDLStaticC.ConfigSetManualClock(cfg, true)\n"
+        "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
+        "e = SDLStaticC.CreateEngine(cfg)\n"
+        "SDLStaticC.ConfigDestroy(cfg)\n"
+        "raise 'engine' if e.nil?\n"
+        "$steps = 0\n"
+        "$frames = 0\n"
+        "SDLStaticC.OnFixedUpdate(e) { |step| $steps += 1 }\n"
+        "SDLStaticC.OnUpdate(e) { |dt| $frames += 1 }\n"
+        "5.times do\n"
+        "  SDLStaticC.EngineAdvance(e, 16666667)\n"
+        "  SDLStaticC.EngineTick(e)\n"
+        "end\n"
+        "raise \"update ran #{$frames} times\" unless $frames == 5\n"
+        "raise \"fixed ran #{$steps} times\" unless $steps >= 4\n"
+        "SDLStaticC.DestroyEngine(e)\n");
+    SDL_Quit();
+}
+
+TEST(GenRuby, JointsCanBeBuiltAndCreatedFromRuby)
+{
+    RunRuby(
+        "wd = B2.DefaultWorldDef\n"
+        "world = B2.CreateWorld(wd)\n"
+        "bd = B2.DefaultBodyDef\n"
+        "a = B2.CreateBody(world, bd)\n"
+        "b = B2.CreateBody(world, bd)\n"
+        "rd = SDLStaticC.RevoluteJointDefCreate\n"
+        "SDLStaticC.RevoluteJointDefSetBodies(rd, a, b)\n"
+        "SDLStaticC.RevoluteJointDefSetLimit(rd, -45, 45)\n"
+        "hinge = B2.CreateRevoluteJoint(world, rd)\n"
+        "raise 'hinge' if hinge.nil?\n"
+        "SDLStaticC.RevoluteJointDefDestroy(rd)\n"
+        "B2.DestroyWorld(world)\n");
 }
 
 TEST(GenRuby, AScriptCanCreateAndDriveAnEngine)

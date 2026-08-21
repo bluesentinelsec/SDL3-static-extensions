@@ -30,6 +30,8 @@
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/light.h>
+#include <SDLStatic/physics_build.h>
+#include <SDLStatic/physics_draw.h>
 #include <SDLStatic/regex.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/textfile.h>
@@ -426,6 +428,16 @@ static void GenPush_SDLStatic_LightDef(lua_State *L, const SDLStatic_LightDef *i
     lua_setfield(L, -2, "enabled");
 }
 
+static void GenRead_SDLStatic_PhysicsDrawConfig(lua_State *L, int idx, SDLStatic_PhysicsDrawConfig *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    out->pixels_per_meter = (float)SDLStaticGen_LuaFieldNum(L, idx, "pixels_per_meter");
+    out->offset_x = (float)SDLStaticGen_LuaFieldNum(L, idx, "offset_x");
+    out->offset_y = (float)SDLStaticGen_LuaFieldNum(L, idx, "offset_y");
+    out->draw_joints = (bool)SDLStaticGen_LuaFieldBool(L, idx, "draw_joints");
+}
+
 static void GenPush_SDLStatic_RayHit(lua_State *L, const SDLStatic_RayHit *in)
 {
     lua_createtable(L, 0, 7);
@@ -481,6 +493,23 @@ static void GenRead_SDL_Color(lua_State *L, int idx, SDL_Color *out)
     out->g = (Uint8)SDLStaticGen_LuaFieldInt(L, idx, "g");
     out->b = (Uint8)SDLStaticGen_LuaFieldInt(L, idx, "b");
     out->a = (Uint8)SDLStaticGen_LuaFieldInt(L, idx, "a");
+}
+
+static void GenRead_b2BodyId(lua_State *L, int idx, b2BodyId *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    out->index1 = (int32_t)SDLStaticGen_LuaFieldInt(L, idx, "index1");
+    out->world0 = (uint16_t)SDLStaticGen_LuaFieldInt(L, idx, "world0");
+    out->generation = (uint16_t)SDLStaticGen_LuaFieldInt(L, idx, "generation");
+}
+
+static void GenRead_b2WorldId(lua_State *L, int idx, b2WorldId *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!lua_istable(L, idx)) { return; }
+    out->index1 = (uint16_t)SDLStaticGen_LuaFieldInt(L, idx, "index1");
+    out->generation = (uint16_t)SDLStaticGen_LuaFieldInt(L, idx, "generation");
 }
 
 static void GenDtor_SDLStatic_FreeTiledMap(void *p)
@@ -2379,6 +2408,103 @@ static int GenL_SDLStatic_DisconnectSignal(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_DistanceJointDefCreate(lua_State *L)
+{
+    (void)L;
+    b2DistanceJointDef * rv = SDLStatic_DistanceJointDefCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "b2DistanceJointDef");
+    return 1;
+}
+
+static int GenL_SDLStatic_DistanceJointDefDestroy(lua_State *L)
+{
+    (void)L;
+    b2DistanceJointDef *a0 = (b2DistanceJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2DistanceJointDef");
+    SDLStatic_DistanceJointDefDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_DistanceJointDefSetAnchors(lua_State *L)
+{
+    (void)L;
+    b2DistanceJointDef *a0 = (b2DistanceJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2DistanceJointDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    float a4 = (float)luaL_checknumber(L, 5);
+    SDLStatic_DistanceJointDefSetAnchors(a0, a1, a2, a3, a4);
+    return 0;
+}
+
+static int GenL_SDLStatic_DistanceJointDefSetBodies(lua_State *L)
+{
+    (void)L;
+    b2DistanceJointDef *a0 = (b2DistanceJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2DistanceJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(L, 2, &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(L, 3, &a2);
+    SDLStatic_DistanceJointDefSetBodies(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_DistanceJointDefSetCollideConnected(lua_State *L)
+{
+    (void)L;
+    b2DistanceJointDef *a0 = (b2DistanceJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2DistanceJointDef");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_DistanceJointDefSetCollideConnected(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_DistanceJointDefSetLength(lua_State *L)
+{
+    (void)L;
+    b2DistanceJointDef *a0 = (b2DistanceJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2DistanceJointDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    SDLStatic_DistanceJointDefSetLength(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_DistanceJointDefSetLimit(lua_State *L)
+{
+    (void)L;
+    b2DistanceJointDef *a0 = (b2DistanceJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2DistanceJointDef");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    SDLStatic_DistanceJointDefSetLimit(a0, a1, a2, a3);
+    return 0;
+}
+
+static int GenL_SDLStatic_DistanceJointDefSetSpring(lua_State *L)
+{
+    (void)L;
+    b2DistanceJointDef *a0 = (b2DistanceJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2DistanceJointDef");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    SDLStatic_DistanceJointDefSetSpring(a0, a1, a2, a3);
+    return 0;
+}
+
+static int GenL_SDLStatic_DrawPhysicsWorld(lua_State *L)
+{
+    (void)L;
+    b2WorldId a0;
+    GenRead_b2WorldId(L, 1, &a0);
+    SDL_Renderer *a1 = (SDL_Renderer *)SDLStaticGen_LuaCheckHandle(L, 2, "SDL_Renderer");
+    SDLStatic_PhysicsDrawConfig tmp2;
+    const SDLStatic_PhysicsDrawConfig *a2 = NULL;
+    if (!lua_isnoneornil(L, 3)) {
+        GenRead_SDLStatic_PhysicsDrawConfig(L, 3, &tmp2);
+        a2 = &tmp2;
+    }
+    bool rv = SDLStatic_DrawPhysicsWorld(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_EncodeDataBase64(lua_State *L)
 {
     (void)L;
@@ -2956,6 +3082,34 @@ static int GenL_SDLStatic_EventWindowId(lua_State *L)
     Uint32 rv = SDLStatic_EventWindowId(a0);
     lua_pushinteger(L, (lua_Integer)rv);
     return 1;
+}
+
+static int GenL_SDLStatic_FilterJointDefCreate(lua_State *L)
+{
+    (void)L;
+    b2FilterJointDef * rv = SDLStatic_FilterJointDefCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "b2FilterJointDef");
+    return 1;
+}
+
+static int GenL_SDLStatic_FilterJointDefDestroy(lua_State *L)
+{
+    (void)L;
+    b2FilterJointDef *a0 = (b2FilterJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2FilterJointDef");
+    SDLStatic_FilterJointDefDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_FilterJointDefSetBodies(lua_State *L)
+{
+    (void)L;
+    b2FilterJointDef *a0 = (b2FilterJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2FilterJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(L, 2, &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(L, 3, &a2);
+    SDLStatic_FilterJointDefSetBodies(a0, a1, a2);
+    return 0;
 }
 
 static int GenL_SDLStatic_FingerCount(lua_State *L)
@@ -4129,6 +4283,34 @@ static int GenL_SDLStatic_LoadTiledMap(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_MotorJointDefCreate(lua_State *L)
+{
+    (void)L;
+    b2MotorJointDef * rv = SDLStatic_MotorJointDefCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "b2MotorJointDef");
+    return 1;
+}
+
+static int GenL_SDLStatic_MotorJointDefDestroy(lua_State *L)
+{
+    (void)L;
+    b2MotorJointDef *a0 = (b2MotorJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2MotorJointDef");
+    SDLStatic_MotorJointDefDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_MotorJointDefSetBodies(lua_State *L)
+{
+    (void)L;
+    b2MotorJointDef *a0 = (b2MotorJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2MotorJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(L, 2, &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(L, 3, &a2);
+    SDLStatic_MotorJointDefSetBodies(a0, a1, a2);
+    return 0;
+}
+
 static int GenL_SDLStatic_MountEncryptedArchive(lua_State *L)
 {
     (void)L;
@@ -4191,6 +4373,53 @@ static int GenL_SDLStatic_MouseDown(lua_State *L)
     bool rv = SDLStatic_MouseDown(a0, a1);
     lua_pushboolean(L, (int)rv);
     return 1;
+}
+
+static int GenL_SDLStatic_MouseJointDefCreate(lua_State *L)
+{
+    (void)L;
+    b2MouseJointDef * rv = SDLStatic_MouseJointDefCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "b2MouseJointDef");
+    return 1;
+}
+
+static int GenL_SDLStatic_MouseJointDefDestroy(lua_State *L)
+{
+    (void)L;
+    b2MouseJointDef *a0 = (b2MouseJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2MouseJointDef");
+    SDLStatic_MouseJointDefDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_MouseJointDefSetBodies(lua_State *L)
+{
+    (void)L;
+    b2MouseJointDef *a0 = (b2MouseJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2MouseJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(L, 2, &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(L, 3, &a2);
+    SDLStatic_MouseJointDefSetBodies(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_MouseJointDefSetMaxForce(lua_State *L)
+{
+    (void)L;
+    b2MouseJointDef *a0 = (b2MouseJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2MouseJointDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    SDLStatic_MouseJointDefSetMaxForce(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_MouseJointDefSetSpring(lua_State *L)
+{
+    (void)L;
+    b2MouseJointDef *a0 = (b2MouseJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2MouseJointDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    SDLStatic_MouseJointDefSetSpring(a0, a1, a2);
+    return 0;
 }
 
 static int GenL_SDLStatic_MousePosition(lua_State *L)
@@ -4348,6 +4577,78 @@ static int GenL_SDLStatic_PhysicsSetSubSteps(lua_State *L)
     SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
     int a1 = (int)luaL_checkinteger(L, 2);
     SDLStatic_PhysicsSetSubSteps(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_PrismaticJointDefCreate(lua_State *L)
+{
+    (void)L;
+    b2PrismaticJointDef * rv = SDLStatic_PrismaticJointDefCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "b2PrismaticJointDef");
+    return 1;
+}
+
+static int GenL_SDLStatic_PrismaticJointDefDestroy(lua_State *L)
+{
+    (void)L;
+    b2PrismaticJointDef *a0 = (b2PrismaticJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2PrismaticJointDef");
+    SDLStatic_PrismaticJointDefDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_PrismaticJointDefSetAnchors(lua_State *L)
+{
+    (void)L;
+    b2PrismaticJointDef *a0 = (b2PrismaticJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2PrismaticJointDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    float a4 = (float)luaL_checknumber(L, 5);
+    SDLStatic_PrismaticJointDefSetAnchors(a0, a1, a2, a3, a4);
+    return 0;
+}
+
+static int GenL_SDLStatic_PrismaticJointDefSetAxis(lua_State *L)
+{
+    (void)L;
+    b2PrismaticJointDef *a0 = (b2PrismaticJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2PrismaticJointDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    SDLStatic_PrismaticJointDefSetAxis(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_PrismaticJointDefSetBodies(lua_State *L)
+{
+    (void)L;
+    b2PrismaticJointDef *a0 = (b2PrismaticJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2PrismaticJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(L, 2, &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(L, 3, &a2);
+    SDLStatic_PrismaticJointDefSetBodies(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_PrismaticJointDefSetLimit(lua_State *L)
+{
+    (void)L;
+    b2PrismaticJointDef *a0 = (b2PrismaticJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2PrismaticJointDef");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    SDLStatic_PrismaticJointDefSetLimit(a0, a1, a2, a3);
+    return 0;
+}
+
+static int GenL_SDLStatic_PrismaticJointDefSetMotor(lua_State *L)
+{
+    (void)L;
+    b2PrismaticJointDef *a0 = (b2PrismaticJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2PrismaticJointDef");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    SDLStatic_PrismaticJointDefSetMotor(a0, a1, a2, a3);
     return 0;
 }
 
@@ -4542,6 +4843,87 @@ static int GenL_SDLStatic_RenderWorld(lua_State *L)
     int rv = SDLStatic_RenderWorld(a0, a1, a2);
     lua_pushinteger(L, (lua_Integer)rv);
     return 1;
+}
+
+static int GenL_SDLStatic_RevoluteJointDefCreate(lua_State *L)
+{
+    (void)L;
+    b2RevoluteJointDef * rv = SDLStatic_RevoluteJointDefCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "b2RevoluteJointDef");
+    return 1;
+}
+
+static int GenL_SDLStatic_RevoluteJointDefDestroy(lua_State *L)
+{
+    (void)L;
+    b2RevoluteJointDef *a0 = (b2RevoluteJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2RevoluteJointDef");
+    SDLStatic_RevoluteJointDefDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_RevoluteJointDefSetAnchors(lua_State *L)
+{
+    (void)L;
+    b2RevoluteJointDef *a0 = (b2RevoluteJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2RevoluteJointDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    float a4 = (float)luaL_checknumber(L, 5);
+    SDLStatic_RevoluteJointDefSetAnchors(a0, a1, a2, a3, a4);
+    return 0;
+}
+
+static int GenL_SDLStatic_RevoluteJointDefSetBodies(lua_State *L)
+{
+    (void)L;
+    b2RevoluteJointDef *a0 = (b2RevoluteJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2RevoluteJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(L, 2, &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(L, 3, &a2);
+    SDLStatic_RevoluteJointDefSetBodies(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_RevoluteJointDefSetCollideConnected(lua_State *L)
+{
+    (void)L;
+    b2RevoluteJointDef *a0 = (b2RevoluteJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2RevoluteJointDef");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    SDLStatic_RevoluteJointDefSetCollideConnected(a0, a1);
+    return 0;
+}
+
+static int GenL_SDLStatic_RevoluteJointDefSetLimit(lua_State *L)
+{
+    (void)L;
+    b2RevoluteJointDef *a0 = (b2RevoluteJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2RevoluteJointDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    SDLStatic_RevoluteJointDefSetLimit(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_RevoluteJointDefSetMotor(lua_State *L)
+{
+    (void)L;
+    b2RevoluteJointDef *a0 = (b2RevoluteJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2RevoluteJointDef");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    SDLStatic_RevoluteJointDefSetMotor(a0, a1, a2, a3);
+    return 0;
+}
+
+static int GenL_SDLStatic_RevoluteJointDefSetSpring(lua_State *L)
+{
+    (void)L;
+    b2RevoluteJointDef *a0 = (b2RevoluteJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2RevoluteJointDef");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    SDLStatic_RevoluteJointDefSetSpring(a0, a1, a2, a3);
+    return 0;
 }
 
 static int GenL_SDLStatic_SHA256(lua_State *L)
@@ -5277,10 +5659,134 @@ static int GenL_SDLStatic_TouchRotation(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_WeldJointDefCreate(lua_State *L)
+{
+    (void)L;
+    b2WeldJointDef * rv = SDLStatic_WeldJointDefCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "b2WeldJointDef");
+    return 1;
+}
+
+static int GenL_SDLStatic_WeldJointDefDestroy(lua_State *L)
+{
+    (void)L;
+    b2WeldJointDef *a0 = (b2WeldJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2WeldJointDef");
+    SDLStatic_WeldJointDefDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_WeldJointDefSetAnchors(lua_State *L)
+{
+    (void)L;
+    b2WeldJointDef *a0 = (b2WeldJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2WeldJointDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    float a4 = (float)luaL_checknumber(L, 5);
+    SDLStatic_WeldJointDefSetAnchors(a0, a1, a2, a3, a4);
+    return 0;
+}
+
+static int GenL_SDLStatic_WeldJointDefSetBodies(lua_State *L)
+{
+    (void)L;
+    b2WeldJointDef *a0 = (b2WeldJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2WeldJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(L, 2, &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(L, 3, &a2);
+    SDLStatic_WeldJointDefSetBodies(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_WeldJointDefSetSpring(lua_State *L)
+{
+    (void)L;
+    b2WeldJointDef *a0 = (b2WeldJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2WeldJointDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    float a4 = (float)luaL_checknumber(L, 5);
+    SDLStatic_WeldJointDefSetSpring(a0, a1, a2, a3, a4);
+    return 0;
+}
+
+static int GenL_SDLStatic_WheelJointDefCreate(lua_State *L)
+{
+    (void)L;
+    b2WheelJointDef * rv = SDLStatic_WheelJointDefCreate();
+    SDLStaticGen_LuaPushHandle(L, (void *)rv, "b2WheelJointDef");
+    return 1;
+}
+
+static int GenL_SDLStatic_WheelJointDefDestroy(lua_State *L)
+{
+    (void)L;
+    b2WheelJointDef *a0 = (b2WheelJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2WheelJointDef");
+    SDLStatic_WheelJointDefDestroy(a0);
+    return 0;
+}
+
+static int GenL_SDLStatic_WheelJointDefSetAnchors(lua_State *L)
+{
+    (void)L;
+    b2WheelJointDef *a0 = (b2WheelJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2WheelJointDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    float a4 = (float)luaL_checknumber(L, 5);
+    SDLStatic_WheelJointDefSetAnchors(a0, a1, a2, a3, a4);
+    return 0;
+}
+
+static int GenL_SDLStatic_WheelJointDefSetAxis(lua_State *L)
+{
+    (void)L;
+    b2WheelJointDef *a0 = (b2WheelJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2WheelJointDef");
+    float a1 = (float)luaL_checknumber(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    SDLStatic_WheelJointDefSetAxis(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_WheelJointDefSetBodies(lua_State *L)
+{
+    (void)L;
+    b2WheelJointDef *a0 = (b2WheelJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2WheelJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(L, 2, &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(L, 3, &a2);
+    SDLStatic_WheelJointDefSetBodies(a0, a1, a2);
+    return 0;
+}
+
+static int GenL_SDLStatic_WheelJointDefSetMotor(lua_State *L)
+{
+    (void)L;
+    b2WheelJointDef *a0 = (b2WheelJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2WheelJointDef");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    SDLStatic_WheelJointDefSetMotor(a0, a1, a2, a3);
+    return 0;
+}
+
+static int GenL_SDLStatic_WheelJointDefSetSpring(lua_State *L)
+{
+    (void)L;
+    b2WheelJointDef *a0 = (b2WheelJointDef *)SDLStaticGen_LuaCheckHandle(L, 1, "b2WheelJointDef");
+    bool a1 = (bool)lua_toboolean(L, 2);
+    float a2 = (float)luaL_checknumber(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    SDLStatic_WheelJointDefSetSpring(a0, a1, a2, a3);
+    return 0;
+}
+
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 470);
+    lua_createtable(L, 0, 517);
     lua_pushcfunction(L, GenL_SDLStatic_ActionBind);
     lua_setfield(L, -2, "ActionBind");
     lua_pushcfunction(L, GenL_SDLStatic_ActionBindAxis);
@@ -5639,6 +6145,24 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "DialogStatus");
     lua_pushcfunction(L, GenL_SDLStatic_DisconnectSignal);
     lua_setfield(L, -2, "DisconnectSignal");
+    lua_pushcfunction(L, GenL_SDLStatic_DistanceJointDefCreate);
+    lua_setfield(L, -2, "DistanceJointDefCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_DistanceJointDefDestroy);
+    lua_setfield(L, -2, "DistanceJointDefDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_DistanceJointDefSetAnchors);
+    lua_setfield(L, -2, "DistanceJointDefSetAnchors");
+    lua_pushcfunction(L, GenL_SDLStatic_DistanceJointDefSetBodies);
+    lua_setfield(L, -2, "DistanceJointDefSetBodies");
+    lua_pushcfunction(L, GenL_SDLStatic_DistanceJointDefSetCollideConnected);
+    lua_setfield(L, -2, "DistanceJointDefSetCollideConnected");
+    lua_pushcfunction(L, GenL_SDLStatic_DistanceJointDefSetLength);
+    lua_setfield(L, -2, "DistanceJointDefSetLength");
+    lua_pushcfunction(L, GenL_SDLStatic_DistanceJointDefSetLimit);
+    lua_setfield(L, -2, "DistanceJointDefSetLimit");
+    lua_pushcfunction(L, GenL_SDLStatic_DistanceJointDefSetSpring);
+    lua_setfield(L, -2, "DistanceJointDefSetSpring");
+    lua_pushcfunction(L, GenL_SDLStatic_DrawPhysicsWorld);
+    lua_setfield(L, -2, "DrawPhysicsWorld");
     lua_pushcfunction(L, GenL_SDLStatic_EncodeDataBase64);
     lua_setfield(L, -2, "EncodeDataBase64");
     lua_pushcfunction(L, GenL_SDLStatic_EngineAdvance);
@@ -5763,6 +6287,12 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "EventWheelY");
     lua_pushcfunction(L, GenL_SDLStatic_EventWindowId);
     lua_setfield(L, -2, "EventWindowId");
+    lua_pushcfunction(L, GenL_SDLStatic_FilterJointDefCreate);
+    lua_setfield(L, -2, "FilterJointDefCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_FilterJointDefDestroy);
+    lua_setfield(L, -2, "FilterJointDefDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_FilterJointDefSetBodies);
+    lua_setfield(L, -2, "FilterJointDefSetBodies");
     lua_pushcfunction(L, GenL_SDLStatic_FingerCount);
     lua_setfield(L, -2, "FingerCount");
     lua_pushcfunction(L, GenL_SDLStatic_FreeTiledMap);
@@ -5991,6 +6521,12 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "LoadTextureAsync");
     lua_pushcfunction(L, GenL_SDLStatic_LoadTiledMap);
     lua_setfield(L, -2, "LoadTiledMap");
+    lua_pushcfunction(L, GenL_SDLStatic_MotorJointDefCreate);
+    lua_setfield(L, -2, "MotorJointDefCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_MotorJointDefDestroy);
+    lua_setfield(L, -2, "MotorJointDefDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_MotorJointDefSetBodies);
+    lua_setfield(L, -2, "MotorJointDefSetBodies");
     lua_pushcfunction(L, GenL_SDLStatic_MountEncryptedArchive);
     lua_setfield(L, -2, "MountEncryptedArchive");
     lua_pushcfunction(L, GenL_SDLStatic_MountEncryptedArchiveFile);
@@ -6003,6 +6539,16 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "MouseDelta");
     lua_pushcfunction(L, GenL_SDLStatic_MouseDown);
     lua_setfield(L, -2, "MouseDown");
+    lua_pushcfunction(L, GenL_SDLStatic_MouseJointDefCreate);
+    lua_setfield(L, -2, "MouseJointDefCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_MouseJointDefDestroy);
+    lua_setfield(L, -2, "MouseJointDefDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_MouseJointDefSetBodies);
+    lua_setfield(L, -2, "MouseJointDefSetBodies");
+    lua_pushcfunction(L, GenL_SDLStatic_MouseJointDefSetMaxForce);
+    lua_setfield(L, -2, "MouseJointDefSetMaxForce");
+    lua_pushcfunction(L, GenL_SDLStatic_MouseJointDefSetSpring);
+    lua_setfield(L, -2, "MouseJointDefSetSpring");
     lua_pushcfunction(L, GenL_SDLStatic_MousePosition);
     lua_setfield(L, -2, "MousePosition");
     lua_pushcfunction(L, GenL_SDLStatic_MousePressed);
@@ -6033,6 +6579,20 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "PhysicsSetPixelsPerMetre");
     lua_pushcfunction(L, GenL_SDLStatic_PhysicsSetSubSteps);
     lua_setfield(L, -2, "PhysicsSetSubSteps");
+    lua_pushcfunction(L, GenL_SDLStatic_PrismaticJointDefCreate);
+    lua_setfield(L, -2, "PrismaticJointDefCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_PrismaticJointDefDestroy);
+    lua_setfield(L, -2, "PrismaticJointDefDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_PrismaticJointDefSetAnchors);
+    lua_setfield(L, -2, "PrismaticJointDefSetAnchors");
+    lua_pushcfunction(L, GenL_SDLStatic_PrismaticJointDefSetAxis);
+    lua_setfield(L, -2, "PrismaticJointDefSetAxis");
+    lua_pushcfunction(L, GenL_SDLStatic_PrismaticJointDefSetBodies);
+    lua_setfield(L, -2, "PrismaticJointDefSetBodies");
+    lua_pushcfunction(L, GenL_SDLStatic_PrismaticJointDefSetLimit);
+    lua_setfield(L, -2, "PrismaticJointDefSetLimit");
+    lua_pushcfunction(L, GenL_SDLStatic_PrismaticJointDefSetMotor);
+    lua_setfield(L, -2, "PrismaticJointDefSetMotor");
     lua_pushcfunction(L, GenL_SDLStatic_QuitDebugText);
     lua_setfield(L, -2, "QuitDebugText");
     lua_pushcfunction(L, GenL_SDLStatic_RegexEscape);
@@ -6071,6 +6631,22 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "RenderOverlay");
     lua_pushcfunction(L, GenL_SDLStatic_RenderWorld);
     lua_setfield(L, -2, "RenderWorld");
+    lua_pushcfunction(L, GenL_SDLStatic_RevoluteJointDefCreate);
+    lua_setfield(L, -2, "RevoluteJointDefCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_RevoluteJointDefDestroy);
+    lua_setfield(L, -2, "RevoluteJointDefDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_RevoluteJointDefSetAnchors);
+    lua_setfield(L, -2, "RevoluteJointDefSetAnchors");
+    lua_pushcfunction(L, GenL_SDLStatic_RevoluteJointDefSetBodies);
+    lua_setfield(L, -2, "RevoluteJointDefSetBodies");
+    lua_pushcfunction(L, GenL_SDLStatic_RevoluteJointDefSetCollideConnected);
+    lua_setfield(L, -2, "RevoluteJointDefSetCollideConnected");
+    lua_pushcfunction(L, GenL_SDLStatic_RevoluteJointDefSetLimit);
+    lua_setfield(L, -2, "RevoluteJointDefSetLimit");
+    lua_pushcfunction(L, GenL_SDLStatic_RevoluteJointDefSetMotor);
+    lua_setfield(L, -2, "RevoluteJointDefSetMotor");
+    lua_pushcfunction(L, GenL_SDLStatic_RevoluteJointDefSetSpring);
+    lua_setfield(L, -2, "RevoluteJointDefSetSpring");
     lua_pushcfunction(L, GenL_SDLStatic_SHA256);
     lua_setfield(L, -2, "SHA256");
     lua_pushcfunction(L, GenL_SDLStatic_SampleLight);
@@ -6221,6 +6797,30 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "TouchPinch");
     lua_pushcfunction(L, GenL_SDLStatic_TouchRotation);
     lua_setfield(L, -2, "TouchRotation");
+    lua_pushcfunction(L, GenL_SDLStatic_WeldJointDefCreate);
+    lua_setfield(L, -2, "WeldJointDefCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_WeldJointDefDestroy);
+    lua_setfield(L, -2, "WeldJointDefDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_WeldJointDefSetAnchors);
+    lua_setfield(L, -2, "WeldJointDefSetAnchors");
+    lua_pushcfunction(L, GenL_SDLStatic_WeldJointDefSetBodies);
+    lua_setfield(L, -2, "WeldJointDefSetBodies");
+    lua_pushcfunction(L, GenL_SDLStatic_WeldJointDefSetSpring);
+    lua_setfield(L, -2, "WeldJointDefSetSpring");
+    lua_pushcfunction(L, GenL_SDLStatic_WheelJointDefCreate);
+    lua_setfield(L, -2, "WheelJointDefCreate");
+    lua_pushcfunction(L, GenL_SDLStatic_WheelJointDefDestroy);
+    lua_setfield(L, -2, "WheelJointDefDestroy");
+    lua_pushcfunction(L, GenL_SDLStatic_WheelJointDefSetAnchors);
+    lua_setfield(L, -2, "WheelJointDefSetAnchors");
+    lua_pushcfunction(L, GenL_SDLStatic_WheelJointDefSetAxis);
+    lua_setfield(L, -2, "WheelJointDefSetAxis");
+    lua_pushcfunction(L, GenL_SDLStatic_WheelJointDefSetBodies);
+    lua_setfield(L, -2, "WheelJointDefSetBodies");
+    lua_pushcfunction(L, GenL_SDLStatic_WheelJointDefSetMotor);
+    lua_setfield(L, -2, "WheelJointDefSetMotor");
+    lua_pushcfunction(L, GenL_SDLStatic_WheelJointDefSetSpring);
+    lua_setfield(L, -2, "WheelJointDefSetSpring");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_ASSET_MISSING);
     lua_setfield(L, -2, "SDLSTATIC_ASSET_MISSING");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_ASSET_QUEUED);

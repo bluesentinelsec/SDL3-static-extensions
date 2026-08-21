@@ -13,6 +13,7 @@ add_library(SDLStatic_Physics STATIC
   ${BOX2D_SOURCES}
   # Original SDLStatic code (not vendored): b2DebugDraw -> gpu* primitives.
   glue/sdlstatic_physics_draw.c
+  glue/sdlstatic_physics_build.c
 )
 add_library(SDLStatic::Physics ALIAS SDLStatic_Physics)
 

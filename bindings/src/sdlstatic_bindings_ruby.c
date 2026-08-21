@@ -755,6 +755,8 @@ bool SDLStatic_OpenRubyBindings(mrb_state *mrb)
     /* Generated flat mirror of the full C API; see
      * bindings/generated/COVERAGE.md. */
     SDLStatic_OpenGeneratedRubyBindings(mrb);
+    /* Engine hooks: the one thing a generator cannot produce. */
+    SDLStatic_OpenRubyEngineHooks(mrb);
     /* Ruby's Regexp is a library class here, not a language builtin. */
     if (!SDLStatic_OpenRubyRegexp(mrb))
     {

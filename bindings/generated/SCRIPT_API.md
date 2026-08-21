@@ -2566,6 +2566,15 @@ returns as an array.
 | `SDLStaticC.DialogReset()` | nil |
 | `SDLStaticC.DialogStatus()` | integer |
 | `SDLStaticC.DisconnectSignal(emitter: SDLStatic_SignalEmitter, connection: integer)` | boolean |
+| `SDLStaticC.DistanceJointDefCreate()` | b2DistanceJointDef|nil |
+| `SDLStaticC.DistanceJointDefDestroy(def: b2DistanceJointDef)` | nil |
+| `SDLStaticC.DistanceJointDefSetAnchors(def: b2DistanceJointDef, ax: number, ay: number, bx: number, by: number)` | nil |
+| `SDLStaticC.DistanceJointDefSetBodies(def: b2DistanceJointDef, a: b2BodyId table, b: b2BodyId table)` | nil |
+| `SDLStaticC.DistanceJointDefSetCollideConnected(def: b2DistanceJointDef, enabled: boolean)` | nil |
+| `SDLStaticC.DistanceJointDefSetLength(def: b2DistanceJointDef, length: number)` | nil |
+| `SDLStaticC.DistanceJointDefSetLimit(def: b2DistanceJointDef, enabled: boolean, min_length: number, max_length: number)` | nil |
+| `SDLStaticC.DistanceJointDefSetSpring(def: b2DistanceJointDef, enabled: boolean, hertz: number, damping: number)` | nil |
+| `SDLStaticC.DrawPhysicsWorld(world: b2WorldId table, renderer: SDL_Renderer, config: SDLStatic_PhysicsDrawConfig table)` | boolean |
 | `SDLStaticC.EncodeDataBase64(data: string|nil, outputSize: integer)` | string|nil, outputSize: integer |
 | `SDLStaticC.EngineAdvance(engine: SDLStatic_Engine, nanoseconds: integer)` | nil |
 | `SDLStaticC.EngineAlpha(engine: SDLStatic_Engine)` | number |
@@ -2628,6 +2637,9 @@ returns as an array.
 | `SDLStaticC.EventWheelX(event: SDL_Event)` | number |
 | `SDLStaticC.EventWheelY(event: SDL_Event)` | number |
 | `SDLStaticC.EventWindowId(event: SDL_Event)` | integer |
+| `SDLStaticC.FilterJointDefCreate()` | b2FilterJointDef|nil |
+| `SDLStaticC.FilterJointDefDestroy(def: b2FilterJointDef)` | nil |
+| `SDLStaticC.FilterJointDefSetBodies(def: b2FilterJointDef, a: b2BodyId table, b: b2BodyId table)` | nil |
 | `SDLStaticC.FingerCount(engine: SDLStatic_Engine)` | integer |
 | `SDLStaticC.FreeTiledMap(map: SDLStatic_TiledMap)` | nil |
 | `SDLStaticC.GamepadAccelerometer(engine: SDLStatic_Engine, player: integer, x: number, y: number, z: number)` | x: number, y: number, z: number |
@@ -2742,12 +2754,20 @@ returns as an array.
 | `SDLStaticC.LoadTexture(engine: SDLStatic_Engine, path: string|nil)` | integer |
 | `SDLStaticC.LoadTextureAsync(engine: SDLStatic_Engine, path: string|nil)` | integer |
 | `SDLStaticC.LoadTiledMap(path: string|nil)` | SDLStatic_TiledMap|nil |
+| `SDLStaticC.MotorJointDefCreate()` | b2MotorJointDef|nil |
+| `SDLStaticC.MotorJointDefDestroy(def: b2MotorJointDef)` | nil |
+| `SDLStaticC.MotorJointDefSetBodies(def: b2MotorJointDef, a: b2BodyId table, b: b2BodyId table)` | nil |
 | `SDLStaticC.MountEncryptedArchive(data: string|nil, password: string|nil, mountPoint: string|nil)` | boolean |
 | `SDLStaticC.MountEncryptedArchiveFile(path: string|nil, password: string|nil, mountPoint: string|nil)` | boolean |
 | `SDLStaticC.MountMedia(explicit_path: string|nil, password: string|nil)` | integer |
 | `SDLStaticC.MouseCaptured(engine: SDLStatic_Engine)` | boolean |
 | `SDLStaticC.MouseDelta(engine: SDLStatic_Engine, x: number, y: number)` | x: number, y: number |
 | `SDLStaticC.MouseDown(engine: SDLStatic_Engine, button: integer)` | boolean |
+| `SDLStaticC.MouseJointDefCreate()` | b2MouseJointDef|nil |
+| `SDLStaticC.MouseJointDefDestroy(def: b2MouseJointDef)` | nil |
+| `SDLStaticC.MouseJointDefSetBodies(def: b2MouseJointDef, a: b2BodyId table, b: b2BodyId table)` | nil |
+| `SDLStaticC.MouseJointDefSetMaxForce(def: b2MouseJointDef, force: number)` | nil |
+| `SDLStaticC.MouseJointDefSetSpring(def: b2MouseJointDef, hertz: number, damping: number)` | nil |
 | `SDLStaticC.MousePosition(engine: SDLStatic_Engine, x: number, y: number)` | x: number, y: number |
 | `SDLStaticC.MousePressed(engine: SDLStatic_Engine, button: integer)` | boolean |
 | `SDLStaticC.MouseReleased(engine: SDLStatic_Engine, button: integer)` | boolean |
@@ -2763,6 +2783,13 @@ returns as an array.
 | `SDLStaticC.PhysicsSetPaused(engine: SDLStatic_Engine, paused: boolean)` | nil |
 | `SDLStaticC.PhysicsSetPixelsPerMetre(engine: SDLStatic_Engine, pixels: number)` | nil |
 | `SDLStaticC.PhysicsSetSubSteps(engine: SDLStatic_Engine, sub_steps: integer)` | nil |
+| `SDLStaticC.PrismaticJointDefCreate()` | b2PrismaticJointDef|nil |
+| `SDLStaticC.PrismaticJointDefDestroy(def: b2PrismaticJointDef)` | nil |
+| `SDLStaticC.PrismaticJointDefSetAnchors(def: b2PrismaticJointDef, ax: number, ay: number, bx: number, by: number)` | nil |
+| `SDLStaticC.PrismaticJointDefSetAxis(def: b2PrismaticJointDef, x: number, y: number)` | nil |
+| `SDLStaticC.PrismaticJointDefSetBodies(def: b2PrismaticJointDef, a: b2BodyId table, b: b2BodyId table)` | nil |
+| `SDLStaticC.PrismaticJointDefSetLimit(def: b2PrismaticJointDef, enabled: boolean, lower: number, upper: number)` | nil |
+| `SDLStaticC.PrismaticJointDefSetMotor(def: b2PrismaticJointDef, enabled: boolean, speed: number, max_force: number)` | nil |
 | `SDLStaticC.QuitDebugText()` | nil |
 | `SDLStaticC.RegexEscape(text: string|nil)` | string|nil |
 | `SDLStaticC.RegexFlags(regex: SDLStatic_Regex)` | string|nil |
@@ -2782,6 +2809,14 @@ returns as an array.
 | `SDLStaticC.RenderLighting(scene: SDLStatic_LightScene)` | boolean |
 | `SDLStaticC.RenderOverlay(engine: SDLStatic_Engine, alpha: number)` | integer |
 | `SDLStaticC.RenderWorld(engine: SDLStatic_Engine, camera: SDLStatic_Camera table, alpha: number)` | integer |
+| `SDLStaticC.RevoluteJointDefCreate()` | b2RevoluteJointDef|nil |
+| `SDLStaticC.RevoluteJointDefDestroy(def: b2RevoluteJointDef)` | nil |
+| `SDLStaticC.RevoluteJointDefSetAnchors(def: b2RevoluteJointDef, ax: number, ay: number, bx: number, by: number)` | nil |
+| `SDLStaticC.RevoluteJointDefSetBodies(def: b2RevoluteJointDef, a: b2BodyId table, b: b2BodyId table)` | nil |
+| `SDLStaticC.RevoluteJointDefSetCollideConnected(def: b2RevoluteJointDef, enabled: boolean)` | nil |
+| `SDLStaticC.RevoluteJointDefSetLimit(def: b2RevoluteJointDef, min_degrees: number, max_degrees: number)` | nil |
+| `SDLStaticC.RevoluteJointDefSetMotor(def: b2RevoluteJointDef, enabled: boolean, degrees_per_second: number, max_torque: number)` | nil |
+| `SDLStaticC.RevoluteJointDefSetSpring(def: b2RevoluteJointDef, enabled: boolean, hertz: number, damping: number)` | nil |
 | `SDLStaticC.SHA256(data: string|nil, digest: integer)` | boolean, digest: integer |
 | `SDLStaticC.SampleLight(scene: SDLStatic_LightScene, x: number, y: number)` | number |
 | `SDLStaticC.SaveDelete(engine: SDLStatic_Engine, slot: integer)` | boolean |
@@ -2857,4 +2892,16 @@ returns as an array.
 | `SDLStaticC.TiledTileWidth(map: SDLStatic_TiledMap)` | integer |
 | `SDLStaticC.TouchPinch(engine: SDLStatic_Engine)` | number |
 | `SDLStaticC.TouchRotation(engine: SDLStatic_Engine)` | number |
+| `SDLStaticC.WeldJointDefCreate()` | b2WeldJointDef|nil |
+| `SDLStaticC.WeldJointDefDestroy(def: b2WeldJointDef)` | nil |
+| `SDLStaticC.WeldJointDefSetAnchors(def: b2WeldJointDef, ax: number, ay: number, bx: number, by: number)` | nil |
+| `SDLStaticC.WeldJointDefSetBodies(def: b2WeldJointDef, a: b2BodyId table, b: b2BodyId table)` | nil |
+| `SDLStaticC.WeldJointDefSetSpring(def: b2WeldJointDef, linear_hertz: number, linear_damping: number, angular_hertz: number, angular_damping: number)` | nil |
+| `SDLStaticC.WheelJointDefCreate()` | b2WheelJointDef|nil |
+| `SDLStaticC.WheelJointDefDestroy(def: b2WheelJointDef)` | nil |
+| `SDLStaticC.WheelJointDefSetAnchors(def: b2WheelJointDef, ax: number, ay: number, bx: number, by: number)` | nil |
+| `SDLStaticC.WheelJointDefSetAxis(def: b2WheelJointDef, x: number, y: number)` | nil |
+| `SDLStaticC.WheelJointDefSetBodies(def: b2WheelJointDef, a: b2BodyId table, b: b2BodyId table)` | nil |
+| `SDLStaticC.WheelJointDefSetMotor(def: b2WheelJointDef, enabled: boolean, speed: number, max_torque: number)` | nil |
+| `SDLStaticC.WheelJointDefSetSpring(def: b2WheelJointDef, enabled: boolean, hertz: number, damping: number)` | nil |
 

@@ -31,6 +31,8 @@
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/light.h>
+#include <SDLStatic/physics_build.h>
+#include <SDLStatic/physics_draw.h>
 #include <SDLStatic/regex.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/textfile.h>
@@ -527,6 +529,9 @@ inline Status DialogDeliverSave(const char *path) {
 inline Status DisconnectSignal(SDLStatic_SignalEmitter *emitter, Uint64 connection) {
   return ::SDLStatic_DisconnectSignal(emitter, connection) ? Status() : Status::FromSdl();
 }
+inline Status DrawPhysicsWorld(b2WorldId world, SDL_Renderer *renderer, const SDLStatic_PhysicsDrawConfig *config) {
+  return ::SDLStatic_DrawPhysicsWorld(world, renderer, config) ? Status() : Status::FromSdl();
+}
 inline Status EngineEffectsAvailable(SDLStatic_Engine *engine) {
   return ::SDLStatic_EngineEffectsAvailable(engine) ? Status() : Status::FromSdl();
 }
@@ -860,6 +865,14 @@ inline constexpr auto& DeviceGyro = ::SDLStatic_DeviceGyro;
 inline constexpr auto& DialogPath = ::SDLStatic_DialogPath;
 inline constexpr auto& DialogReset = ::SDLStatic_DialogReset;
 inline constexpr auto& DialogStatus = ::SDLStatic_DialogStatus;
+inline constexpr auto& DistanceJointDefCreate = ::SDLStatic_DistanceJointDefCreate;
+inline constexpr auto& DistanceJointDefDestroy = ::SDLStatic_DistanceJointDefDestroy;
+inline constexpr auto& DistanceJointDefSetAnchors = ::SDLStatic_DistanceJointDefSetAnchors;
+inline constexpr auto& DistanceJointDefSetBodies = ::SDLStatic_DistanceJointDefSetBodies;
+inline constexpr auto& DistanceJointDefSetCollideConnected = ::SDLStatic_DistanceJointDefSetCollideConnected;
+inline constexpr auto& DistanceJointDefSetLength = ::SDLStatic_DistanceJointDefSetLength;
+inline constexpr auto& DistanceJointDefSetLimit = ::SDLStatic_DistanceJointDefSetLimit;
+inline constexpr auto& DistanceJointDefSetSpring = ::SDLStatic_DistanceJointDefSetSpring;
 inline constexpr auto& EmitSignal = ::SDLStatic_EmitSignal;
 inline constexpr auto& EncodeDataBase64 = ::SDLStatic_EncodeDataBase64;
 inline constexpr auto& EncryptData = ::SDLStatic_EncryptData;
@@ -919,6 +932,9 @@ inline constexpr auto& EventType = ::SDLStatic_EventType;
 inline constexpr auto& EventWheelX = ::SDLStatic_EventWheelX;
 inline constexpr auto& EventWheelY = ::SDLStatic_EventWheelY;
 inline constexpr auto& EventWindowId = ::SDLStatic_EventWindowId;
+inline constexpr auto& FilterJointDefCreate = ::SDLStatic_FilterJointDefCreate;
+inline constexpr auto& FilterJointDefDestroy = ::SDLStatic_FilterJointDefDestroy;
+inline constexpr auto& FilterJointDefSetBodies = ::SDLStatic_FilterJointDefSetBodies;
 inline constexpr auto& FingerCount = ::SDLStatic_FingerCount;
 inline constexpr auto& FingerHeldInRect = ::SDLStatic_FingerHeldInRect;
 inline constexpr auto& FingerInRect = ::SDLStatic_FingerInRect;
@@ -983,8 +999,16 @@ inline constexpr auto& LoadTextFile = ::SDLStatic_LoadTextFile;
 inline constexpr auto& LoadTexture = ::SDLStatic_LoadTexture;
 inline constexpr auto& LoadTextureAsync = ::SDLStatic_LoadTextureAsync;
 inline constexpr auto& LoadVFSFile = ::SDLStatic_LoadVFSFile;
+inline constexpr auto& MotorJointDefCreate = ::SDLStatic_MotorJointDefCreate;
+inline constexpr auto& MotorJointDefDestroy = ::SDLStatic_MotorJointDefDestroy;
+inline constexpr auto& MotorJointDefSetBodies = ::SDLStatic_MotorJointDefSetBodies;
 inline constexpr auto& MountMedia = ::SDLStatic_MountMedia;
 inline constexpr auto& MouseDelta = ::SDLStatic_MouseDelta;
+inline constexpr auto& MouseJointDefCreate = ::SDLStatic_MouseJointDefCreate;
+inline constexpr auto& MouseJointDefDestroy = ::SDLStatic_MouseJointDefDestroy;
+inline constexpr auto& MouseJointDefSetBodies = ::SDLStatic_MouseJointDefSetBodies;
+inline constexpr auto& MouseJointDefSetMaxForce = ::SDLStatic_MouseJointDefSetMaxForce;
+inline constexpr auto& MouseJointDefSetSpring = ::SDLStatic_MouseJointDefSetSpring;
 inline constexpr auto& MousePosition = ::SDLStatic_MousePosition;
 inline constexpr auto& MouseWheel = ::SDLStatic_MouseWheel;
 inline constexpr auto& OpenVFSRead = ::SDLStatic_OpenVFSRead;
@@ -998,11 +1022,26 @@ inline constexpr auto& PhysicsSetGravity = ::SDLStatic_PhysicsSetGravity;
 inline constexpr auto& PhysicsSetPaused = ::SDLStatic_PhysicsSetPaused;
 inline constexpr auto& PhysicsSetPixelsPerMetre = ::SDLStatic_PhysicsSetPixelsPerMetre;
 inline constexpr auto& PhysicsSetSubSteps = ::SDLStatic_PhysicsSetSubSteps;
+inline constexpr auto& PrismaticJointDefCreate = ::SDLStatic_PrismaticJointDefCreate;
+inline constexpr auto& PrismaticJointDefDestroy = ::SDLStatic_PrismaticJointDefDestroy;
+inline constexpr auto& PrismaticJointDefSetAnchors = ::SDLStatic_PrismaticJointDefSetAnchors;
+inline constexpr auto& PrismaticJointDefSetAxis = ::SDLStatic_PrismaticJointDefSetAxis;
+inline constexpr auto& PrismaticJointDefSetBodies = ::SDLStatic_PrismaticJointDefSetBodies;
+inline constexpr auto& PrismaticJointDefSetLimit = ::SDLStatic_PrismaticJointDefSetLimit;
+inline constexpr auto& PrismaticJointDefSetMotor = ::SDLStatic_PrismaticJointDefSetMotor;
 inline constexpr auto& QuitDebugText = ::SDLStatic_QuitDebugText;
 inline constexpr auto& RegexEscape = ::SDLStatic_RegexEscape;
 inline constexpr auto& RenderLastStats = ::SDLStatic_RenderLastStats;
 inline constexpr auto& RenderOverlay = ::SDLStatic_RenderOverlay;
 inline constexpr auto& RenderWorld = ::SDLStatic_RenderWorld;
+inline constexpr auto& RevoluteJointDefCreate = ::SDLStatic_RevoluteJointDefCreate;
+inline constexpr auto& RevoluteJointDefDestroy = ::SDLStatic_RevoluteJointDefDestroy;
+inline constexpr auto& RevoluteJointDefSetAnchors = ::SDLStatic_RevoluteJointDefSetAnchors;
+inline constexpr auto& RevoluteJointDefSetBodies = ::SDLStatic_RevoluteJointDefSetBodies;
+inline constexpr auto& RevoluteJointDefSetCollideConnected = ::SDLStatic_RevoluteJointDefSetCollideConnected;
+inline constexpr auto& RevoluteJointDefSetLimit = ::SDLStatic_RevoluteJointDefSetLimit;
+inline constexpr auto& RevoluteJointDefSetMotor = ::SDLStatic_RevoluteJointDefSetMotor;
+inline constexpr auto& RevoluteJointDefSetSpring = ::SDLStatic_RevoluteJointDefSetSpring;
 inline constexpr auto& SaveInfoOf = ::SDLStatic_SaveInfoOf;
 inline constexpr auto& SavePath = ::SDLStatic_SavePath;
 inline constexpr auto& SaveRead = ::SDLStatic_SaveRead;
@@ -1042,6 +1081,18 @@ inline constexpr auto& TextTyped = ::SDLStatic_TextTyped;
 inline constexpr auto& Texture = ::SDLStatic_Texture;
 inline constexpr auto& TouchPinch = ::SDLStatic_TouchPinch;
 inline constexpr auto& TouchRotation = ::SDLStatic_TouchRotation;
+inline constexpr auto& WeldJointDefCreate = ::SDLStatic_WeldJointDefCreate;
+inline constexpr auto& WeldJointDefDestroy = ::SDLStatic_WeldJointDefDestroy;
+inline constexpr auto& WeldJointDefSetAnchors = ::SDLStatic_WeldJointDefSetAnchors;
+inline constexpr auto& WeldJointDefSetBodies = ::SDLStatic_WeldJointDefSetBodies;
+inline constexpr auto& WeldJointDefSetSpring = ::SDLStatic_WeldJointDefSetSpring;
+inline constexpr auto& WheelJointDefCreate = ::SDLStatic_WheelJointDefCreate;
+inline constexpr auto& WheelJointDefDestroy = ::SDLStatic_WheelJointDefDestroy;
+inline constexpr auto& WheelJointDefSetAnchors = ::SDLStatic_WheelJointDefSetAnchors;
+inline constexpr auto& WheelJointDefSetAxis = ::SDLStatic_WheelJointDefSetAxis;
+inline constexpr auto& WheelJointDefSetBodies = ::SDLStatic_WheelJointDefSetBodies;
+inline constexpr auto& WheelJointDefSetMotor = ::SDLStatic_WheelJointDefSetMotor;
+inline constexpr auto& WheelJointDefSetSpring = ::SDLStatic_WheelJointDefSetSpring;
 
 }  // namespace ext
 }  // namespace sdlstatic

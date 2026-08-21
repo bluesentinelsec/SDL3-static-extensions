@@ -35,6 +35,8 @@ endforeach()
 add_library(SDLStatic_Bindings STATIC
   src/bindings_core.c
   src/sdlstatic_bindings_lua.c
+  src/sdlstatic_engine_hooks_lua.c
+  src/sdlstatic_engine_hooks_ruby.c
   src/sdlstatic_bindings_ruby.c
   src/gen_support_lua.c
   src/gen_support_ruby.c

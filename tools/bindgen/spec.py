@@ -192,6 +192,7 @@ LIBRARIES: list[LibrarySpec] = [
             "light/include/SDLStatic/light.h",
             "ttf/include/SDLStatic/*.h",
             "engine/include/SDLStatic/*.h",
+            "physics/include/SDLStatic/*.h",
         ],
         includes=[],
         error_fn="SDL_GetError()",

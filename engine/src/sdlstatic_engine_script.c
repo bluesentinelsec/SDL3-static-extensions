@@ -126,8 +126,18 @@ bool SDLStatic_ScriptBind(SDLStatic_Engine *engine, void *language_state,
         SDL_InvalidParamError("engine/dispatch");
         return false;
     }
-    /* Rebinding drops whatever the previous language was holding, so a
-       state that is being replaced does not leak its references. */
+    /* Binding the same state again is a no-op, not a reset. A language's
+       registration helper calls this on every OnUpdate/OnRender, and
+       unbinding each time would release the handler registered a moment
+       ago — leaving only whichever hook was registered last, which is a
+       bug that looks exactly like "hooks do not fire". */
+    if (bridge->dispatch == dispatch && bridge->language_state == language_state)
+    {
+        return true;
+    }
+
+    /* A genuinely different language state does reset, so the outgoing one
+       does not leak the references it was holding. */
     SDLStatic_ScriptUnbind(engine);
     bridge = Bridge(engine, true);
     if (bridge == NULL)

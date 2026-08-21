@@ -30,6 +30,8 @@
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/light.h>
+#include <SDLStatic/physics_build.h>
+#include <SDLStatic/physics_draw.h>
 #include <SDLStatic/regex.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/textfile.h>
@@ -341,6 +343,16 @@ static mrb_value GenPush_SDLStatic_LightDef(mrb_state *mrb, const SDLStatic_Ligh
     return h;
 }
 
+static void GenRead_SDLStatic_PhysicsDrawConfig(mrb_state *mrb, mrb_value h, SDLStatic_PhysicsDrawConfig *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!mrb_hash_p(h)) { return; }
+    out->pixels_per_meter = (float)SDLStaticGen_RubyFieldNum(mrb, h, "pixels_per_meter");
+    out->offset_x = (float)SDLStaticGen_RubyFieldNum(mrb, h, "offset_x");
+    out->offset_y = (float)SDLStaticGen_RubyFieldNum(mrb, h, "offset_y");
+    out->draw_joints = (bool)SDLStaticGen_RubyFieldBool(mrb, h, "draw_joints");
+}
+
 static mrb_value GenPush_SDLStatic_RayHit(mrb_state *mrb, const SDLStatic_RayHit *in)
 {
     mrb_value h = mrb_hash_new(mrb);
@@ -387,6 +399,23 @@ static void GenRead_SDL_Color(mrb_state *mrb, mrb_value h, SDL_Color *out)
     out->g = (Uint8)SDLStaticGen_RubyFieldInt(mrb, h, "g");
     out->b = (Uint8)SDLStaticGen_RubyFieldInt(mrb, h, "b");
     out->a = (Uint8)SDLStaticGen_RubyFieldInt(mrb, h, "a");
+}
+
+static void GenRead_b2BodyId(mrb_state *mrb, mrb_value h, b2BodyId *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!mrb_hash_p(h)) { return; }
+    out->index1 = (int32_t)SDLStaticGen_RubyFieldInt(mrb, h, "index1");
+    out->world0 = (uint16_t)SDLStaticGen_RubyFieldInt(mrb, h, "world0");
+    out->generation = (uint16_t)SDLStaticGen_RubyFieldInt(mrb, h, "generation");
+}
+
+static void GenRead_b2WorldId(mrb_state *mrb, mrb_value h, b2WorldId *out)
+{
+    memset(out, 0, sizeof(*out));
+    if (!mrb_hash_p(h)) { return; }
+    out->index1 = (uint16_t)SDLStaticGen_RubyFieldInt(mrb, h, "index1");
+    out->generation = (uint16_t)SDLStaticGen_RubyFieldInt(mrb, h, "generation");
 }
 
 static void GenDtor_SDLStatic_FreeTiledMap(void *p)
@@ -3088,6 +3117,146 @@ static mrb_value GenR_SDLStatic_DisconnectSignal(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_DistanceJointDefCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2DistanceJointDef * rv = SDLStatic_DistanceJointDefCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "b2DistanceJointDef");
+    }
+}
+
+static mrb_value GenR_SDLStatic_DistanceJointDefDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2DistanceJointDef *a0 = (b2DistanceJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2DistanceJointDef");
+    SDLStatic_DistanceJointDefDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_DistanceJointDefSetAnchors(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2DistanceJointDef *a0 = (b2DistanceJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2DistanceJointDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    float a4 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    SDLStatic_DistanceJointDefSetAnchors(a0, a1, a2, a3, a4);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_DistanceJointDefSetBodies(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2DistanceJointDef *a0 = (b2DistanceJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2DistanceJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), &a2);
+    SDLStatic_DistanceJointDefSetBodies(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_DistanceJointDefSetCollideConnected(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2DistanceJointDef *a0 = (b2DistanceJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2DistanceJointDef");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_DistanceJointDefSetCollideConnected(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_DistanceJointDefSetLength(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2DistanceJointDef *a0 = (b2DistanceJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2DistanceJointDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_DistanceJointDefSetLength(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_DistanceJointDefSetLimit(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2DistanceJointDef *a0 = (b2DistanceJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2DistanceJointDef");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    SDLStatic_DistanceJointDefSetLimit(a0, a1, a2, a3);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_DistanceJointDefSetSpring(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2DistanceJointDef *a0 = (b2DistanceJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2DistanceJointDef");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    SDLStatic_DistanceJointDefSetSpring(a0, a1, a2, a3);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_DrawPhysicsWorld(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2WorldId a0;
+    GenRead_b2WorldId(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), &a0);
+    SDL_Renderer *a1 = (SDL_Renderer *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), "SDL_Renderer");
+    SDLStatic_PhysicsDrawConfig tmp2;
+    const SDLStatic_PhysicsDrawConfig *a2 = NULL;
+    if (argc > 2 && mrb_hash_p(argv[2])) {
+        GenRead_SDLStatic_PhysicsDrawConfig(mrb, argv[2], &tmp2);
+        a2 = &tmp2;
+    }
+    bool rv = SDLStatic_DrawPhysicsWorld(a0, a1, a2);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
 static mrb_value GenR_SDLStatic_EncodeDataBase64(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -3931,6 +4100,48 @@ static mrb_value GenR_SDLStatic_EventWindowId(mrb_state *mrb, mrb_value self)
     SDL_Event *a0 = (SDL_Event *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDL_Event");
     Uint32 rv = SDLStatic_EventWindowId(a0);
     return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_FilterJointDefCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2FilterJointDef * rv = SDLStatic_FilterJointDefCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "b2FilterJointDef");
+    }
+}
+
+static mrb_value GenR_SDLStatic_FilterJointDefDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2FilterJointDef *a0 = (b2FilterJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2FilterJointDef");
+    SDLStatic_FilterJointDefDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_FilterJointDefSetBodies(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2FilterJointDef *a0 = (b2FilterJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2FilterJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), &a2);
+    SDLStatic_FilterJointDefSetBodies(a0, a1, a2);
+    return mrb_nil_value();
     }
 }
 
@@ -5602,6 +5813,48 @@ static mrb_value GenR_SDLStatic_LoadTiledMap(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_MotorJointDefCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2MotorJointDef * rv = SDLStatic_MotorJointDefCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "b2MotorJointDef");
+    }
+}
+
+static mrb_value GenR_SDLStatic_MotorJointDefDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2MotorJointDef *a0 = (b2MotorJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2MotorJointDef");
+    SDLStatic_MotorJointDefDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_MotorJointDefSetBodies(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2MotorJointDef *a0 = (b2MotorJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2MotorJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), &a2);
+    SDLStatic_MotorJointDefSetBodies(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
 static mrb_value GenR_SDLStatic_MountEncryptedArchive(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -5689,6 +5942,77 @@ static mrb_value GenR_SDLStatic_MouseDown(mrb_state *mrb, mrb_value self)
     SDLStatic_MouseButton a1 = (SDLStatic_MouseButton)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
     bool rv = SDLStatic_MouseDown(a0, a1);
     return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_MouseJointDefCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2MouseJointDef * rv = SDLStatic_MouseJointDefCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "b2MouseJointDef");
+    }
+}
+
+static mrb_value GenR_SDLStatic_MouseJointDefDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2MouseJointDef *a0 = (b2MouseJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2MouseJointDef");
+    SDLStatic_MouseJointDefDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_MouseJointDefSetBodies(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2MouseJointDef *a0 = (b2MouseJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2MouseJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), &a2);
+    SDLStatic_MouseJointDefSetBodies(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_MouseJointDefSetMaxForce(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2MouseJointDef *a0 = (b2MouseJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2MouseJointDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_MouseJointDefSetMaxForce(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_MouseJointDefSetSpring(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2MouseJointDef *a0 = (b2MouseJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2MouseJointDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_MouseJointDefSetSpring(a0, a1, a2);
+    return mrb_nil_value();
     }
 }
 
@@ -5918,6 +6242,112 @@ static mrb_value GenR_SDLStatic_PhysicsSetSubSteps(mrb_state *mrb, mrb_value sel
     SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
     int a1 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
     SDLStatic_PhysicsSetSubSteps(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_PrismaticJointDefCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2PrismaticJointDef * rv = SDLStatic_PrismaticJointDefCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "b2PrismaticJointDef");
+    }
+}
+
+static mrb_value GenR_SDLStatic_PrismaticJointDefDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2PrismaticJointDef *a0 = (b2PrismaticJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2PrismaticJointDef");
+    SDLStatic_PrismaticJointDefDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_PrismaticJointDefSetAnchors(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2PrismaticJointDef *a0 = (b2PrismaticJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2PrismaticJointDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    float a4 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    SDLStatic_PrismaticJointDefSetAnchors(a0, a1, a2, a3, a4);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_PrismaticJointDefSetAxis(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2PrismaticJointDef *a0 = (b2PrismaticJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2PrismaticJointDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_PrismaticJointDefSetAxis(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_PrismaticJointDefSetBodies(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2PrismaticJointDef *a0 = (b2PrismaticJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2PrismaticJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), &a2);
+    SDLStatic_PrismaticJointDefSetBodies(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_PrismaticJointDefSetLimit(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2PrismaticJointDef *a0 = (b2PrismaticJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2PrismaticJointDef");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    SDLStatic_PrismaticJointDefSetLimit(a0, a1, a2, a3);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_PrismaticJointDefSetMotor(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2PrismaticJointDef *a0 = (b2PrismaticJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2PrismaticJointDef");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    SDLStatic_PrismaticJointDefSetMotor(a0, a1, a2, a3);
     return mrb_nil_value();
     }
 }
@@ -6190,6 +6620,126 @@ static mrb_value GenR_SDLStatic_RenderWorld(mrb_state *mrb, mrb_value self)
     float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
     int rv = SDLStatic_RenderWorld(a0, a1, a2);
     return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
+static mrb_value GenR_SDLStatic_RevoluteJointDefCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2RevoluteJointDef * rv = SDLStatic_RevoluteJointDefCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "b2RevoluteJointDef");
+    }
+}
+
+static mrb_value GenR_SDLStatic_RevoluteJointDefDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2RevoluteJointDef *a0 = (b2RevoluteJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2RevoluteJointDef");
+    SDLStatic_RevoluteJointDefDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_RevoluteJointDefSetAnchors(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2RevoluteJointDef *a0 = (b2RevoluteJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2RevoluteJointDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    float a4 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    SDLStatic_RevoluteJointDefSetAnchors(a0, a1, a2, a3, a4);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_RevoluteJointDefSetBodies(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2RevoluteJointDef *a0 = (b2RevoluteJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2RevoluteJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), &a2);
+    SDLStatic_RevoluteJointDefSetBodies(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_RevoluteJointDefSetCollideConnected(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2RevoluteJointDef *a0 = (b2RevoluteJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2RevoluteJointDef");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_RevoluteJointDefSetCollideConnected(a0, a1);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_RevoluteJointDefSetLimit(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2RevoluteJointDef *a0 = (b2RevoluteJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2RevoluteJointDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_RevoluteJointDefSetLimit(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_RevoluteJointDefSetMotor(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2RevoluteJointDef *a0 = (b2RevoluteJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2RevoluteJointDef");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    SDLStatic_RevoluteJointDefSetMotor(a0, a1, a2, a3);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_RevoluteJointDefSetSpring(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2RevoluteJointDef *a0 = (b2RevoluteJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2RevoluteJointDef");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    SDLStatic_RevoluteJointDefSetSpring(a0, a1, a2, a3);
+    return mrb_nil_value();
     }
 }
 
@@ -7255,6 +7805,188 @@ static mrb_value GenR_SDLStatic_TouchRotation(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_WeldJointDefCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2WeldJointDef * rv = SDLStatic_WeldJointDefCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "b2WeldJointDef");
+    }
+}
+
+static mrb_value GenR_SDLStatic_WeldJointDefDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2WeldJointDef *a0 = (b2WeldJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2WeldJointDef");
+    SDLStatic_WeldJointDefDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_WeldJointDefSetAnchors(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2WeldJointDef *a0 = (b2WeldJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2WeldJointDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    float a4 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    SDLStatic_WeldJointDefSetAnchors(a0, a1, a2, a3, a4);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_WeldJointDefSetBodies(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2WeldJointDef *a0 = (b2WeldJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2WeldJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), &a2);
+    SDLStatic_WeldJointDefSetBodies(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_WeldJointDefSetSpring(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2WeldJointDef *a0 = (b2WeldJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2WeldJointDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    float a4 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    SDLStatic_WeldJointDefSetSpring(a0, a1, a2, a3, a4);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_WheelJointDefCreate(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2WheelJointDef * rv = SDLStatic_WheelJointDefCreate();
+    return SDLStaticGen_RubyPushHandle(mrb, (void *)rv, "b2WheelJointDef");
+    }
+}
+
+static mrb_value GenR_SDLStatic_WheelJointDefDestroy(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2WheelJointDef *a0 = (b2WheelJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2WheelJointDef");
+    SDLStatic_WheelJointDefDestroy(a0);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_WheelJointDefSetAnchors(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2WheelJointDef *a0 = (b2WheelJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2WheelJointDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    float a4 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 4 ? argv[4] : mrb_nil_value()));
+    SDLStatic_WheelJointDefSetAnchors(a0, a1, a2, a3, a4);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_WheelJointDefSetAxis(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2WheelJointDef *a0 = (b2WheelJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2WheelJointDef");
+    float a1 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    SDLStatic_WheelJointDefSetAxis(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_WheelJointDefSetBodies(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2WheelJointDef *a0 = (b2WheelJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2WheelJointDef");
+    b2BodyId a1;
+    GenRead_b2BodyId(mrb, (argc > 1 ? argv[1] : mrb_nil_value()), &a1);
+    b2BodyId a2;
+    GenRead_b2BodyId(mrb, (argc > 2 ? argv[2] : mrb_nil_value()), &a2);
+    SDLStatic_WheelJointDefSetBodies(a0, a1, a2);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_WheelJointDefSetMotor(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2WheelJointDef *a0 = (b2WheelJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2WheelJointDef");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    SDLStatic_WheelJointDefSetMotor(a0, a1, a2, a3);
+    return mrb_nil_value();
+    }
+}
+
+static mrb_value GenR_SDLStatic_WheelJointDefSetSpring(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    b2WheelJointDef *a0 = (b2WheelJointDef *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "b2WheelJointDef");
+    bool a1 = (bool)SDLStaticGen_RubyToBool((argc > 1 ? argv[1] : mrb_nil_value()));
+    float a2 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    SDLStatic_WheelJointDefSetSpring(a0, a1, a2, a3);
+    return mrb_nil_value();
+    }
+}
+
 void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb);
 void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
 {
@@ -7440,6 +8172,15 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "DialogReset", GenR_SDLStatic_DialogReset, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DialogStatus", GenR_SDLStatic_DialogStatus, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "DisconnectSignal", GenR_SDLStatic_DisconnectSignal, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DistanceJointDefCreate", GenR_SDLStatic_DistanceJointDefCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DistanceJointDefDestroy", GenR_SDLStatic_DistanceJointDefDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DistanceJointDefSetAnchors", GenR_SDLStatic_DistanceJointDefSetAnchors, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DistanceJointDefSetBodies", GenR_SDLStatic_DistanceJointDefSetBodies, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DistanceJointDefSetCollideConnected", GenR_SDLStatic_DistanceJointDefSetCollideConnected, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DistanceJointDefSetLength", GenR_SDLStatic_DistanceJointDefSetLength, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DistanceJointDefSetLimit", GenR_SDLStatic_DistanceJointDefSetLimit, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DistanceJointDefSetSpring", GenR_SDLStatic_DistanceJointDefSetSpring, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "DrawPhysicsWorld", GenR_SDLStatic_DrawPhysicsWorld, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "EncodeDataBase64", GenR_SDLStatic_EncodeDataBase64, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "EngineAdvance", GenR_SDLStatic_EngineAdvance, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "EngineAlpha", GenR_SDLStatic_EngineAlpha, MRB_ARGS_ANY());
@@ -7502,6 +8243,9 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "EventWheelX", GenR_SDLStatic_EventWheelX, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "EventWheelY", GenR_SDLStatic_EventWheelY, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "EventWindowId", GenR_SDLStatic_EventWindowId, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "FilterJointDefCreate", GenR_SDLStatic_FilterJointDefCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "FilterJointDefDestroy", GenR_SDLStatic_FilterJointDefDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "FilterJointDefSetBodies", GenR_SDLStatic_FilterJointDefSetBodies, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "FingerCount", GenR_SDLStatic_FingerCount, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "FreeTiledMap", GenR_SDLStatic_FreeTiledMap, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "GamepadAccelerometer", GenR_SDLStatic_GamepadAccelerometer, MRB_ARGS_ANY());
@@ -7616,12 +8360,20 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "LoadTexture", GenR_SDLStatic_LoadTexture, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "LoadTextureAsync", GenR_SDLStatic_LoadTextureAsync, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "LoadTiledMap", GenR_SDLStatic_LoadTiledMap, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "MotorJointDefCreate", GenR_SDLStatic_MotorJointDefCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "MotorJointDefDestroy", GenR_SDLStatic_MotorJointDefDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "MotorJointDefSetBodies", GenR_SDLStatic_MotorJointDefSetBodies, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "MountEncryptedArchive", GenR_SDLStatic_MountEncryptedArchive, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "MountEncryptedArchiveFile", GenR_SDLStatic_MountEncryptedArchiveFile, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "MountMedia", GenR_SDLStatic_MountMedia, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "MouseCaptured", GenR_SDLStatic_MouseCaptured, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "MouseDelta", GenR_SDLStatic_MouseDelta, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "MouseDown", GenR_SDLStatic_MouseDown, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "MouseJointDefCreate", GenR_SDLStatic_MouseJointDefCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "MouseJointDefDestroy", GenR_SDLStatic_MouseJointDefDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "MouseJointDefSetBodies", GenR_SDLStatic_MouseJointDefSetBodies, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "MouseJointDefSetMaxForce", GenR_SDLStatic_MouseJointDefSetMaxForce, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "MouseJointDefSetSpring", GenR_SDLStatic_MouseJointDefSetSpring, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "MousePosition", GenR_SDLStatic_MousePosition, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "MousePressed", GenR_SDLStatic_MousePressed, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "MouseReleased", GenR_SDLStatic_MouseReleased, MRB_ARGS_ANY());
@@ -7637,6 +8389,13 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "PhysicsSetPaused", GenR_SDLStatic_PhysicsSetPaused, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "PhysicsSetPixelsPerMetre", GenR_SDLStatic_PhysicsSetPixelsPerMetre, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "PhysicsSetSubSteps", GenR_SDLStatic_PhysicsSetSubSteps, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "PrismaticJointDefCreate", GenR_SDLStatic_PrismaticJointDefCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "PrismaticJointDefDestroy", GenR_SDLStatic_PrismaticJointDefDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "PrismaticJointDefSetAnchors", GenR_SDLStatic_PrismaticJointDefSetAnchors, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "PrismaticJointDefSetAxis", GenR_SDLStatic_PrismaticJointDefSetAxis, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "PrismaticJointDefSetBodies", GenR_SDLStatic_PrismaticJointDefSetBodies, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "PrismaticJointDefSetLimit", GenR_SDLStatic_PrismaticJointDefSetLimit, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "PrismaticJointDefSetMotor", GenR_SDLStatic_PrismaticJointDefSetMotor, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "QuitDebugText", GenR_SDLStatic_QuitDebugText, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "RegexEscape", GenR_SDLStatic_RegexEscape, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "RegexFlags", GenR_SDLStatic_RegexFlags, MRB_ARGS_ANY());
@@ -7656,6 +8415,14 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "RenderLighting", GenR_SDLStatic_RenderLighting, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "RenderOverlay", GenR_SDLStatic_RenderOverlay, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "RenderWorld", GenR_SDLStatic_RenderWorld, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RevoluteJointDefCreate", GenR_SDLStatic_RevoluteJointDefCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RevoluteJointDefDestroy", GenR_SDLStatic_RevoluteJointDefDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RevoluteJointDefSetAnchors", GenR_SDLStatic_RevoluteJointDefSetAnchors, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RevoluteJointDefSetBodies", GenR_SDLStatic_RevoluteJointDefSetBodies, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RevoluteJointDefSetCollideConnected", GenR_SDLStatic_RevoluteJointDefSetCollideConnected, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RevoluteJointDefSetLimit", GenR_SDLStatic_RevoluteJointDefSetLimit, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RevoluteJointDefSetMotor", GenR_SDLStatic_RevoluteJointDefSetMotor, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "RevoluteJointDefSetSpring", GenR_SDLStatic_RevoluteJointDefSetSpring, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SHA256", GenR_SDLStatic_SHA256, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SampleLight", GenR_SDLStatic_SampleLight, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SaveDelete", GenR_SDLStatic_SaveDelete, MRB_ARGS_ANY());
@@ -7731,6 +8498,18 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "TiledTileWidth", GenR_SDLStatic_TiledTileWidth, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "TouchPinch", GenR_SDLStatic_TouchPinch, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "TouchRotation", GenR_SDLStatic_TouchRotation, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "WeldJointDefCreate", GenR_SDLStatic_WeldJointDefCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "WeldJointDefDestroy", GenR_SDLStatic_WeldJointDefDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "WeldJointDefSetAnchors", GenR_SDLStatic_WeldJointDefSetAnchors, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "WeldJointDefSetBodies", GenR_SDLStatic_WeldJointDefSetBodies, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "WeldJointDefSetSpring", GenR_SDLStatic_WeldJointDefSetSpring, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "WheelJointDefCreate", GenR_SDLStatic_WheelJointDefCreate, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "WheelJointDefDestroy", GenR_SDLStatic_WheelJointDefDestroy, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "WheelJointDefSetAnchors", GenR_SDLStatic_WheelJointDefSetAnchors, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "WheelJointDefSetAxis", GenR_SDLStatic_WheelJointDefSetAxis, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "WheelJointDefSetBodies", GenR_SDLStatic_WheelJointDefSetBodies, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "WheelJointDefSetMotor", GenR_SDLStatic_WheelJointDefSetMotor, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "WheelJointDefSetSpring", GenR_SDLStatic_WheelJointDefSetSpring, MRB_ARGS_ANY());
     mrb_define_const(mrb, mod, "SDLSTATIC_ASSET_MISSING", mrb_int_value(mrb, (mrb_int)SDLSTATIC_ASSET_MISSING));
     mrb_define_const(mrb, mod, "SDLSTATIC_ASSET_QUEUED", mrb_int_value(mrb, (mrb_int)SDLSTATIC_ASSET_QUEUED));
     mrb_define_const(mrb, mod, "SDLSTATIC_ASSET_LOADING", mrb_int_value(mrb, (mrb_int)SDLSTATIC_ASSET_LOADING));

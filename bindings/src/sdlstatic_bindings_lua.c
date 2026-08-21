@@ -721,6 +721,9 @@ bool SDLStatic_OpenLuaBindings(lua_State *L)
      * PHYSFS, B2, NK, JSON, SDLStaticC tables); see
      * bindings/generated/COVERAGE.md. */
     SDLStatic_OpenGeneratedLuaBindings(L);
+    /* Engine hooks: the one thing a generator cannot produce, because it
+     * has to turn a Lua function into something C can hold. */
+    SDLStatic_OpenLuaEngineHooks(L);
     /* Real regular expressions, which Lua patterns are not. */
     if (!SDLStatic_OpenLuaRegex(L))
     {
