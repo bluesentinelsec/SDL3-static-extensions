@@ -6,6 +6,7 @@
 #define SDLSTATIC_CPP_SDLSTATIC_H_
 
 #include "sdlstatic/app.h"      // IWYU pragma: export
+#include "sdlstatic/game.h"     // IWYU pragma: export
 #include "sdlstatic/extras.h"   // IWYU pragma: export
 #include "sdlstatic/mixer.h"    // IWYU pragma: export
 #include "sdlstatic/physics.h"  // IWYU pragma: export
