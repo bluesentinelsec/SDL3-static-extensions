@@ -112,10 +112,16 @@ TEST_F(AssetHarness, TheFrameLoopFinishesAsyncLoads)
     const std::string path = WritePng("sdlstatic_asset_c.png", 24, 0x20);
     const SDLStatic_TextureId id = SDLStatic_LoadTextureAsync(engine_, path.c_str());
 
-    for (int i = 0; i < 200 && SDLStatic_AssetStatusOf(engine_, id) != SDLSTATIC_ASSET_READY;
-         ++i)
+    // Bounded by the wall clock, not by an iteration count. The engine's
+    // clock is manual here, so 200 frames run in a few milliseconds — long
+    // enough for a worker to have decoded on a fast machine and not on a
+    // slower one, which is a race in the test rather than in the engine.
+    const Uint64 deadline = SDL_GetTicks() + 5000;
+    while (SDLStatic_AssetStatusOf(engine_, id) != SDLSTATIC_ASSET_READY &&
+           SDL_GetTicks() < deadline)
     {
         Frames(1);
+        SDL_Delay(1); // let the worker actually run
     }
     EXPECT_EQ(SDLStatic_AssetStatusOf(engine_, id), SDLSTATIC_ASSET_READY);
     SDL_RemovePath(path.c_str());
