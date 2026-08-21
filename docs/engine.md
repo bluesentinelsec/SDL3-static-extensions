@@ -22,7 +22,8 @@ target_link_libraries(your_game PRIVATE SDLStatic::Engine)
 
 This page covers the loop and time, presentation and scaling, scenes,
 graphics settings, the camera, actors, engine-owned rendering, input,
-actions, physics and assets. The lighting integration follows.
+actions, physics, assets and lighting. Saves, localisation and the script
+bindings follow.
 
 ## The loop
 
@@ -1386,3 +1387,179 @@ before asking the VFS and falls back to the real filesystem.
 path. A level torn down while it is still loading is not exotic — it is what
 happens when a player quits during a loading screen — so the worker
 re-checks the slot is live after dequeuing it.
+
+## Lighting
+
+The lighting module knows how to light a scene. What it cannot know is
+where the camera is, which actors are carrying lights, or what the player
+set the quality slider to — so the engine supplies those.
+`<SDLStatic/engine_light.h>`.
+
+```c
+SDLStatic_LightSetPreset(engine, SDLSTATIC_LIGHT_NIGHT);
+
+SDLStatic_LightDef torch = SDLStatic_LightDefault();
+torch.radius = 380.0f;
+torch.color = (SDL_FColor){1.0f, 0.72f, 0.36f, 1.0f};
+torch.flicker = 0.15f;
+SDLStatic_ActorAddLight(actor, &torch);
+
+/* in the render hook, after the world and before the HUD */
+SDLStatic_RenderWorld(engine, &camera, alpha);
+SDLStatic_LightRender(engine, &camera, alpha);
+SDLStatic_RenderOverlay(engine, alpha);
+```
+
+Order matters: lighting multiplies over what is already drawn, so anything
+drawn afterwards is unlit — which is what a HUD wants and what the world
+does not.
+
+### Presets and the clock
+
+| | |
+|---|---|
+| `NONE` | no lighting; the world draws at full brightness, and costs nothing |
+| `SUNRISE` / `AFTERNOON` / `SUNSET` / `NIGHT` | points on the day/night curve |
+| `DARK` | a cave: near-black at any hour, but *not* absolute black — a player with no torch should be able to tell the game from a crash |
+
+A preset also sets the hour, so a game that later starts the clock carries
+on from a time that matches what is on screen.
+
+```c
+SDLStatic_LightSetClock(engine, 6.0f, 0.05f);   /* dawn, a 20-minute day */
+if (SDLStatic_LightSunlight(engine) < 0.2f) LightTheStreetlamps();
+```
+
+Setting a custom ambient stops the clock driving it. A game that has said
+what colour it wants should not have it quietly overwritten a frame later.
+
+### Lights ride on actors
+
+A light attached to an actor follows it — through parents, through physics,
+for the actor's whole life — and disappears when the actor does. There is
+nothing to keep in sync, which is the entire reason it lives there rather
+than being submitted by hand.
+
+It is submitted at `SDLStatic_ActorRenderTransform`, the same place the
+sprite is drawn. At the simulation position instead, a torch would lag its
+own flame by up to a tick: a shimmer that is maddening to look at and very
+hard to attribute to its cause.
+
+The offset rides the actor's rotation, so a torch at the end of an arm
+sweeps the room as the character turns.
+
+### The quality budget is applied for you
+
+`dynamic_lights` and `shadows` decide the light-map resolution, the ray
+count, the softness, and how many lights are submitted at all. A player who
+turns lighting off gets ambient only, at no cost, without the game writing a
+single conditional.
+
+When the budget runs out the engine **stops** rather than thinning: a light
+that flickers in and out as the count drifts across the limit is far more
+distracting than one that is consistently absent. `SDLStatic_LightCount`
+reports what actually went in, which is how you notice a budget silently
+dropping half the scene.
+
+### Walls
+
+```c
+SDLStatic_LightAddOccluder(engine, wall_rect);
+```
+
+Occluders and dark zones are buffered and consumed by the next
+`LightRender`, so they can be submitted anywhere in the frame. An API where
+`AddOccluder` only works inside an invisible window is one that fails
+silently when somebody calls it in the wrong place.
+
+**Static physics bodies are submitted automatically**, because a level's
+collision is usually exactly what should block light — off with
+`SDLStatic_LightSetAutoOccluders` for a game that disagrees. Only bodies
+near the camera go in: an occluder off screen cannot cast a shadow onto it,
+and the mask has a finite resolution to spend.
+
+## Saves
+
+The engine provides the primitives, not the data model. It knows how to put
+bytes somewhere safe and hand them back; it never learns what a save
+contains. `<SDLStatic/engine_save.h>`.
+
+```c
+SDLStatic_SaveSetIdentity(engine, "acme", "mygame");
+SDLStatic_SaveWrite(engine, 1, &state, sizeof(state), "Cave of Ordeals");
+
+size_t size = 0;
+void *data = SDLStatic_SaveRead(engine, 1, &size);
+if (data != NULL && size == sizeof(state)) SDL_memcpy(&state, data, size);
+SDL_free(data);
+```
+
+A save format is the most game-specific thing a game has, so one imposed
+here would be wrong for every game in a different way.
+
+### Writes are atomic, and that is the whole point
+
+A save goes to a temporary file, is closed, and is then **renamed** over the
+target. Rename is atomic everywhere this runs, so the previous save survives
+intact until the new one is complete on disk.
+
+The obvious implementation — open the save file and write into it — destroys
+the player's progress if the game crashes, the battery dies, or the disk
+fills up halfway through. It fails rarely and takes something irreplaceable
+when it does, which is the worst possible combination, and it is the one
+piece of this that is genuinely worth an engine owning.
+
+### Slots carry a label
+
+`SDLStatic_SaveInfoOf` returns existence, size, modification time and a
+label without reading the payload — so a load menu can draw its rows without
+parsing saves it may not even be able to interpret, such as an older
+version's. Saves from a newer build are refused rather than misread.
+
+## Localisation
+
+```c
+SDLStatic_TextLoadFile(engine, "fr");          /* lang/fr.toml from the archive */
+SDLStatic_TextSetLanguage(engine, "fr");
+
+DrawText(SDLStatic_Text(engine, "menu.start"));
+DrawText(SDLStatic_TextFormat(engine, "hud.score", score));
+```
+
+```toml
+# media/lang/fr.toml
+[strings]
+"menu.start" = "Commencer"
+"hud.score" = "%d points"
+```
+
+### The fallback chain
+
+Current language → **English** → **the key itself**. Each step earns its
+place:
+
+- A translation in progress has gaps *by definition* — translators work from
+  partial files. An English button beats a blank one, because a blank is
+  indistinguishable from a bug.
+- A key with no entry anywhere renders as `menu.start`. That is ugly on
+  purpose: obvious in a screenshot, and it names the thing that needs
+  fixing.
+
+`SDLStatic_TextHas` reports whether a real translation exists, for a
+coverage tool — not for gameplay, which should just draw the string.
+
+### Keys, not English text, are the identifiers
+
+Keying off the English string means every typo fix in English silently
+breaks every translation. Keys cost a little readability at the call site
+and buy the freedom to edit English at all.
+
+### Formatting is the translator's
+
+The looked-up string *is* the format, so `"Score: %d"` and `"%d points"` are
+both expressible. Word order differs between languages, and a translation
+that cannot move its own placeholders is not really a translation.
+
+`SDLStatic_TextFormat` returns one of a small rotating set of buffers, so
+several calls can appear in one expression without the second clobbering the
+first.

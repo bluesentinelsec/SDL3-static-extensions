@@ -229,6 +229,13 @@ typedef struct SDLStatic_RayHit
 extern SDLStatic_RayHit SDLStatic_PhysicsRaycast(SDLStatic_Engine *engine, float x, float y,
                                                  float dx, float dy, Uint32 mask);
 
+/** The body's bounding box in world units, or false if it has none.
+ *
+ *  Useful for culling and debug draw, and it is what the lighting
+ *  integration uses to treat static bodies as walls — a level's collision
+ *  is usually exactly what should block light. */
+extern bool SDLStatic_ActorBodyBounds(SDLStatic_Actor *actor, SDL_FRect *out);
+
 /** Every actor whose body overlaps the rectangle, written into a caller's
  *  array. Returns how many, at most `capacity`. */
 extern int SDLStatic_PhysicsOverlap(SDLStatic_Engine *engine, SDL_FRect area, Uint32 mask,

@@ -78,6 +78,9 @@ struct SDLStatic_Actor
     SDLStatic_Sprite sprite;
     bool has_sprite;
 
+    SDLStatic_LightDef light;
+    bool has_light;
+
     /* A Box2D body handle, kept as its three fields so this file needs no
        Box2D header — the actor system does not depend on physics, only the
        other way round. */
@@ -625,6 +628,32 @@ void SDLStatic_ActorClearBody(SDLStatic_Actor *actor)
     if (actor != NULL)
     {
         actor->has_body = false;
+    }
+}
+
+SDLStatic_LightDef *SDLStatic_ActorLightSlot(SDLStatic_Actor *actor, bool create)
+{
+    if (actor == NULL)
+    {
+        return NULL;
+    }
+    if (!actor->has_light)
+    {
+        if (!create)
+        {
+            return NULL;
+        }
+        actor->light = SDLStatic_LightDefault();
+        actor->has_light = true;
+    }
+    return &actor->light;
+}
+
+void SDLStatic_ActorLightRemove(SDLStatic_Actor *actor)
+{
+    if (actor != NULL)
+    {
+        actor->has_light = false;
     }
 }
 

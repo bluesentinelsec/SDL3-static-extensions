@@ -255,3 +255,166 @@ TEST(SdlInitTest, GuardOrdersMixerTeardownAfterOwners) {
 }  // teardown order: Audio/Track, Mixer, then SdlInit -> SDL_Quit
 
 }  // namespace
+
+// --- the engine wrapper ---------------------------------------------------
+//
+// What C++ adds over the C API is lifetime, hooks and handles. These check
+// exactly those three, not the engine behaviour underneath — that already
+// has its own tests, in C.
+
+namespace {
+
+sdlstatic::Engine MakeHeadlessEngine() {
+  SDLStatic_EngineConfig config{};
+  config.headless = true;
+  config.manual_clock = true;
+  config.no_auto_mount = true;
+  config.design_width = 320;
+  config.design_height = 240;
+  auto engine = sdlstatic::Engine::Create(config);
+  EXPECT_TRUE(engine.ok());
+  return std::move(engine).value();
+}
+
+TEST(CppEngine, CreatesAndDestroysWithScope) {
+  ASSERT_TRUE(SDL_Init(0));
+  {
+    sdlstatic::Engine engine = MakeHeadlessEngine();
+    EXPECT_TRUE(static_cast<bool>(engine));
+    EXPECT_NE(engine.get(), nullptr);
+    EXPECT_NE(engine.renderer(), nullptr);
+  }  // destroyed here; ASan would notice if it were not
+  SDL_Quit();
+}
+
+// Lambdas capturing game state, without a trampoline and a static_cast per
+// hook.
+TEST(CppEngine, HooksAreLambdas) {
+  ASSERT_TRUE(SDL_Init(0));
+  {
+    sdlstatic::Engine engine = MakeHeadlessEngine();
+
+    int fixed_steps = 0;
+    int frames = 0;
+    engine.on_fixed_update([&](float) { fixed_steps++; });
+    engine.on_update([&](float) { frames++; });
+
+    for (int i = 0; i < 3; ++i) {
+      engine.Advance(16666667ull);
+      engine.Tick();
+    }
+    EXPECT_EQ(frames, 3);
+    EXPECT_GT(fixed_steps, 0);
+  }
+  SDL_Quit();
+}
+
+// An actor handle is a value that knows its engine, so it reads as methods
+// rather than three-argument calls with out-parameters.
+TEST(CppEngine, ActorsAreValues) {
+  ASSERT_TRUE(SDL_Init(0));
+  {
+    sdlstatic::Engine engine = MakeHeadlessEngine();
+
+    SDLStatic_ActorDef def{};
+    def.type = "goblin";
+    def.x = 10.0f;
+    def.y = 20.0f;
+    sdlstatic::Actor actor = engine.spawn(def);
+    ASSERT_TRUE(actor.alive());
+    EXPECT_STREQ(actor.type(), "goblin");
+    EXPECT_FLOAT_EQ(actor.world().x, 10.0f);
+
+    actor.move(5.0f, 0.0f);
+    EXPECT_FLOAT_EQ(actor.world().x, 15.0f);
+
+    engine.Advance(16666667ull);
+    engine.Tick();
+    EXPECT_EQ(engine.actor_count(), 1);
+    EXPECT_EQ(engine.find_by_type("goblin"), actor);
+
+    // A copy of the handle sees the same actor, and both stop resolving
+    // when it dies — which is the whole reason this is not a pointer.
+    sdlstatic::Actor copy = actor;
+    actor.destroy();
+    engine.Advance(16666667ull);
+    engine.Tick();
+    EXPECT_FALSE(copy.alive());
+    EXPECT_EQ(copy.get(), nullptr);
+  }
+  SDL_Quit();
+}
+
+TEST(CppEngine, QueriesReturnVectors) {
+  ASSERT_TRUE(SDL_Init(0));
+  {
+    sdlstatic::Engine engine = MakeHeadlessEngine();
+    for (int i = 0; i < 5; ++i) {
+      SDLStatic_ActorDef def{};
+      def.type = "rock";
+      def.tags = 1u << 0;
+      engine.spawn(def);
+    }
+    engine.Advance(16666667ull);
+    engine.Tick();
+
+    const std::vector<sdlstatic::Actor> rocks = engine.query("rock");
+    EXPECT_EQ(rocks.size(), 5u);
+    for (const sdlstatic::Actor& rock : rocks) EXPECT_TRUE(rock.alive());
+    EXPECT_EQ(engine.query(nullptr, 1u << 1).size(), 0u);
+  }
+  SDL_Quit();
+}
+
+TEST(CppEngine, ActionMapsOwnThemselves) {
+  ASSERT_TRUE(SDL_Init(0));
+  {
+    sdlstatic::Engine engine = MakeHeadlessEngine();
+    auto map_result = sdlstatic::ActionMap::Create();
+    ASSERT_TRUE(map_result.ok());
+    sdlstatic::ActionMap map = std::move(map_result).value();
+
+    EXPECT_TRUE(map.bind_key("jump", SDL_SCANCODE_SPACE));
+    EXPECT_TRUE(map.bind_pad("jump", SDLSTATIC_PAD_A));
+    EXPECT_FALSE(engine.action_down(map, 0, "jump")) << "nothing pressed";
+    EXPECT_FLOAT_EQ(engine.action_value(map, 0, "jump"), 0.0f);
+  }  // map destroyed here, exactly once
+  SDL_Quit();
+}
+
+// Saves come back owned, so a caller cannot forget to free them.
+TEST(CppEngine, SavesReturnOwnedBuffers) {
+  ASSERT_TRUE(SDL_Init(0));
+  {
+    sdlstatic::Engine engine = MakeHeadlessEngine();
+    engine.set_save_identity("SDLStaticTest", "CppEngineSaveTest");
+
+    const int payload = 4321;
+    ASSERT_TRUE(engine.save(0, &payload, sizeof(payload), "cpp"));
+
+    const std::vector<unsigned char> bytes = engine.load(0);
+    ASSERT_EQ(bytes.size(), sizeof(payload));
+    int read = 0;
+    SDL_memcpy(&read, bytes.data(), bytes.size());
+    EXPECT_EQ(read, 4321);
+
+    // An empty slot is an empty vector rather than a null to check.
+    EXPECT_TRUE(engine.load(5).empty());
+    SDLStatic_SaveDelete(engine.get(), 0);
+  }
+  SDL_Quit();
+}
+
+TEST(CppEngine, TextFallsBackThroughTheWrapper) {
+  ASSERT_TRUE(SDL_Init(0));
+  {
+    sdlstatic::Engine engine = MakeHeadlessEngine();
+    ASSERT_TRUE(SDLStatic_TextLoad(engine.get(), "en",
+                                   "[strings]\n\"hello\" = \"Hello\"\n"));
+    EXPECT_STREQ(engine.text("hello"), "Hello");
+    EXPECT_STREQ(engine.text("absent"), "absent");
+  }
+  SDL_Quit();
+}
+
+}  // namespace
