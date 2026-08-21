@@ -52,6 +52,14 @@ typedef struct SDLStatic_GuiGrid
  *                    the current font (so even heights need no hard-coding).
  * \returns false on bad parameters.
  */
+/** A grid on the heap, for callers that cannot declare one on the stack.
+ *
+ *  C code should keep using a local — it is cheaper and scoped. This exists
+ *  for scripts, which have no stack to put a struct on, and without it every
+ *  grid function was bound and uncallable. */
+extern SDLStatic_GuiGrid *SDLStatic_GuiGridCreate(void);
+extern void SDLStatic_GuiGridDestroy(SDLStatic_GuiGrid *grid);
+
 extern bool SDLStatic_GuiGridBegin(struct nk_context *ctx, SDLStatic_GuiGrid *grid, int columns,
                                    const float *weights, float row_height);
 

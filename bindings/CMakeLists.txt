@@ -35,6 +35,8 @@ endforeach()
 add_library(SDLStatic_Bindings STATIC
   src/bindings_core.c
   src/sdlstatic_bindings_lua.c
+  src/sdlstatic_engine_hooks_lua.c
+  src/sdlstatic_engine_hooks_ruby.c
   src/sdlstatic_bindings_ruby.c
   src/gen_support_lua.c
   src/gen_support_ruby.c
@@ -69,6 +71,9 @@ if(SDLSTATIC_BUILD_REGEX)
 endif()
 if(SDLSTATIC_BUILD_LIGHT)
   target_link_libraries(SDLStatic_Bindings PUBLIC SDLStatic::Light)
+endif()
+if(SDLSTATIC_BUILD_ENGINE)
+  target_link_libraries(SDLStatic_Bindings PUBLIC SDLStatic::Engine)
 endif()
 if(SDLSTATIC_BUILD_NET)
   target_link_libraries(SDLStatic_Bindings PUBLIC SDLStatic::Net)

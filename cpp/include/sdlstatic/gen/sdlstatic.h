@@ -12,9 +12,28 @@
 #include <SDLStatic/crypto.h>
 #include <SDLStatic/debug_text.h>
 #include <SDLStatic/dialog.h>
+#include <SDLStatic/engine.h>
+#include <SDLStatic/engine_actor.h>
+#include <SDLStatic/engine_assets.h>
+#include <SDLStatic/engine_binding.h>
+#include <SDLStatic/engine_camera.h>
+#include <SDLStatic/engine_config.h>
+#include <SDLStatic/engine_graphics.h>
+#include <SDLStatic/engine_input.h>
+#include <SDLStatic/engine_light.h>
+#include <SDLStatic/engine_media.h>
+#include <SDLStatic/engine_physics.h>
+#include <SDLStatic/engine_render.h>
+#include <SDLStatic/engine_save.h>
+#include <SDLStatic/engine_scene.h>
+#include <SDLStatic/engine_script.h>
+#include <SDLStatic/engine_text.h>
+#include <SDLStatic/gpu_build.h>
 #include <SDLStatic/gui.h>
 #include <SDLStatic/gui_grid.h>
 #include <SDLStatic/light.h>
+#include <SDLStatic/physics_build.h>
+#include <SDLStatic/physics_draw.h>
 #include <SDLStatic/regex.h>
 #include <SDLStatic/signals.h>
 #include <SDLStatic/textfile.h>
@@ -406,8 +425,101 @@ class LightSceneHandle {
 };
 
 // bool-returning C functions surfaced as Status.
+inline Status ActionBind(SDLStatic_ActionMap *map, const char *action, SDLStatic_Binding binding) {
+  return ::SDLStatic_ActionBind(map, action, binding) ? Status() : Status::FromSdl();
+}
+inline Status ActionBindAxis(SDLStatic_ActionMap *map, const char *action, SDLStatic_GamepadAxis axis, int half) {
+  return ::SDLStatic_ActionBindAxis(map, action, axis, half) ? Status() : Status::FromSdl();
+}
+inline Status ActionBindDirection(SDLStatic_ActionMap *map, const char *action, SDLStatic_Direction direction) {
+  return ::SDLStatic_ActionBindDirection(map, action, direction) ? Status() : Status::FromSdl();
+}
+inline Status ActionBindKey(SDLStatic_ActionMap *map, const char *action, SDL_Scancode key) {
+  return ::SDLStatic_ActionBindKey(map, action, key) ? Status() : Status::FromSdl();
+}
+inline Status ActionBindKeySigned(SDLStatic_ActionMap *map, const char *action, SDL_Scancode key, int sign) {
+  return ::SDLStatic_ActionBindKeySigned(map, action, key, sign) ? Status() : Status::FromSdl();
+}
+inline Status ActionBindMouse(SDLStatic_ActionMap *map, const char *action, SDLStatic_MouseButton button) {
+  return ::SDLStatic_ActionBindMouse(map, action, button) ? Status() : Status::FromSdl();
+}
+inline Status ActionBindPad(SDLStatic_ActionMap *map, const char *action, SDLStatic_GamepadButton button) {
+  return ::SDLStatic_ActionBindPad(map, action, button) ? Status() : Status::FromSdl();
+}
+inline Status ActionBindingAt(SDLStatic_ActionMap *map, const char *action, int index, SDLStatic_Binding *out) {
+  return ::SDLStatic_ActionBindingAt(map, action, index, out) ? Status() : Status::FromSdl();
+}
+inline Status ActionCapture(SDLStatic_Engine *engine, int player, SDLStatic_Binding *out) {
+  return ::SDLStatic_ActionCapture(engine, player, out) ? Status() : Status::FromSdl();
+}
+inline Status ActionDown(SDLStatic_Engine *engine, SDLStatic_ActionMap *map, int player, const char *action) {
+  return ::SDLStatic_ActionDown(engine, map, player, action) ? Status() : Status::FromSdl();
+}
+inline Status ActionMapLoad(SDLStatic_ActionMap *map, const char *org, const char *app) {
+  return ::SDLStatic_ActionMapLoad(map, org, app) ? Status() : Status::FromSdl();
+}
+inline Status ActionMapLoadToml(SDLStatic_ActionMap *map, const char *toml) {
+  return ::SDLStatic_ActionMapLoadToml(map, toml) ? Status() : Status::FromSdl();
+}
+inline Status ActionMapSave(SDLStatic_ActionMap *map, const char *org, const char *app) {
+  return ::SDLStatic_ActionMapSave(map, org, app) ? Status() : Status::FromSdl();
+}
+inline Status ActionPressed(SDLStatic_Engine *engine, SDLStatic_ActionMap *map, int player, const char *action) {
+  return ::SDLStatic_ActionPressed(engine, map, player, action) ? Status() : Status::FromSdl();
+}
+inline Status ActionReleased(SDLStatic_Engine *engine, SDLStatic_ActionMap *map, int player, const char *action) {
+  return ::SDLStatic_ActionReleased(engine, map, player, action) ? Status() : Status::FromSdl();
+}
+inline Status ActorAddBody(SDLStatic_Actor *actor, const SDLStatic_BodyDef *def) {
+  return ::SDLStatic_ActorAddBody(actor, def) ? Status() : Status::FromSdl();
+}
+inline Status ActorAddLight(SDLStatic_Actor *actor, const SDLStatic_LightDef *light) {
+  return ::SDLStatic_ActorAddLight(actor, light) ? Status() : Status::FromSdl();
+}
+inline Status ActorAlive(SDLStatic_Engine *engine, SDLStatic_ActorId id) {
+  return ::SDLStatic_ActorAlive(engine, id) ? Status() : Status::FromSdl();
+}
+inline Status ActorBodyBounds(SDLStatic_Actor *actor, SDL_FRect *out) {
+  return ::SDLStatic_ActorBodyBounds(actor, out) ? Status() : Status::FromSdl();
+}
+inline Status ActorEnabled(SDLStatic_Actor *actor) {
+  return ::SDLStatic_ActorEnabled(actor) ? Status() : Status::FromSdl();
+}
+inline Status ActorHasBody(SDLStatic_Actor *actor) {
+  return ::SDLStatic_ActorHasBody(actor) ? Status() : Status::FromSdl();
+}
+inline Status ActorHasTags(SDLStatic_Actor *actor, SDLStatic_ActorTags any) {
+  return ::SDLStatic_ActorHasTags(actor, any) ? Status() : Status::FromSdl();
+}
+inline Status ActorSend(SDLStatic_Engine *engine, SDLStatic_ActorId target, const SDLStatic_ActorMessage *message) {
+  return ::SDLStatic_ActorSend(engine, target, message) ? Status() : Status::FromSdl();
+}
+inline Status ActorSetParent(SDLStatic_Actor *actor, SDLStatic_ActorId parent) {
+  return ::SDLStatic_ActorSetParent(actor, parent) ? Status() : Status::FromSdl();
+}
+inline Status ActorSetSprite(SDLStatic_Actor *actor, const SDLStatic_Sprite *sprite) {
+  return ::SDLStatic_ActorSetSprite(actor, sprite) ? Status() : Status::FromSdl();
+}
+inline Status AnyInput(SDLStatic_Engine *engine) {
+  return ::SDLStatic_AnyInput(engine) ? Status() : Status::FromSdl();
+}
+inline Status AssetsReady(SDLStatic_Engine *engine) {
+  return ::SDLStatic_AssetsReady(engine) ? Status() : Status::FromSdl();
+}
 inline Status BidiBaseIsRTL(const char *utf8, int length) {
   return ::SDLStatic_BidiBaseIsRTL(utf8, length) ? Status() : Status::FromSdl();
+}
+inline Status BindingFromString(const char *text, SDLStatic_Binding *out) {
+  return ::SDLStatic_BindingFromString(text, out) ? Status() : Status::FromSdl();
+}
+inline Status CameraBegin(SDLStatic_Engine *engine, const SDLStatic_Camera *camera) {
+  return ::SDLStatic_CameraBegin(engine, camera) ? Status() : Status::FromSdl();
+}
+inline Status CameraScreenToWorld(const SDLStatic_Camera *camera, float screen_x, float screen_y, float *world_x, float *world_y) {
+  return ::SDLStatic_CameraScreenToWorld(camera, screen_x, screen_y, world_x, world_y) ? Status() : Status::FromSdl();
+}
+inline Status CameraVisible(const SDLStatic_Camera *camera, SDL_FRect world) {
+  return ::SDLStatic_CameraVisible(camera, world) ? Status() : Status::FromSdl();
 }
 inline Status CryptoSelfTest() {
   return ::SDLStatic_CryptoSelfTest() ? Status() : Status::FromSdl();
@@ -418,11 +530,122 @@ inline Status DialogDeliverSave(const char *path) {
 inline Status DisconnectSignal(SDLStatic_SignalEmitter *emitter, Uint64 connection) {
   return ::SDLStatic_DisconnectSignal(emitter, connection) ? Status() : Status::FromSdl();
 }
+inline Status DrawPhysicsWorld(b2WorldId world, SDL_Renderer *renderer, const SDLStatic_PhysicsDrawConfig *config) {
+  return ::SDLStatic_DrawPhysicsWorld(world, renderer, config) ? Status() : Status::FromSdl();
+}
+inline Status EngineEffectsAvailable(SDLStatic_Engine *engine) {
+  return ::SDLStatic_EngineEffectsAvailable(engine) ? Status() : Status::FromSdl();
+}
+inline Status EngineSetDisplay(SDLStatic_Engine *engine, int index) {
+  return ::SDLStatic_EngineSetDisplay(engine, index) ? Status() : Status::FromSdl();
+}
+inline Status EngineSetGraphics(SDLStatic_Engine *engine, const SDLStatic_GraphicsSettings *settings) {
+  return ::SDLStatic_EngineSetGraphics(engine, settings) ? Status() : Status::FromSdl();
+}
+inline Status EngineSetPresentation(SDLStatic_Engine *engine, SDLStatic_EnginePresentation mode) {
+  return ::SDLStatic_EngineSetPresentation(engine, mode) ? Status() : Status::FromSdl();
+}
+inline Status EngineSetTickRate(SDLStatic_Engine *engine, int ticks_per_second) {
+  return ::SDLStatic_EngineSetTickRate(engine, ticks_per_second) ? Status() : Status::FromSdl();
+}
+inline Status EngineTick(SDLStatic_Engine *engine) {
+  return ::SDLStatic_EngineTick(engine) ? Status() : Status::FromSdl();
+}
+inline Status EventKeyRepeat(SDL_Event *event) {
+  return ::SDLStatic_EventKeyRepeat(event) ? Status() : Status::FromSdl();
+}
+inline Status GPUComputeBindingsAddBuffer(SDLStatic_GPUComputeBindings *bindings, SDL_GPUBuffer *buffer, bool cycle) {
+  return ::SDLStatic_GPUComputeBindingsAddBuffer(bindings, buffer, cycle) ? Status() : Status::FromSdl();
+}
+inline Status GPUComputeBindingsAddTexture(SDLStatic_GPUComputeBindings *bindings, SDL_GPUTexture *texture, Uint32 mip_level, Uint32 layer, bool cycle) {
+  return ::SDLStatic_GPUComputeBindingsAddTexture(bindings, texture, mip_level, layer, cycle) ? Status() : Status::FromSdl();
+}
+inline Status GPUPipelineInfoAddColorTarget(SDL_GPUGraphicsPipelineCreateInfo *info, SDL_GPUTextureFormat format) {
+  return ::SDLStatic_GPUPipelineInfoAddColorTarget(info, format) ? Status() : Status::FromSdl();
+}
+inline Status GPUPipelineInfoAddVertexAttribute(SDL_GPUGraphicsPipelineCreateInfo *info, Uint32 location, Uint32 buffer_slot, SDL_GPUVertexElementFormat format, Uint32 offset) {
+  return ::SDLStatic_GPUPipelineInfoAddVertexAttribute(info, location, buffer_slot, format, offset) ? Status() : Status::FromSdl();
+}
+inline Status GPUPipelineInfoAddVertexBuffer(SDL_GPUGraphicsPipelineCreateInfo *info, Uint32 slot, Uint32 pitch, SDL_GPUVertexInputRate input_rate) {
+  return ::SDLStatic_GPUPipelineInfoAddVertexBuffer(info, slot, pitch, input_rate) ? Status() : Status::FromSdl();
+}
+inline Status GPURenderStateInfoAddSampler(SDL_GPURenderStateCreateInfo *info, SDL_GPUTexture *texture, SDL_GPUSampler *sampler) {
+  return ::SDLStatic_GPURenderStateInfoAddSampler(info, texture, sampler) ? Status() : Status::FromSdl();
+}
+inline Status GPUUploadToTransferBuffer(SDL_GPUDevice *device, SDL_GPUTransferBuffer *buffer, Uint32 offset, const void *data, int size, bool cycle) {
+  return ::SDLStatic_GPUUploadToTransferBuffer(device, buffer, offset, data, size, cycle) ? Status() : Status::FromSdl();
+}
+inline Status GPUWaitForFence(SDL_GPUDevice *device, SDL_GPUFence *fence) {
+  return ::SDLStatic_GPUWaitForFence(device, fence) ? Status() : Status::FromSdl();
+}
+inline Status GamepadButtonDown(SDLStatic_Engine *engine, int player, SDLStatic_GamepadButton button) {
+  return ::SDLStatic_GamepadButtonDown(engine, player, button) ? Status() : Status::FromSdl();
+}
+inline Status GamepadButtonPressed(SDLStatic_Engine *engine, int player, SDLStatic_GamepadButton button) {
+  return ::SDLStatic_GamepadButtonPressed(engine, player, button) ? Status() : Status::FromSdl();
+}
+inline Status GamepadButtonReleased(SDLStatic_Engine *engine, int player, SDLStatic_GamepadButton button) {
+  return ::SDLStatic_GamepadButtonReleased(engine, player, button) ? Status() : Status::FromSdl();
+}
+inline Status GamepadConnected(SDLStatic_Engine *engine, int player) {
+  return ::SDLStatic_GamepadConnected(engine, player) ? Status() : Status::FromSdl();
+}
+inline Status GamepadDirectionPressed(SDLStatic_Engine *engine, int player, SDLStatic_Direction direction) {
+  return ::SDLStatic_GamepadDirectionPressed(engine, player, direction) ? Status() : Status::FromSdl();
+}
+inline Status GamepadDirectionRepeat(SDLStatic_Engine *engine, int player, SDLStatic_Direction direction) {
+  return ::SDLStatic_GamepadDirectionRepeat(engine, player, direction) ? Status() : Status::FromSdl();
+}
+inline Status GamepadHasAccelerometer(SDLStatic_Engine *engine, int player) {
+  return ::SDLStatic_GamepadHasAccelerometer(engine, player) ? Status() : Status::FromSdl();
+}
+inline Status GamepadHasGyro(SDLStatic_Engine *engine, int player) {
+  return ::SDLStatic_GamepadHasGyro(engine, player) ? Status() : Status::FromSdl();
+}
+inline Status GamepadRumble(SDLStatic_Engine *engine, int player, float low, float high, Uint32 milliseconds) {
+  return ::SDLStatic_GamepadRumble(engine, player, low, high, milliseconds) ? Status() : Status::FromSdl();
+}
+inline Status GamepadRumbleTriggers(SDLStatic_Engine *engine, int player, float left, float right, Uint32 milliseconds) {
+  return ::SDLStatic_GamepadRumbleTriggers(engine, player, left, right, milliseconds) ? Status() : Status::FromSdl();
+}
+inline Status GamepadSetLED(SDLStatic_Engine *engine, int player, Uint8 red, Uint8 green, Uint8 blue) {
+  return ::SDLStatic_GamepadSetLED(engine, player, red, green, blue) ? Status() : Status::FromSdl();
+}
+inline Status GraphicsEqual(const SDLStatic_GraphicsSettings *a, const SDLStatic_GraphicsSettings *b) {
+  return ::SDLStatic_GraphicsEqual(a, b) ? Status() : Status::FromSdl();
+}
+inline Status GraphicsLoadTomlFile(SDLStatic_GraphicsSettings *settings, const char *path) {
+  return ::SDLStatic_GraphicsLoadTomlFile(settings, path) ? Status() : Status::FromSdl();
+}
+inline Status GraphicsLoadTomlString(SDLStatic_GraphicsSettings *settings, const char *toml) {
+  return ::SDLStatic_GraphicsLoadTomlString(settings, toml) ? Status() : Status::FromSdl();
+}
+inline Status GraphicsQualityFromName(const char *name, SDLStatic_GraphicsQuality *out) {
+  return ::SDLStatic_GraphicsQualityFromName(name, out) ? Status() : Status::FromSdl();
+}
+inline Status GraphicsSave(const SDLStatic_GraphicsSettings *settings, const char *org, const char *app) {
+  return ::SDLStatic_GraphicsSave(settings, org, app) ? Status() : Status::FromSdl();
+}
 inline Status GuiGridBegin(struct nk_context *ctx, SDLStatic_GuiGrid *grid, int columns, const float *weights, float row_height) {
   return ::SDLStatic_GuiGridBegin(ctx, grid, columns, weights, row_height) ? Status() : Status::FromSdl();
 }
 inline Status HMACSHA256(const void *key, size_t keySize, const void *data, size_t dataSize, Uint8 digest[32]) {
   return ::SDLStatic_HMACSHA256(key, keySize, data, dataSize, digest) ? Status() : Status::FromSdl();
+}
+inline Status HasDeviceMotion(SDLStatic_Engine *engine) {
+  return ::SDLStatic_HasDeviceMotion(engine) ? Status() : Status::FromSdl();
+}
+inline Status KeyDown(SDLStatic_Engine *engine, SDL_Scancode key) {
+  return ::SDLStatic_KeyDown(engine, key) ? Status() : Status::FromSdl();
+}
+inline Status KeyPressed(SDLStatic_Engine *engine, SDL_Scancode key) {
+  return ::SDLStatic_KeyPressed(engine, key) ? Status() : Status::FromSdl();
+}
+inline Status KeyReleased(SDLStatic_Engine *engine, SDL_Scancode key) {
+  return ::SDLStatic_KeyReleased(engine, key) ? Status() : Status::FromSdl();
+}
+inline Status LightRender(SDLStatic_Engine *engine, const SDLStatic_Camera *camera, float alpha) {
+  return ::SDLStatic_LightRender(engine, camera, alpha) ? Status() : Status::FromSdl();
 }
 inline Status MountEncryptedArchive(const void *data, int dataSize, const char *password, const char *mountPoint) {
   return ::SDLStatic_MountEncryptedArchive(data, dataSize, password, mountPoint) ? Status() : Status::FromSdl();
@@ -430,11 +653,80 @@ inline Status MountEncryptedArchive(const void *data, int dataSize, const char *
 inline Status MountEncryptedArchiveFile(const char *path, const char *password, const char *mountPoint) {
   return ::SDLStatic_MountEncryptedArchiveFile(path, password, mountPoint) ? Status() : Status::FromSdl();
 }
+inline Status MouseCaptured(SDLStatic_Engine *engine) {
+  return ::SDLStatic_MouseCaptured(engine) ? Status() : Status::FromSdl();
+}
+inline Status MouseDown(SDLStatic_Engine *engine, SDLStatic_MouseButton button) {
+  return ::SDLStatic_MouseDown(engine, button) ? Status() : Status::FromSdl();
+}
+inline Status MousePressed(SDLStatic_Engine *engine, SDLStatic_MouseButton button) {
+  return ::SDLStatic_MousePressed(engine, button) ? Status() : Status::FromSdl();
+}
+inline Status MouseReleased(SDLStatic_Engine *engine, SDLStatic_MouseButton button) {
+  return ::SDLStatic_MouseReleased(engine, button) ? Status() : Status::FromSdl();
+}
+inline Status PhysicsPaused(SDLStatic_Engine *engine) {
+  return ::SDLStatic_PhysicsPaused(engine) ? Status() : Status::FromSdl();
+}
 inline Status RenderDebugText(SDL_Renderer *renderer, float x, float y, const char *text) {
   return ::SDLStatic_RenderDebugText(renderer, x, y, text) ? Status() : Status::FromSdl();
 }
+inline Status RunGame(SDLStatic_Engine *engine, const SDLStatic_GameHooks *hooks, void *user) {
+  return ::SDLStatic_RunGame(engine, hooks, user) ? Status() : Status::FromSdl();
+}
 inline Status SHA256(const void *data, size_t dataSize, Uint8 digest[32]) {
   return ::SDLStatic_SHA256(data, dataSize, digest) ? Status() : Status::FromSdl();
+}
+inline Status SaveDelete(SDLStatic_Engine *engine, int slot) {
+  return ::SDLStatic_SaveDelete(engine, slot) ? Status() : Status::FromSdl();
+}
+inline Status SaveExists(SDLStatic_Engine *engine, int slot) {
+  return ::SDLStatic_SaveExists(engine, slot) ? Status() : Status::FromSdl();
+}
+inline Status SaveWrite(SDLStatic_Engine *engine, int slot, const void *data, size_t size, const char *label) {
+  return ::SDLStatic_SaveWrite(engine, slot, data, size, label) ? Status() : Status::FromSdl();
+}
+inline Status SceneIsActive(SDLStatic_Scene *scene) {
+  return ::SDLStatic_SceneIsActive(scene) ? Status() : Status::FromSdl();
+}
+inline Status ScenePop(SDLStatic_Engine *engine) {
+  return ::SDLStatic_ScenePop(engine) ? Status() : Status::FromSdl();
+}
+inline Status ScenePush(SDLStatic_Engine *engine, const SDLStatic_SceneDef *def) {
+  return ::SDLStatic_ScenePush(engine, def) ? Status() : Status::FromSdl();
+}
+inline Status SceneReplace(SDLStatic_Engine *engine, const SDLStatic_SceneDef *def) {
+  return ::SDLStatic_SceneReplace(engine, def) ? Status() : Status::FromSdl();
+}
+inline Status SceneReset(SDLStatic_Engine *engine, const SDLStatic_SceneDef *def) {
+  return ::SDLStatic_SceneReset(engine, def) ? Status() : Status::FromSdl();
+}
+inline Status SceneTransitionTo(SDLStatic_Engine *engine, const SDLStatic_SceneDef *def, SDLStatic_SceneTransition transition, float seconds) {
+  return ::SDLStatic_SceneTransitionTo(engine, def, transition, seconds) ? Status() : Status::FromSdl();
+}
+inline Status SceneTransitioning(SDLStatic_Engine *engine) {
+  return ::SDLStatic_SceneTransitioning(engine) ? Status() : Status::FromSdl();
+}
+inline Status ScriptBind(SDLStatic_Engine *engine, void *language_state, SDLStatic_ScriptDispatch dispatch, SDLStatic_ScriptRelease release) {
+  return ::SDLStatic_ScriptBind(engine, language_state, dispatch, release) ? Status() : Status::FromSdl();
+}
+inline Status ScriptHasHandlers(SDLStatic_Engine *engine) {
+  return ::SDLStatic_ScriptHasHandlers(engine) ? Status() : Status::FromSdl();
+}
+inline Status ScriptRun(SDLStatic_Engine *engine) {
+  return ::SDLStatic_ScriptRun(engine) ? Status() : Status::FromSdl();
+}
+inline Status ScriptSetHook(SDLStatic_Engine *engine, SDLStatic_ScriptHook hook, Sint64 handle) {
+  return ::SDLStatic_ScriptSetHook(engine, hook, handle) ? Status() : Status::FromSdl();
+}
+inline Status SetDeviceMotion(SDLStatic_Engine *engine, bool enabled) {
+  return ::SDLStatic_SetDeviceMotion(engine, enabled) ? Status() : Status::FromSdl();
+}
+inline Status SetGamepadMotion(SDLStatic_Engine *engine, int player, bool enabled) {
+  return ::SDLStatic_SetGamepadMotion(engine, player, enabled) ? Status() : Status::FromSdl();
+}
+inline Status SetMouseCapture(SDLStatic_Engine *engine, bool captured) {
+  return ::SDLStatic_SetMouseCapture(engine, captured) ? Status() : Status::FromSdl();
 }
 inline Status ShowOpenFileDialog(SDL_Window *window, const char *filter_name, const char *filter_pattern, const char *default_location) {
   return ::SDLStatic_ShowOpenFileDialog(window, filter_name, filter_pattern, default_location) ? Status() : Status::FromSdl();
@@ -442,15 +734,148 @@ inline Status ShowOpenFileDialog(SDL_Window *window, const char *filter_name, co
 inline Status ShowSaveFileDialog(SDL_Window *window, const char *filter_name, const char *filter_pattern, const char *default_location) {
   return ::SDLStatic_ShowSaveFileDialog(window, filter_name, filter_pattern, default_location) ? Status() : Status::FromSdl();
 }
+inline Status TextHas(SDLStatic_Engine *engine, const char *key) {
+  return ::SDLStatic_TextHas(engine, key) ? Status() : Status::FromSdl();
+}
+inline Status TextLoad(SDLStatic_Engine *engine, const char *language, const char *toml) {
+  return ::SDLStatic_TextLoad(engine, language, toml) ? Status() : Status::FromSdl();
+}
+inline Status TextLoadFile(SDLStatic_Engine *engine, const char *language) {
+  return ::SDLStatic_TextLoadFile(engine, language) ? Status() : Status::FromSdl();
+}
 
 // Everything else, aliased into the namespace unchanged.
+inline constexpr auto& ActionBindingCount = ::SDLStatic_ActionBindingCount;
+inline constexpr auto& ActionClear = ::SDLStatic_ActionClear;
+inline constexpr auto& ActionCount = ::SDLStatic_ActionCount;
+inline constexpr auto& ActionMapCreate = ::SDLStatic_ActionMapCreate;
+inline constexpr auto& ActionMapDestroy = ::SDLStatic_ActionMapDestroy;
+inline constexpr auto& ActionMapKeyboardPlayer = ::SDLStatic_ActionMapKeyboardPlayer;
+inline constexpr auto& ActionMapSetKeyboardPlayer = ::SDLStatic_ActionMapSetKeyboardPlayer;
+inline constexpr auto& ActionMapToToml = ::SDLStatic_ActionMapToToml;
+inline constexpr auto& ActionName = ::SDLStatic_ActionName;
+inline constexpr auto& ActionValue = ::SDLStatic_ActionValue;
+inline constexpr auto& ActionVector = ::SDLStatic_ActionVector;
+inline constexpr auto& ActorAngularVelocity = ::SDLStatic_ActorAngularVelocity;
+inline constexpr auto& ActorApplyForce = ::SDLStatic_ActorApplyForce;
+inline constexpr auto& ActorApplyImpulse = ::SDLStatic_ActorApplyImpulse;
+inline constexpr auto& ActorBroadcast = ::SDLStatic_ActorBroadcast;
+inline constexpr auto& ActorChild = ::SDLStatic_ActorChild;
+inline constexpr auto& ActorChildCount = ::SDLStatic_ActorChildCount;
+inline constexpr auto& ActorClear = ::SDLStatic_ActorClear;
+inline constexpr auto& ActorClearSprite = ::SDLStatic_ActorClearSprite;
+inline constexpr auto& ActorCount = ::SDLStatic_ActorCount;
+inline constexpr auto& ActorDefCreate = ::SDLStatic_ActorDefCreate;
+inline constexpr auto& ActorDefDestroy = ::SDLStatic_ActorDefDestroy;
+inline constexpr auto& ActorDefSetName = ::SDLStatic_ActorDefSetName;
+inline constexpr auto& ActorDefSetParent = ::SDLStatic_ActorDefSetParent;
+inline constexpr auto& ActorDefSetPosition = ::SDLStatic_ActorDefSetPosition;
+inline constexpr auto& ActorDefSetRotation = ::SDLStatic_ActorDefSetRotation;
+inline constexpr auto& ActorDefSetScale = ::SDLStatic_ActorDefSetScale;
+inline constexpr auto& ActorDefSetStateSize = ::SDLStatic_ActorDefSetStateSize;
+inline constexpr auto& ActorDefSetTags = ::SDLStatic_ActorDefSetTags;
+inline constexpr auto& ActorDefSetType = ::SDLStatic_ActorDefSetType;
+inline constexpr auto& ActorDestroy = ::SDLStatic_ActorDestroy;
+inline constexpr auto& ActorEach = ::SDLStatic_ActorEach;
+inline constexpr auto& ActorEngine = ::SDLStatic_ActorEngine;
+inline constexpr auto& ActorFindByName = ::SDLStatic_ActorFindByName;
+inline constexpr auto& ActorFindByType = ::SDLStatic_ActorFindByType;
+inline constexpr auto& ActorGet = ::SDLStatic_ActorGet;
+inline constexpr auto& ActorGetId = ::SDLStatic_ActorGetId;
+inline constexpr auto& ActorGetTags = ::SDLStatic_ActorGetTags;
+inline constexpr auto& ActorLight = ::SDLStatic_ActorLight;
+inline constexpr auto& ActorLocal = ::SDLStatic_ActorLocal;
+inline constexpr auto& ActorMove = ::SDLStatic_ActorMove;
+inline constexpr auto& ActorName = ::SDLStatic_ActorName;
+inline constexpr auto& ActorParent = ::SDLStatic_ActorParent;
+inline constexpr auto& ActorQuery = ::SDLStatic_ActorQuery;
+inline constexpr auto& ActorRemoveBody = ::SDLStatic_ActorRemoveBody;
+inline constexpr auto& ActorRemoveLight = ::SDLStatic_ActorRemoveLight;
+inline constexpr auto& ActorRenderTransform = ::SDLStatic_ActorRenderTransform;
+inline constexpr auto& ActorSetAngularVelocity = ::SDLStatic_ActorSetAngularVelocity;
+inline constexpr auto& ActorSetEnabled = ::SDLStatic_ActorSetEnabled;
+inline constexpr auto& ActorSetLocal = ::SDLStatic_ActorSetLocal;
+inline constexpr auto& ActorSetPosition = ::SDLStatic_ActorSetPosition;
+inline constexpr auto& ActorSetTags = ::SDLStatic_ActorSetTags;
+inline constexpr auto& ActorSetVelocity = ::SDLStatic_ActorSetVelocity;
+inline constexpr auto& ActorSpawn = ::SDLStatic_ActorSpawn;
+inline constexpr auto& ActorSprite = ::SDLStatic_ActorSprite;
+inline constexpr auto& ActorState = ::SDLStatic_ActorState;
+inline constexpr auto& ActorTeleport = ::SDLStatic_ActorTeleport;
+inline constexpr auto& ActorTeleportBody = ::SDLStatic_ActorTeleportBody;
+inline constexpr auto& ActorType = ::SDLStatic_ActorType;
+inline constexpr auto& ActorVelocity = ::SDLStatic_ActorVelocity;
+inline constexpr auto& ActorWakeBody = ::SDLStatic_ActorWakeBody;
+inline constexpr auto& ActorWorld = ::SDLStatic_ActorWorld;
+inline constexpr auto& AssetPath = ::SDLStatic_AssetPath;
+inline constexpr auto& AssetRelease = ::SDLStatic_AssetRelease;
+inline constexpr auto& AssetRetain = ::SDLStatic_AssetRetain;
+inline constexpr auto& AssetStatusOf = ::SDLStatic_AssetStatusOf;
+inline constexpr auto& AssetsFrameBudget = ::SDLStatic_AssetsFrameBudget;
+inline constexpr auto& AssetsLoaded = ::SDLStatic_AssetsLoaded;
+inline constexpr auto& AssetsPending = ::SDLStatic_AssetsPending;
+inline constexpr auto& AssetsProgress = ::SDLStatic_AssetsProgress;
+inline constexpr auto& AssetsSetFrameBudget = ::SDLStatic_AssetsSetFrameBudget;
+inline constexpr auto& AssetsSetWorkers = ::SDLStatic_AssetsSetWorkers;
+inline constexpr auto& AssetsWait = ::SDLStatic_AssetsWait;
 inline constexpr auto& BidiItemize = ::SDLStatic_BidiItemize;
+inline constexpr auto& BindingToString = ::SDLStatic_BindingToString;
+inline constexpr auto& BodyDefCreate = ::SDLStatic_BodyDefCreate;
+inline constexpr auto& BodyDefDestroy = ::SDLStatic_BodyDefDestroy;
+inline constexpr auto& BodyDefSetBullet = ::SDLStatic_BodyDefSetBullet;
+inline constexpr auto& BodyDefSetFilter = ::SDLStatic_BodyDefSetFilter;
+inline constexpr auto& BodyDefSetFixedRotation = ::SDLStatic_BodyDefSetFixedRotation;
+inline constexpr auto& BodyDefSetGravityScale = ::SDLStatic_BodyDefSetGravityScale;
+inline constexpr auto& BodyDefSetMaterial = ::SDLStatic_BodyDefSetMaterial;
+inline constexpr auto& BodyDefSetOffset = ::SDLStatic_BodyDefSetOffset;
+inline constexpr auto& BodyDefSetSensor = ::SDLStatic_BodyDefSetSensor;
+inline constexpr auto& BodyDefSetShape = ::SDLStatic_BodyDefSetShape;
+inline constexpr auto& BodyDefSetSize = ::SDLStatic_BodyDefSetSize;
+inline constexpr auto& BodyDefSetType = ::SDLStatic_BodyDefSetType;
+inline constexpr auto& BodyDefault = ::SDLStatic_BodyDefault;
+inline constexpr auto& CameraCreate = ::SDLStatic_CameraCreate;
+inline constexpr auto& CameraDestroy = ::SDLStatic_CameraDestroy;
+inline constexpr auto& CameraEnd = ::SDLStatic_CameraEnd;
+inline constexpr auto& CameraFollow = ::SDLStatic_CameraFollow;
+inline constexpr auto& CameraInit = ::SDLStatic_CameraInit;
+inline constexpr auto& CameraPoint = ::SDLStatic_CameraPoint;
+inline constexpr auto& CameraRect = ::SDLStatic_CameraRect;
+inline constexpr auto& CameraSetBounds = ::SDLStatic_CameraSetBounds;
+inline constexpr auto& CameraSetDeadzone = ::SDLStatic_CameraSetDeadzone;
+inline constexpr auto& CameraSetSmoothing = ::SDLStatic_CameraSetSmoothing;
+inline constexpr auto& CameraSetViewport = ::SDLStatic_CameraSetViewport;
+inline constexpr auto& CameraSetZoom = ::SDLStatic_CameraSetZoom;
+inline constexpr auto& CameraShake = ::SDLStatic_CameraShake;
+inline constexpr auto& CameraSnap = ::SDLStatic_CameraSnap;
+inline constexpr auto& CameraSplit = ::SDLStatic_CameraSplit;
+inline constexpr auto& CameraUpdate = ::SDLStatic_CameraUpdate;
+inline constexpr auto& CameraX = ::SDLStatic_CameraX;
+inline constexpr auto& CameraY = ::SDLStatic_CameraY;
 inline constexpr auto& CompressData = ::SDLStatic_CompressData;
+inline constexpr auto& ConfigCreate = ::SDLStatic_ConfigCreate;
+inline constexpr auto& ConfigDestroy = ::SDLStatic_ConfigDestroy;
+inline constexpr auto& ConfigSetAutoMount = ::SDLStatic_ConfigSetAutoMount;
+inline constexpr auto& ConfigSetBackend = ::SDLStatic_ConfigSetBackend;
+inline constexpr auto& ConfigSetDesignSize = ::SDLStatic_ConfigSetDesignSize;
+inline constexpr auto& ConfigSetFullscreen = ::SDLStatic_ConfigSetFullscreen;
+inline constexpr auto& ConfigSetGraphics = ::SDLStatic_ConfigSetGraphics;
+inline constexpr auto& ConfigSetHeadless = ::SDLStatic_ConfigSetHeadless;
+inline constexpr auto& ConfigSetHighDpi = ::SDLStatic_ConfigSetHighDpi;
+inline constexpr auto& ConfigSetManualClock = ::SDLStatic_ConfigSetManualClock;
+inline constexpr auto& ConfigSetMaxFps = ::SDLStatic_ConfigSetMaxFps;
+inline constexpr auto& ConfigSetMediaPath = ::SDLStatic_ConfigSetMediaPath;
+inline constexpr auto& ConfigSetPresentation = ::SDLStatic_ConfigSetPresentation;
+inline constexpr auto& ConfigSetResizable = ::SDLStatic_ConfigSetResizable;
+inline constexpr auto& ConfigSetTickRate = ::SDLStatic_ConfigSetTickRate;
+inline constexpr auto& ConfigSetTitle = ::SDLStatic_ConfigSetTitle;
+inline constexpr auto& ConfigSetVsync = ::SDLStatic_ConfigSetVsync;
+inline constexpr auto& ConfigSetWindowSize = ::SDLStatic_ConfigSetWindowSize;
 inline constexpr auto& ConnectSignal = ::SDLStatic_ConnectSignal;
 inline constexpr auto& CountSignalConnections = ::SDLStatic_CountSignalConnections;
 inline constexpr auto& CreateChipSFX = ::SDLStatic_CreateChipSFX;
 inline constexpr auto& CreateChipTone = ::SDLStatic_CreateChipTone;
 inline constexpr auto& CreateChipTune = ::SDLStatic_CreateChipTune;
+inline constexpr auto& CreateEngine = ::SDLStatic_CreateEngine;
 inline constexpr auto& CreateGuiWithGlyphs = ::SDLStatic_CreateGuiWithGlyphs;
 inline constexpr auto& CreateSignalEmitter = ::SDLStatic_CreateSignalEmitter;
 inline constexpr auto& DayNightAmbient = ::SDLStatic_DayNightAmbient;
@@ -458,23 +883,317 @@ inline constexpr auto& DayNightSunlight = ::SDLStatic_DayNightSunlight;
 inline constexpr auto& DecodeDataBase64 = ::SDLStatic_DecodeDataBase64;
 inline constexpr auto& DecompressData = ::SDLStatic_DecompressData;
 inline constexpr auto& DecryptData = ::SDLStatic_DecryptData;
+inline constexpr auto& DestroyEngine = ::SDLStatic_DestroyEngine;
 inline constexpr auto& DestroySignalEmitter = ::SDLStatic_DestroySignalEmitter;
+inline constexpr auto& DeviceAccelerometer = ::SDLStatic_DeviceAccelerometer;
+inline constexpr auto& DeviceGyro = ::SDLStatic_DeviceGyro;
 inline constexpr auto& DialogPath = ::SDLStatic_DialogPath;
 inline constexpr auto& DialogReset = ::SDLStatic_DialogReset;
 inline constexpr auto& DialogStatus = ::SDLStatic_DialogStatus;
+inline constexpr auto& DistanceJointDefCreate = ::SDLStatic_DistanceJointDefCreate;
+inline constexpr auto& DistanceJointDefDestroy = ::SDLStatic_DistanceJointDefDestroy;
+inline constexpr auto& DistanceJointDefSetAnchors = ::SDLStatic_DistanceJointDefSetAnchors;
+inline constexpr auto& DistanceJointDefSetBodies = ::SDLStatic_DistanceJointDefSetBodies;
+inline constexpr auto& DistanceJointDefSetCollideConnected = ::SDLStatic_DistanceJointDefSetCollideConnected;
+inline constexpr auto& DistanceJointDefSetLength = ::SDLStatic_DistanceJointDefSetLength;
+inline constexpr auto& DistanceJointDefSetLimit = ::SDLStatic_DistanceJointDefSetLimit;
+inline constexpr auto& DistanceJointDefSetSpring = ::SDLStatic_DistanceJointDefSetSpring;
 inline constexpr auto& EmitSignal = ::SDLStatic_EmitSignal;
 inline constexpr auto& EncodeDataBase64 = ::SDLStatic_EncodeDataBase64;
 inline constexpr auto& EncryptData = ::SDLStatic_EncryptData;
+inline constexpr auto& EngineAdvance = ::SDLStatic_EngineAdvance;
+inline constexpr auto& EngineAlpha = ::SDLStatic_EngineAlpha;
+inline constexpr auto& EngineAssetScale = ::SDLStatic_EngineAssetScale;
+inline constexpr auto& EngineDelta = ::SDLStatic_EngineDelta;
+inline constexpr auto& EngineDesignSize = ::SDLStatic_EngineDesignSize;
+inline constexpr auto& EngineDisplay = ::SDLStatic_EngineDisplay;
+inline constexpr auto& EngineDisplayCount = ::SDLStatic_EngineDisplayCount;
+inline constexpr auto& EngineDisplayName = ::SDLStatic_EngineDisplayName;
+inline constexpr auto& EngineEmbedMedia = ::SDLStatic_EngineEmbedMedia;
+inline constexpr auto& EngineFps = ::SDLStatic_EngineFps;
+inline constexpr auto& EngineFrameCount = ::SDLStatic_EngineFrameCount;
+inline constexpr auto& EngineGraphics = ::SDLStatic_EngineGraphics;
+inline constexpr auto& EngineMaxFps = ::SDLStatic_EngineMaxFps;
+inline constexpr auto& EngineMediaPath = ::SDLStatic_EngineMediaPath;
+inline constexpr auto& EngineMediaSource = ::SDLStatic_EngineMediaSource;
+inline constexpr auto& EngineOverloadFrames = ::SDLStatic_EngineOverloadFrames;
+inline constexpr auto& EnginePixelSize = ::SDLStatic_EnginePixelSize;
+inline constexpr auto& EnginePresentation_ = ::SDLStatic_EnginePresentation_;
+inline constexpr auto& EngineQuit = ::SDLStatic_EngineQuit;
+inline constexpr auto& EngineRenderScale = ::SDLStatic_EngineRenderScale;
+inline constexpr auto& EngineRenderer = ::SDLStatic_EngineRenderer;
+inline constexpr auto& EngineSafeRect = ::SDLStatic_EngineSafeRect;
+inline constexpr auto& EngineSetClearColor = ::SDLStatic_EngineSetClearColor;
+inline constexpr auto& EngineSetHooks = ::SDLStatic_EngineSetHooks;
+inline constexpr auto& EngineSetMaxFps = ::SDLStatic_EngineSetMaxFps;
+inline constexpr auto& EngineSetMediaPassword = ::SDLStatic_EngineSetMediaPassword;
+inline constexpr auto& EngineSetRefreshRate = ::SDLStatic_EngineSetRefreshRate;
+inline constexpr auto& EngineSetTimeScale = ::SDLStatic_EngineSetTimeScale;
+inline constexpr auto& EngineStep = ::SDLStatic_EngineStep;
+inline constexpr auto& EngineStepsLastFrame = ::SDLStatic_EngineStepsLastFrame;
+inline constexpr auto& EngineTickRate = ::SDLStatic_EngineTickRate;
+inline constexpr auto& EngineTimeScale = ::SDLStatic_EngineTimeScale;
+inline constexpr auto& EngineViewRect = ::SDLStatic_EngineViewRect;
+inline constexpr auto& EngineWindow = ::SDLStatic_EngineWindow;
+inline constexpr auto& EngineWindowToDesign = ::SDLStatic_EngineWindowToDesign;
+inline constexpr auto& EventCreate = ::SDLStatic_EventCreate;
+inline constexpr auto& EventDestroy = ::SDLStatic_EventDestroy;
+inline constexpr auto& EventGamepadAxis = ::SDLStatic_EventGamepadAxis;
+inline constexpr auto& EventGamepadAxisValue = ::SDLStatic_EventGamepadAxisValue;
+inline constexpr auto& EventGamepadButton = ::SDLStatic_EventGamepadButton;
+inline constexpr auto& EventGamepadWhich = ::SDLStatic_EventGamepadWhich;
+inline constexpr auto& EventKeyModifiers = ::SDLStatic_EventKeyModifiers;
+inline constexpr auto& EventKeyScancode = ::SDLStatic_EventKeyScancode;
+inline constexpr auto& EventMouseButton = ::SDLStatic_EventMouseButton;
+inline constexpr auto& EventMouseDeltaX = ::SDLStatic_EventMouseDeltaX;
+inline constexpr auto& EventMouseDeltaY = ::SDLStatic_EventMouseDeltaY;
+inline constexpr auto& EventMouseX = ::SDLStatic_EventMouseX;
+inline constexpr auto& EventMouseY = ::SDLStatic_EventMouseY;
+inline constexpr auto& EventSetType = ::SDLStatic_EventSetType;
+inline constexpr auto& EventText = ::SDLStatic_EventText;
+inline constexpr auto& EventTouchX = ::SDLStatic_EventTouchX;
+inline constexpr auto& EventTouchY = ::SDLStatic_EventTouchY;
+inline constexpr auto& EventType = ::SDLStatic_EventType;
+inline constexpr auto& EventWheelX = ::SDLStatic_EventWheelX;
+inline constexpr auto& EventWheelY = ::SDLStatic_EventWheelY;
+inline constexpr auto& EventWindowId = ::SDLStatic_EventWindowId;
+inline constexpr auto& FilterJointDefCreate = ::SDLStatic_FilterJointDefCreate;
+inline constexpr auto& FilterJointDefDestroy = ::SDLStatic_FilterJointDefDestroy;
+inline constexpr auto& FilterJointDefSetBodies = ::SDLStatic_FilterJointDefSetBodies;
+inline constexpr auto& FingerCount = ::SDLStatic_FingerCount;
+inline constexpr auto& FingerHeldInRect = ::SDLStatic_FingerHeldInRect;
+inline constexpr auto& FingerInRect = ::SDLStatic_FingerInRect;
+inline constexpr auto& GPUAcquireSwapchain = ::SDLStatic_GPUAcquireSwapchain;
+inline constexpr auto& GPUBeginComputePass = ::SDLStatic_GPUBeginComputePass;
+inline constexpr auto& GPUBindComputeStorageBuffer = ::SDLStatic_GPUBindComputeStorageBuffer;
+inline constexpr auto& GPUBindComputeStorageTexture = ::SDLStatic_GPUBindComputeStorageTexture;
+inline constexpr auto& GPUBindFragmentStorageBuffer = ::SDLStatic_GPUBindFragmentStorageBuffer;
+inline constexpr auto& GPUBindFragmentStorageTexture = ::SDLStatic_GPUBindFragmentStorageTexture;
+inline constexpr auto& GPUBindVertexStorageBuffer = ::SDLStatic_GPUBindVertexStorageBuffer;
+inline constexpr auto& GPUBindVertexStorageTexture = ::SDLStatic_GPUBindVertexStorageTexture;
+inline constexpr auto& GPUBlitInfoCreate = ::SDLStatic_GPUBlitInfoCreate;
+inline constexpr auto& GPUBlitInfoDestroy = ::SDLStatic_GPUBlitInfoDestroy;
+inline constexpr auto& GPUBlitInfoSetDestination = ::SDLStatic_GPUBlitInfoSetDestination;
+inline constexpr auto& GPUBlitInfoSetFilter = ::SDLStatic_GPUBlitInfoSetFilter;
+inline constexpr auto& GPUBlitInfoSetSource = ::SDLStatic_GPUBlitInfoSetSource;
+inline constexpr auto& GPUBufferBindingCreate = ::SDLStatic_GPUBufferBindingCreate;
+inline constexpr auto& GPUBufferBindingDestroy = ::SDLStatic_GPUBufferBindingDestroy;
+inline constexpr auto& GPUBufferBindingSet = ::SDLStatic_GPUBufferBindingSet;
+inline constexpr auto& GPUBufferLocationCreate = ::SDLStatic_GPUBufferLocationCreate;
+inline constexpr auto& GPUBufferLocationDestroy = ::SDLStatic_GPUBufferLocationDestroy;
+inline constexpr auto& GPUBufferLocationSet = ::SDLStatic_GPUBufferLocationSet;
+inline constexpr auto& GPUBufferRegionCreate = ::SDLStatic_GPUBufferRegionCreate;
+inline constexpr auto& GPUBufferRegionDestroy = ::SDLStatic_GPUBufferRegionDestroy;
+inline constexpr auto& GPUBufferRegionSet = ::SDLStatic_GPUBufferRegionSet;
+inline constexpr auto& GPUColorTargetInfoCreate = ::SDLStatic_GPUColorTargetInfoCreate;
+inline constexpr auto& GPUColorTargetInfoDestroy = ::SDLStatic_GPUColorTargetInfoDestroy;
+inline constexpr auto& GPUColorTargetInfoSetClearColor = ::SDLStatic_GPUColorTargetInfoSetClearColor;
+inline constexpr auto& GPUColorTargetInfoSetCycle = ::SDLStatic_GPUColorTargetInfoSetCycle;
+inline constexpr auto& GPUColorTargetInfoSetMipLayer = ::SDLStatic_GPUColorTargetInfoSetMipLayer;
+inline constexpr auto& GPUColorTargetInfoSetOps = ::SDLStatic_GPUColorTargetInfoSetOps;
+inline constexpr auto& GPUColorTargetInfoSetTexture = ::SDLStatic_GPUColorTargetInfoSetTexture;
+inline constexpr auto& GPUComputeBindingsCreate = ::SDLStatic_GPUComputeBindingsCreate;
+inline constexpr auto& GPUComputeBindingsDestroy = ::SDLStatic_GPUComputeBindingsDestroy;
+inline constexpr auto& GPUComputePipelineInfoCreate = ::SDLStatic_GPUComputePipelineInfoCreate;
+inline constexpr auto& GPUComputePipelineInfoDestroy = ::SDLStatic_GPUComputePipelineInfoDestroy;
+inline constexpr auto& GPUComputePipelineInfoSetCode = ::SDLStatic_GPUComputePipelineInfoSetCode;
+inline constexpr auto& GPUComputePipelineInfoSetEntrypoint = ::SDLStatic_GPUComputePipelineInfoSetEntrypoint;
+inline constexpr auto& GPUComputePipelineInfoSetFormat = ::SDLStatic_GPUComputePipelineInfoSetFormat;
+inline constexpr auto& GPUComputePipelineInfoSetThreadCount = ::SDLStatic_GPUComputePipelineInfoSetThreadCount;
+inline constexpr auto& GPUDepthStencilTargetInfoCreate = ::SDLStatic_GPUDepthStencilTargetInfoCreate;
+inline constexpr auto& GPUDepthStencilTargetInfoDestroy = ::SDLStatic_GPUDepthStencilTargetInfoDestroy;
+inline constexpr auto& GPUDepthStencilTargetInfoSetClear = ::SDLStatic_GPUDepthStencilTargetInfoSetClear;
+inline constexpr auto& GPUDepthStencilTargetInfoSetOps = ::SDLStatic_GPUDepthStencilTargetInfoSetOps;
+inline constexpr auto& GPUDepthStencilTargetInfoSetTexture = ::SDLStatic_GPUDepthStencilTargetInfoSetTexture;
+inline constexpr auto& GPUPipelineInfoCreate = ::SDLStatic_GPUPipelineInfoCreate;
+inline constexpr auto& GPUPipelineInfoDestroy = ::SDLStatic_GPUPipelineInfoDestroy;
+inline constexpr auto& GPUPipelineInfoSetDepthStencil = ::SDLStatic_GPUPipelineInfoSetDepthStencil;
+inline constexpr auto& GPUPipelineInfoSetFillMode = ::SDLStatic_GPUPipelineInfoSetFillMode;
+inline constexpr auto& GPUPipelineInfoSetPrimitive = ::SDLStatic_GPUPipelineInfoSetPrimitive;
+inline constexpr auto& GPUPipelineInfoSetShaders = ::SDLStatic_GPUPipelineInfoSetShaders;
+inline constexpr auto& GPUReadTransferBuffer = ::SDLStatic_GPUReadTransferBuffer;
+inline constexpr auto& GPURenderStateInfoCreate = ::SDLStatic_GPURenderStateInfoCreate;
+inline constexpr auto& GPURenderStateInfoDestroy = ::SDLStatic_GPURenderStateInfoDestroy;
+inline constexpr auto& GPURenderStateInfoSetShader = ::SDLStatic_GPURenderStateInfoSetShader;
+inline constexpr auto& GPUShaderCreateInfoCreate = ::SDLStatic_GPUShaderCreateInfoCreate;
+inline constexpr auto& GPUShaderCreateInfoDestroy = ::SDLStatic_GPUShaderCreateInfoDestroy;
+inline constexpr auto& GPUShaderCreateInfoSetCode = ::SDLStatic_GPUShaderCreateInfoSetCode;
+inline constexpr auto& GPUShaderCreateInfoSetCounts = ::SDLStatic_GPUShaderCreateInfoSetCounts;
+inline constexpr auto& GPUShaderCreateInfoSetEntrypoint = ::SDLStatic_GPUShaderCreateInfoSetEntrypoint;
+inline constexpr auto& GPUShaderCreateInfoSetFormat = ::SDLStatic_GPUShaderCreateInfoSetFormat;
+inline constexpr auto& GPUSwapchainHeight = ::SDLStatic_GPUSwapchainHeight;
+inline constexpr auto& GPUSwapchainWidth = ::SDLStatic_GPUSwapchainWidth;
+inline constexpr auto& GPUTextureLocationCreate = ::SDLStatic_GPUTextureLocationCreate;
+inline constexpr auto& GPUTextureLocationDestroy = ::SDLStatic_GPUTextureLocationDestroy;
+inline constexpr auto& GPUTextureLocationSet = ::SDLStatic_GPUTextureLocationSet;
+inline constexpr auto& GPUTextureRegionCreate = ::SDLStatic_GPUTextureRegionCreate;
+inline constexpr auto& GPUTextureRegionDestroy = ::SDLStatic_GPUTextureRegionDestroy;
+inline constexpr auto& GPUTextureRegionSet = ::SDLStatic_GPUTextureRegionSet;
+inline constexpr auto& GPUTextureSamplerBindingCreate = ::SDLStatic_GPUTextureSamplerBindingCreate;
+inline constexpr auto& GPUTextureSamplerBindingDestroy = ::SDLStatic_GPUTextureSamplerBindingDestroy;
+inline constexpr auto& GPUTextureSamplerBindingSet = ::SDLStatic_GPUTextureSamplerBindingSet;
+inline constexpr auto& GPUTextureTransferInfoCreate = ::SDLStatic_GPUTextureTransferInfoCreate;
+inline constexpr auto& GPUTextureTransferInfoDestroy = ::SDLStatic_GPUTextureTransferInfoDestroy;
+inline constexpr auto& GPUTextureTransferInfoSet = ::SDLStatic_GPUTextureTransferInfoSet;
+inline constexpr auto& GPUTransferBufferLocationCreate = ::SDLStatic_GPUTransferBufferLocationCreate;
+inline constexpr auto& GPUTransferBufferLocationDestroy = ::SDLStatic_GPUTransferBufferLocationDestroy;
+inline constexpr auto& GPUTransferBufferLocationSet = ::SDLStatic_GPUTransferBufferLocationSet;
+inline constexpr auto& GPUWaitAndAcquireSwapchain = ::SDLStatic_GPUWaitAndAcquireSwapchain;
+inline constexpr auto& GamepadAccelerometer = ::SDLStatic_GamepadAccelerometer;
+inline constexpr auto& GamepadAxisValue = ::SDLStatic_GamepadAxisValue;
+inline constexpr auto& GamepadCount = ::SDLStatic_GamepadCount;
+inline constexpr auto& GamepadDeadzone = ::SDLStatic_GamepadDeadzone;
+inline constexpr auto& GamepadGyro = ::SDLStatic_GamepadGyro;
+inline constexpr auto& GamepadName = ::SDLStatic_GamepadName;
+inline constexpr auto& GamepadStick = ::SDLStatic_GamepadStick;
+inline constexpr auto& GamepadStopRumble = ::SDLStatic_GamepadStopRumble;
+inline constexpr auto& GetFinger = ::SDLStatic_GetFinger;
+inline constexpr auto& GraphicsArgsConfigPath = ::SDLStatic_GraphicsArgsConfigPath;
+inline constexpr auto& GraphicsClamp = ::SDLStatic_GraphicsClamp;
+inline constexpr auto& GraphicsConfigError = ::SDLStatic_GraphicsConfigError;
+inline constexpr auto& GraphicsConfigPath = ::SDLStatic_GraphicsConfigPath;
+inline constexpr auto& GraphicsDefaults = ::SDLStatic_GraphicsDefaults;
+inline constexpr auto& GraphicsLightMapScale = ::SDLStatic_GraphicsLightMapScale;
+inline constexpr auto& GraphicsLoadArgs = ::SDLStatic_GraphicsLoadArgs;
+inline constexpr auto& GraphicsMaxDynamicLights = ::SDLStatic_GraphicsMaxDynamicLights;
+inline constexpr auto& GraphicsParticleDensity = ::SDLStatic_GraphicsParticleDensity;
+inline constexpr auto& GraphicsQualityName = ::SDLStatic_GraphicsQualityName;
+inline constexpr auto& GraphicsResolve = ::SDLStatic_GraphicsResolve;
+inline constexpr auto& GraphicsSafeMode = ::SDLStatic_GraphicsSafeMode;
+inline constexpr auto& GraphicsSavePath = ::SDLStatic_GraphicsSavePath;
+inline constexpr auto& GraphicsSetArchiveReader = ::SDLStatic_GraphicsSetArchiveReader;
+inline constexpr auto& GraphicsShadowRays = ::SDLStatic_GraphicsShadowRays;
+inline constexpr auto& GraphicsShadowSoftness = ::SDLStatic_GraphicsShadowSoftness;
+inline constexpr auto& GraphicsToToml = ::SDLStatic_GraphicsToToml;
 inline constexpr auto& GuiGridCell = ::SDLStatic_GuiGridCell;
 inline constexpr auto& GuiGridCellSpan = ::SDLStatic_GuiGridCellSpan;
+inline constexpr auto& GuiGridCreate = ::SDLStatic_GuiGridCreate;
+inline constexpr auto& GuiGridDestroy = ::SDLStatic_GuiGridDestroy;
 inline constexpr auto& GuiGridEnd = ::SDLStatic_GuiGridEnd;
 inline constexpr auto& GuiGridNextRow = ::SDLStatic_GuiGridNextRow;
+inline constexpr auto& IdleSeconds = ::SDLStatic_IdleSeconds;
+inline constexpr auto& KeyModifiers = ::SDLStatic_KeyModifiers;
+inline constexpr auto& LastInputDevice = ::SDLStatic_LastInputDevice;
+inline constexpr auto& LightAddDarkZone = ::SDLStatic_LightAddDarkZone;
+inline constexpr auto& LightAddOccluder = ::SDLStatic_LightAddOccluder;
+inline constexpr auto& LightAddOccluderLine = ::SDLStatic_LightAddOccluderLine;
+inline constexpr auto& LightAmbient = ::SDLStatic_LightAmbient;
+inline constexpr auto& LightAt = ::SDLStatic_LightAt;
+inline constexpr auto& LightCount = ::SDLStatic_LightCount;
+inline constexpr auto& LightDefCreate = ::SDLStatic_LightDefCreate;
+inline constexpr auto& LightDefDestroy = ::SDLStatic_LightDefDestroy;
+inline constexpr auto& LightDefSetColor = ::SDLStatic_LightDefSetColor;
+inline constexpr auto& LightDefSetCone = ::SDLStatic_LightDefSetCone;
+inline constexpr auto& LightDefSetFlicker = ::SDLStatic_LightDefSetFlicker;
+inline constexpr auto& LightDefSetOffset = ::SDLStatic_LightDefSetOffset;
+inline constexpr auto& LightDefSetRadius = ::SDLStatic_LightDefSetRadius;
+inline constexpr auto& LightDefSetShadows = ::SDLStatic_LightDefSetShadows;
+inline constexpr auto& LightDefault = ::SDLStatic_LightDefault;
+inline constexpr auto& LightHour = ::SDLStatic_LightHour;
+inline constexpr auto& LightPreset_ = ::SDLStatic_LightPreset_;
+inline constexpr auto& LightSetAmbient = ::SDLStatic_LightSetAmbient;
+inline constexpr auto& LightSetAutoOccluders = ::SDLStatic_LightSetAutoOccluders;
+inline constexpr auto& LightSetClock = ::SDLStatic_LightSetClock;
+inline constexpr auto& LightSetPreset = ::SDLStatic_LightSetPreset;
+inline constexpr auto& LightSunlight = ::SDLStatic_LightSunlight;
 inline constexpr auto& LoadTextFile = ::SDLStatic_LoadTextFile;
+inline constexpr auto& LoadTexture = ::SDLStatic_LoadTexture;
+inline constexpr auto& LoadTextureAsync = ::SDLStatic_LoadTextureAsync;
 inline constexpr auto& LoadVFSFile = ::SDLStatic_LoadVFSFile;
+inline constexpr auto& MotorJointDefCreate = ::SDLStatic_MotorJointDefCreate;
+inline constexpr auto& MotorJointDefDestroy = ::SDLStatic_MotorJointDefDestroy;
+inline constexpr auto& MotorJointDefSetBodies = ::SDLStatic_MotorJointDefSetBodies;
+inline constexpr auto& MountMedia = ::SDLStatic_MountMedia;
+inline constexpr auto& MouseDelta = ::SDLStatic_MouseDelta;
+inline constexpr auto& MouseJointDefCreate = ::SDLStatic_MouseJointDefCreate;
+inline constexpr auto& MouseJointDefDestroy = ::SDLStatic_MouseJointDefDestroy;
+inline constexpr auto& MouseJointDefSetBodies = ::SDLStatic_MouseJointDefSetBodies;
+inline constexpr auto& MouseJointDefSetMaxForce = ::SDLStatic_MouseJointDefSetMaxForce;
+inline constexpr auto& MouseJointDefSetSpring = ::SDLStatic_MouseJointDefSetSpring;
+inline constexpr auto& MousePosition = ::SDLStatic_MousePosition;
+inline constexpr auto& MouseWheel = ::SDLStatic_MouseWheel;
 inline constexpr auto& OpenVFSRead = ::SDLStatic_OpenVFSRead;
+inline constexpr auto& PhysicsBodyCount = ::SDLStatic_PhysicsBodyCount;
+inline constexpr auto& PhysicsGravity = ::SDLStatic_PhysicsGravity;
+inline constexpr auto& PhysicsOverlap = ::SDLStatic_PhysicsOverlap;
+inline constexpr auto& PhysicsPixelsPerMetre = ::SDLStatic_PhysicsPixelsPerMetre;
+inline constexpr auto& PhysicsRaycast = ::SDLStatic_PhysicsRaycast;
+inline constexpr auto& PhysicsSetCollisionCallback = ::SDLStatic_PhysicsSetCollisionCallback;
+inline constexpr auto& PhysicsSetGravity = ::SDLStatic_PhysicsSetGravity;
+inline constexpr auto& PhysicsSetPaused = ::SDLStatic_PhysicsSetPaused;
+inline constexpr auto& PhysicsSetPixelsPerMetre = ::SDLStatic_PhysicsSetPixelsPerMetre;
+inline constexpr auto& PhysicsSetSubSteps = ::SDLStatic_PhysicsSetSubSteps;
+inline constexpr auto& PrismaticJointDefCreate = ::SDLStatic_PrismaticJointDefCreate;
+inline constexpr auto& PrismaticJointDefDestroy = ::SDLStatic_PrismaticJointDefDestroy;
+inline constexpr auto& PrismaticJointDefSetAnchors = ::SDLStatic_PrismaticJointDefSetAnchors;
+inline constexpr auto& PrismaticJointDefSetAxis = ::SDLStatic_PrismaticJointDefSetAxis;
+inline constexpr auto& PrismaticJointDefSetBodies = ::SDLStatic_PrismaticJointDefSetBodies;
+inline constexpr auto& PrismaticJointDefSetLimit = ::SDLStatic_PrismaticJointDefSetLimit;
+inline constexpr auto& PrismaticJointDefSetMotor = ::SDLStatic_PrismaticJointDefSetMotor;
 inline constexpr auto& QuitDebugText = ::SDLStatic_QuitDebugText;
 inline constexpr auto& RegexEscape = ::SDLStatic_RegexEscape;
+inline constexpr auto& RenderLastStats = ::SDLStatic_RenderLastStats;
+inline constexpr auto& RenderOverlay = ::SDLStatic_RenderOverlay;
+inline constexpr auto& RenderWorld = ::SDLStatic_RenderWorld;
+inline constexpr auto& RevoluteJointDefCreate = ::SDLStatic_RevoluteJointDefCreate;
+inline constexpr auto& RevoluteJointDefDestroy = ::SDLStatic_RevoluteJointDefDestroy;
+inline constexpr auto& RevoluteJointDefSetAnchors = ::SDLStatic_RevoluteJointDefSetAnchors;
+inline constexpr auto& RevoluteJointDefSetBodies = ::SDLStatic_RevoluteJointDefSetBodies;
+inline constexpr auto& RevoluteJointDefSetCollideConnected = ::SDLStatic_RevoluteJointDefSetCollideConnected;
+inline constexpr auto& RevoluteJointDefSetLimit = ::SDLStatic_RevoluteJointDefSetLimit;
+inline constexpr auto& RevoluteJointDefSetMotor = ::SDLStatic_RevoluteJointDefSetMotor;
+inline constexpr auto& RevoluteJointDefSetSpring = ::SDLStatic_RevoluteJointDefSetSpring;
+inline constexpr auto& SaveInfoOf = ::SDLStatic_SaveInfoOf;
+inline constexpr auto& SavePath = ::SDLStatic_SavePath;
+inline constexpr auto& SaveRead = ::SDLStatic_SaveRead;
+inline constexpr auto& SaveSetIdentity = ::SDLStatic_SaveSetIdentity;
+inline constexpr auto& SceneCurrent = ::SDLStatic_SceneCurrent;
+inline constexpr auto& SceneDepth = ::SDLStatic_SceneDepth;
+inline constexpr auto& SceneEngine = ::SDLStatic_SceneEngine;
+inline constexpr auto& SceneFind = ::SDLStatic_SceneFind;
+inline constexpr auto& SceneName = ::SDLStatic_SceneName;
+inline constexpr auto& SceneSetTransitionColor = ::SDLStatic_SceneSetTransitionColor;
+inline constexpr auto& SceneState = ::SDLStatic_SceneState;
+inline constexpr auto& ScriptUnbind = ::SDLStatic_ScriptUnbind;
 inline constexpr auto& SetDebugTextSize = ::SDLStatic_SetDebugTextSize;
+inline constexpr auto& SetDirectionRepeat = ::SDLStatic_SetDirectionRepeat;
+inline constexpr auto& SetGamepadDeadzone = ::SDLStatic_SetGamepadDeadzone;
+inline constexpr auto& SetTextInput = ::SDLStatic_SetTextInput;
+inline constexpr auto& SetTriggerThreshold = ::SDLStatic_SetTriggerThreshold;
+inline constexpr auto& SpriteCreate = ::SDLStatic_SpriteCreate;
+inline constexpr auto& SpriteDefault = ::SDLStatic_SpriteDefault;
+inline constexpr auto& SpriteDestroy = ::SDLStatic_SpriteDestroy;
+inline constexpr auto& SpriteSetColor = ::SDLStatic_SpriteSetColor;
+inline constexpr auto& SpriteSetLayer = ::SDLStatic_SpriteSetLayer;
+inline constexpr auto& SpriteSetOrigin = ::SDLStatic_SpriteSetOrigin;
+inline constexpr auto& SpriteSetScreenSpace = ::SDLStatic_SpriteSetScreenSpace;
+inline constexpr auto& SpriteSetSize = ::SDLStatic_SpriteSetSize;
+inline constexpr auto& SpriteSetSortByY = ::SDLStatic_SpriteSetSortByY;
+inline constexpr auto& SpriteSetSource = ::SDLStatic_SpriteSetSource;
+inline constexpr auto& SpriteSetTexture = ::SDLStatic_SpriteSetTexture;
+inline constexpr auto& SpriteSetVisible = ::SDLStatic_SpriteSetVisible;
+inline constexpr auto& Text = ::SDLStatic_Text;
+inline constexpr auto& TextCount = ::SDLStatic_TextCount;
+inline constexpr auto& TextFormat = ::SDLStatic_TextFormat;
+inline constexpr auto& TextLanguage = ::SDLStatic_TextLanguage;
+inline constexpr auto& TextSetLanguage = ::SDLStatic_TextSetLanguage;
+inline constexpr auto& TextSystemLanguages = ::SDLStatic_TextSystemLanguages;
+inline constexpr auto& TextTyped = ::SDLStatic_TextTyped;
+inline constexpr auto& Texture = ::SDLStatic_Texture;
+inline constexpr auto& TouchPinch = ::SDLStatic_TouchPinch;
+inline constexpr auto& TouchRotation = ::SDLStatic_TouchRotation;
+inline constexpr auto& WeldJointDefCreate = ::SDLStatic_WeldJointDefCreate;
+inline constexpr auto& WeldJointDefDestroy = ::SDLStatic_WeldJointDefDestroy;
+inline constexpr auto& WeldJointDefSetAnchors = ::SDLStatic_WeldJointDefSetAnchors;
+inline constexpr auto& WeldJointDefSetBodies = ::SDLStatic_WeldJointDefSetBodies;
+inline constexpr auto& WeldJointDefSetSpring = ::SDLStatic_WeldJointDefSetSpring;
+inline constexpr auto& WheelJointDefCreate = ::SDLStatic_WheelJointDefCreate;
+inline constexpr auto& WheelJointDefDestroy = ::SDLStatic_WheelJointDefDestroy;
+inline constexpr auto& WheelJointDefSetAnchors = ::SDLStatic_WheelJointDefSetAnchors;
+inline constexpr auto& WheelJointDefSetAxis = ::SDLStatic_WheelJointDefSetAxis;
+inline constexpr auto& WheelJointDefSetBodies = ::SDLStatic_WheelJointDefSetBodies;
+inline constexpr auto& WheelJointDefSetMotor = ::SDLStatic_WheelJointDefSetMotor;
+inline constexpr auto& WheelJointDefSetSpring = ::SDLStatic_WheelJointDefSetSpring;
 
 }  // namespace ext
 }  // namespace sdlstatic

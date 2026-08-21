@@ -15,6 +15,8 @@
 #   <SDLStatic/engine_light.h>     lighting presets and actor-attached lights
 #   <SDLStatic/engine_save.h>      atomic save slots
 #   <SDLStatic/engine_text.h>      localisation string tables
+#   <SDLStatic/engine_config.h>    heap builders, for script bindings
+#   <SDLStatic/engine_script.h>    the loop contract for scripts
 #
 # Original code (zlib), plain C over SDL3. The loop is a fixed simulation
 # tick with interpolated rendering — the arrangement that makes motion look
@@ -39,6 +41,9 @@ add_library(SDLStatic_Engine STATIC
   src/sdlstatic_engine_light.c
   src/sdlstatic_engine_save.c
   src/sdlstatic_engine_text.c
+  src/sdlstatic_engine_config.c
+  src/sdlstatic_engine_script.c
+  src/sdlstatic_gpu_build.c
 )
 add_library(SDLStatic::Engine ALIAS SDLStatic_Engine)
 

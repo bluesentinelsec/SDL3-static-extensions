@@ -28,6 +28,7 @@ struct SDLStatic_Assets;
 struct SDLStatic_EngineLight;
 struct SDLStatic_Saves;
 struct SDLStatic_Text;
+struct SDLStatic_ScriptBridge;
 
 struct SDLStatic_Engine
 {
@@ -104,6 +105,7 @@ struct SDLStatic_Engine
     struct SDLStatic_EngineLight *light;
     struct SDLStatic_Saves *saves;
     struct SDLStatic_Text *text;
+    struct SDLStatic_ScriptBridge *script;
 };
 
 extern void SDLStatic_EngineSavesDestroy(SDLStatic_Engine *engine);

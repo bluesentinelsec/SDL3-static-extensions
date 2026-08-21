@@ -28,6 +28,16 @@ extern "C" {
 /** Install the `SDLStatic` global table into a Lua state. */
 extern bool SDLStatic_OpenLuaBindings(lua_State *L);
 
+/** Engine hooks for Lua: SDLStaticC.OnUpdate(engine, fn) and friends, plus
+ *  SDLStaticC.Run(engine). Called for you by SDLStatic_OpenLuaBindings.
+ *
+ *  Separate from the generated surface because turning a Lua function into
+ *  something C can hold is the one thing the generator cannot do. */
+extern bool SDLStatic_OpenLuaEngineHooks(lua_State *L);
+
+/** The same for Ruby. Called for you by SDLStatic_OpenRubyBindings. */
+extern bool SDLStatic_OpenRubyEngineHooks(mrb_state *mrb);
+
 /** Install the `Regex` module — compiled patterns as objects with
  *  match/gmatch/gsub/split — into a Lua state. Lua has patterns rather
  *  than regular expressions, so this is an addition, not a replacement:
