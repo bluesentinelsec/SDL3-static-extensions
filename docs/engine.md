@@ -22,7 +22,7 @@ target_link_libraries(your_game PRIVATE SDLStatic::Engine)
 
 This page covers the loop and time, presentation and scaling, scenes,
 graphics settings, the camera, actors, engine-owned rendering, input,
-actions and physics. Assets and the lighting integration follow.
+actions, physics and assets. The lighting integration follows.
 
 ## The loop
 
@@ -1297,3 +1297,92 @@ caller's array with itself.
 Zero means everything, which is what a game wants until it does not — a
 one-way platform, a ghost that walks through walls, a bullet that ignores
 the player who fired it.
+
+## Assets
+
+Assets come out of the mounted media archive, so a path means the same file
+whether the game is running against a directory, a zip, or bytes compiled
+into the binary. `<SDLStatic/engine_assets.h>`.
+
+```c
+SDLStatic_TextureId hero = SDLStatic_LoadTexture(engine, "sprites/hero.png");
+sprite.texture = SDLStatic_Texture(engine, hero);
+```
+
+### Two ways in, because games need both
+
+**`SDLStatic_LoadTexture` blocks** until the asset is there. That is what you
+want in a `load` hook or anywhere the next line genuinely cannot proceed
+without the thing.
+
+**`SDLStatic_LoadTextureAsync` returns immediately** and loads on a worker.
+That is what you want for a loading screen with a progress bar, or an open
+world streaming in what the player is walking towards.
+
+```c
+SDLStatic_TextureId id = SDLStatic_LoadTextureAsync(engine, "level/tiles.png");
+/* ... later, in the loading scene ... */
+DrawProgressBar(SDLStatic_AssetsProgress(engine));
+if (SDLStatic_AssetsReady(engine)) StartLevel();
+```
+
+Both return the same kind of handle and **share one cache**, so a path
+already loaded synchronously is instant when asked for asynchronously and
+the other way round.
+
+### The cache is by path, and counted
+
+Asking twice gives the same handle and loads once. That matters more than it
+sounds: forty actors of the same type asking for the same sprite is the
+normal case, not an edge case. Handles are reference counted —
+`SDLStatic_AssetRetain` for a second owner, `SDLStatic_AssetRelease` when
+done — and the last release frees the texture, so a level that releases what
+it loaded gets its memory back without the engine guessing when.
+
+### Nothing returns NULL
+
+`SDLStatic_Texture` on a handle that is still loading, or that failed,
+returns the **placeholder**: magenta and black checks, chosen because they
+are impossible to mistake for art and impossible to miss in a screenshot.
+
+So a game may draw without checking, a missing file costs a wrong-looking
+sprite rather than a crash, and the wrongness is loud. `AssetStatusOf`
+reports `FAILED` for anyone who wants to know.
+
+### Why the main thread still does some work
+
+Decoding a PNG is pure computation and happens on a worker. Creating an
+`SDL_Texture` is not — it touches the renderer, and SDL's renderer belongs
+to the thread that made it:
+
+```
+worker:  read from the VFS, decode  ->  SDL_Surface
+main:    SDL_CreateTextureFromSurface  ->  SDL_Texture
+```
+
+The main-thread half is **time-sliced**: at most `AssetsSetFrameBudget`
+milliseconds per frame (2 ms by default), then it stops until next frame.
+Without that, forty textures finishing together upload forty textures in one
+frame and the game hitches at exactly the moment a loading bar is meant to
+be reassuring somebody. Godot and Unity time-slice the same step for the
+same reason.
+
+Raise the budget on a loading screen, where finishing sooner is the whole
+point and there is nothing else to spend the frame on; leave it low during
+gameplay, where a hitch is worse than a late texture.
+
+### Two sharp edges this cost
+
+Both were found by writing the tests, and both are the kind that only show
+up on somebody else's machine:
+
+**PhysFS crashes rather than failing** when it has not been initialised — it
+dereferences its internal mutex without checking. A game that loads a
+texture before mounting an archive, or that sets `no_auto_mount`, is an
+ordinary case rather than a misuse, so the loader checks `PHYSFS_isInit()`
+before asking the VFS and falls back to the real filesystem.
+
+**A slot released while still queued** left the worker duplicating a freed
+path. A level torn down while it is still loading is not exotic — it is what
+happens when a player quits during a loading screen — so the worker
+re-checks the slot is live after dequeuing it.

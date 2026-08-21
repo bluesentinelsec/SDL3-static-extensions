@@ -7,10 +7,12 @@ add_executable(SDL3_static_extensions_engine_test
   render_test.cpp
   input_test.cpp
   physics_test.cpp
+  assets_test.cpp
 )
 target_link_libraries(SDL3_static_extensions_engine_test
   PRIVATE
     SDLStatic::Engine
+    SDLStatic::Image
     GTest::gtest_main
 )
 cppboot_set_project_warnings(SDL3_static_extensions_engine_test)

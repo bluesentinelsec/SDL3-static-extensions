@@ -23,6 +23,7 @@ struct SDLStatic_ActorWorld;
 struct SDLStatic_DrawItem;
 struct SDLStatic_Input;
 struct SDLStatic_Physics;
+struct SDLStatic_Assets;
 
 struct SDLStatic_Engine
 {
@@ -95,7 +96,15 @@ struct SDLStatic_Engine
 
     struct SDLStatic_Input *input;
     struct SDLStatic_Physics *physics;
+    struct SDLStatic_Assets *assets;
 };
+
+/* --- assets -------------------------------------------------------------- */
+
+/** Turn decoded surfaces into textures, within this frame's time budget.
+ *  Main thread only: SDL's renderer belongs to the thread that made it. */
+extern void SDLStatic_EngineAssetsPump(SDLStatic_Engine *engine);
+extern void SDLStatic_EngineAssetsDestroy(SDLStatic_Engine *engine);
 
 /* --- physics ------------------------------------------------------------- */
 
