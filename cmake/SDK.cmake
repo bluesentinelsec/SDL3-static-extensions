@@ -445,6 +445,17 @@ foreach(dir IN LISTS _sdl3_header_dirs)
   )
 endforeach()
 
+# Editor tooling, generated from the same manifest as the bindings: a tags
+# file for the C and C++ headers, and completion definitions for the two
+# scripting languages. They ship with the SDK because an API nobody's editor
+# knows about is an API read from a browser tab.
+set(_editor_dir "${CMAKE_CURRENT_LIST_DIR}/../bindings/generated/editor")
+if(EXISTS "${_editor_dir}/tags")
+  install(FILES "${_editor_dir}/tags" DESTINATION .)
+  install(FILES "${_editor_dir}/sdlstatic.lua" "${_editor_dir}/sdlstatic.rbs"
+          DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/editor)
+endif()
+
 install(TARGETS ${SDLSTATIC_SDK_TARGETS}
   EXPORT ${PROJECT_NAME}Targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
