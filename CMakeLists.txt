@@ -114,6 +114,20 @@ option(SDLSTATIC_BUILD_SHARED_SDK
 # is set before they are configured rather than on our own targets after.
 if(SDLSTATIC_BUILD_SHARED_SDK)
   set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+  # MSVC has no pattern form for export lists, so the DLL relies on CMake
+  # generating an exports.def by scanning the objects. That scan trips over
+  # precompiled-header symbols — SDL3 uses PCH, and its __@@_PchSym_ entries
+  # produce a .def containing a symbol literally named `__`, which then fails
+  # to link:
+  #
+  #   exports.def : error LNK2001: unresolved external symbol __
+  #
+  # Precompiled headers are a build-time optimisation, and a DLL that links
+  # is worth more than the minutes they save.
+  if(MSVC)
+    set(CMAKE_DISABLE_PRECOMPILE_HEADERS ON)
+  endif()
 endif()
 
 # HTML5 canvas demo page for top-level Emscripten builds (see src/web/).
