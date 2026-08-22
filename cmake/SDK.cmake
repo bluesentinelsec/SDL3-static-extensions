@@ -578,10 +578,23 @@ if(SDLSTATIC_BUILD_SHARED_SDK)
       file(GENERATE OUTPUT "${path}" CONTENT "${content}")
       set(${out_var} "-Wl,--version-script,${path}" PARENT_SCOPE)
     else()
-      # MSVC has no pattern form. Rather than generate a .def with tens of
-      # thousands of names, let CMake export what the objects define; the
-      # import library is what a consumer links against either way.
-      set(${out_var} "" PARENT_SCOPE)
+      # MSVC has no pattern form either, so the list is produced rather than
+      # described: CMake's own __create_def writes every symbol the objects
+      # define — the same machinery WINDOWS_EXPORT_ALL_SYMBOLS uses — and
+      # FilterExportDef.cmake then keeps the ones matching these prefixes.
+      # All three platforms end up answering "what is public?" from one list.
+      #
+      # Filtering also removes what made the unfiltered version fail to
+      # link: precompiled-header symbols arrive as `__`, which matches no
+      # prefix of ours.
+      set(objects "${CMAKE_CURRENT_BINARY_DIR}/sdk_objects_${target}.txt")
+      set(full "${CMAKE_CURRENT_BINARY_DIR}/sdk_all_${target}.def")
+      set(path "${CMAKE_CURRENT_BINARY_DIR}/sdk_exports_${target}.def")
+      set(${out_var} "${path}" PARENT_SCOPE)
+      set(SDLSTATIC_SDK_DEF_${target} "${path}" PARENT_SCOPE)
+      set(SDLSTATIC_SDK_DEF_OBJECTS_${target} "${objects}" PARENT_SCOPE)
+      set(SDLSTATIC_SDK_DEF_FULL_${target} "${full}" PARENT_SCOPE)
+      set(SDLSTATIC_SDK_DEF_PATTERNS_${target} "${patterns}" PARENT_SCOPE)
     endif()
   endfunction()
 
@@ -629,9 +642,43 @@ if(SDLSTATIC_BUILD_SHARED_SDK)
       VERSION ${PROJECT_VERSION}
       SOVERSION ${PROJECT_VERSION_MAJOR}
       MACOSX_RPATH ON
-      WINDOWS_EXPORT_ALL_SYMBOLS ON
     )
-    if(_exports)
+    if(_exports AND MSVC)
+      # The object list is written at generate time, when the generator
+      # expressions resolve; the .def is produced just before the link,
+      # because that is the first moment the objects exist.
+      if(sdk STREQUAL "SDLStatic_SDK_Shared")
+        set(_which c)
+      else()
+        set(_which cxx)
+      endif()
+      # The objects the library is *made of*, not $<TARGET_OBJECTS:${sdk}> —
+      # that lists only what this target compiled itself, which is the one
+      # anchor source, and a .def built from it would export almost nothing.
+      set(_def_objects ${_sdk_component_objects} ${_sdk_vendored_objects})
+      if(_which STREQUAL "cxx")
+        list(APPEND _def_objects ${_sdk_cxx_objects})
+      endif()
+      string(REPLACE ";" "\n" _def_object_lines "${_def_objects}")
+      file(GENERATE OUTPUT "${SDLSTATIC_SDK_DEF_OBJECTS_${_which}}"
+           CONTENT "${_def_object_lines}\n")
+
+      add_custom_command(TARGET ${sdk} PRE_LINK
+        COMMAND ${CMAKE_COMMAND} -E __create_def
+                "${SDLSTATIC_SDK_DEF_FULL_${_which}}"
+                "${SDLSTATIC_SDK_DEF_OBJECTS_${_which}}"
+        COMMAND ${CMAKE_COMMAND}
+                -DINPUT=${SDLSTATIC_SDK_DEF_FULL_${_which}}
+                -DOUTPUT=${SDLSTATIC_SDK_DEF_${_which}}
+                "-DPREFIXES=${SDLSTATIC_SDK_EXPORT_PREFIXES}"
+                "-DPATTERNS=${SDLSTATIC_SDK_DEF_PATTERNS_${_which}}"
+                -P "${CMAKE_CURRENT_LIST_DIR}/FilterExportDef.cmake"
+        COMMENT "Filtering the export list for ${sdk}"
+        VERBATIM
+      )
+      target_link_options(${sdk} PRIVATE "/DEF:${SDLSTATIC_SDK_DEF_${_which}}")
+      set_target_properties(${sdk} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS OFF)
+    elseif(_exports)
       target_link_options(${sdk} PRIVATE ${_exports})
     endif()
     target_link_libraries(${sdk} PRIVATE ${SDLSTATIC_SDK_SYSTEM_LIBS})
