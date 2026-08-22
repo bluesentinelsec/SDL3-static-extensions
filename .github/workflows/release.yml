@@ -234,10 +234,12 @@ jobs:
 
           # Three artifacts, and a release that is missing one of them is a
           # release nobody can use for that half of the audience.
+          # Two static archives and two shared libraries. A release missing
+          # one of them is a release half the audience cannot use.
           for lib in SDL3_static_extensions_sdk SDL3_static_extensions_sdk_cxx; do
             found="$(find "${prefix}/lib" -name "*${lib}.*" -print -quit)"
             if [ -z "${found}" ]; then
-              echo "Missing ${lib} from the SDK" >&2
+              echo "Missing static ${lib} from the SDK" >&2
               exit 1
             fi
             size="$(wc -c <"${found}")"
@@ -246,6 +248,25 @@ jobs:
               exit 1
             fi
           done
+
+          for lib in SDL3_static_extensions SDL3_static_extensions_cxx; do
+            found="$(find "${prefix}/lib" "${prefix}/bin" \
+                       \( -name "lib${lib}.so*" -o -name "lib${lib}*.dylib" \
+                          -o -name "${lib}.dll" \) -print -quit 2>/dev/null)"
+            if [ -z "${found}" ]; then
+              echo "Missing shared ${lib} from the SDK" >&2
+              exit 1
+            fi
+          done
+
+          # Loading it is not the test — a library that exports nothing loads
+          # fine and fails on the first lookup, and on Windows a DLL with no
+          # exports is a valid DLL. This calls into it.
+          shared_c="$(find "${prefix}/lib" "${prefix}/bin" \
+                        \( -name "libSDL3_static_extensions.so*" \
+                           -o -name "libSDL3_static_extensions*.dylib" \
+                           -o -name "SDL3_static_extensions.dll" \) -print -quit 2>/dev/null)"
+          python3 tests/ctypes/test_shared_library.py "${shared_c}"
 
           runner="${prefix}/bin/repl"
           [ -f "${runner}" ] || runner="${prefix}/bin/repl.exe"

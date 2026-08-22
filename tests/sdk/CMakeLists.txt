@@ -46,3 +46,27 @@ if(TARGET repl)
     )
   endforeach()
 endif()
+
+# The shared libraries, loaded from outside the C++ toolchain entirely.
+#
+# A C++ consumer proves very little about a shared library: it links through
+# the same compiler that built it and never asks whether the symbols are
+# exported. Python asks nothing of the build system — it opens the file and
+# looks names up — which is what a plugin host or an FFI binding does.
+if(TARGET SDLStatic_SDK_Shared)
+  find_package(Python3 COMPONENTS Interpreter)
+  if(Python3_Interpreter_FOUND)
+    add_test(NAME shared_library_ctypes_c
+      COMMAND ${Python3_EXECUTABLE}
+              ${CMAKE_CURRENT_SOURCE_DIR}/../ctypes/test_shared_library.py
+              $<TARGET_FILE:SDLStatic_SDK_Shared>
+    )
+    add_test(NAME shared_library_ctypes_cxx
+      COMMAND ${Python3_EXECUTABLE}
+              ${CMAKE_CURRENT_SOURCE_DIR}/../ctypes/test_shared_library.py
+              $<TARGET_FILE:SDLStatic_SDK_Cxx_Shared> --cxx
+    )
+    set_tests_properties(shared_library_ctypes_c shared_library_ctypes_cxx
+      PROPERTIES TIMEOUT 300)
+  endif()
+endif()

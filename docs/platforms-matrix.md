@@ -47,7 +47,7 @@ build failure, which is exactly why they are called out here.
 
 | Platform | Artifact | Runner |
 |---|---|---|
-| Linux, macOS, Windows | two static SDKs — C and C++ — plus headers and a CMake package | yes |
+| Linux, macOS, Windows | two static SDKs and two shared libraries — C and C++ of each — plus headers and a CMake package | yes |
 | Android | Prefab AAR, one `.so` per ABI | no¹ |
 | iOS | XCFramework, device + simulator slices | no¹ |
 | Web | wasm archive, headers, CMake package | not yet² |
@@ -55,6 +55,37 @@ build failure, which is exactly why they are called out here.
 ¹ There is no command line to run it from, and CMake treats every executable
 on those platforms as an app bundle.
 ² Tracked with the rest of the web work.
+
+## Shared libraries, and where they are not the answer
+
+Desktop ships both linkages, in both APIs:
+
+| | |
+|---|---|
+| `libSDL3_static_extensions.{so,dylib,dll}` | the C API |
+| `libSDL3_static_extensions_cxx.{so,dylib,dll}` | the C++ API, containing the C one |
+
+with a SONAME (`libfoo.so.0`), an `@rpath` install name on macOS, and an
+import library on Windows. Exports are filtered to the public prefixes —
+`SDLStatic_`, `SDL_`, `b2`, `lua_`, `mrb_`, `nk_` and the rest — so every
+vendored library's internal helpers stay inside rather than becoming part of
+an ABI we would then owe compatibility to.
+
+**The other platforms do not get one, and that is the idiomatic answer
+rather than a gap:**
+
+- **iOS** ships an XCFramework of static archives, because that is how iOS
+  apps are built. A dynamic framework is a different packaging format for a
+  demand nobody has expressed.
+- **Android** already publishes a `.so` in its AAR, because Prefab is how
+  Android consumes native code. It is built its own way — whole-archived,
+  which exports everything — and bringing it under the same export policy is
+  worth doing, but it is not a missing artifact.
+- **Web** has no comparable loading model. wasm side modules exist and change
+  how the whole program is linked; a game gets one wasm module.
+
+The rule: ship the artifact each platform's tooling expects, not the same
+four artifacts everywhere.
 
 ## What "builds" does and does not mean
 

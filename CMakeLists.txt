@@ -96,6 +96,26 @@ endif()
 option(SDL3_STATIC_EXTENSIONS_BUILD_APP "Build the demo application executable" ${SDL3_STATIC_EXTENSIONS_DEFAULT_BUILD_APP})
 option(SDL3_STATIC_EXTENSIONS_BUILD_TESTS "Build unit tests" ${SDL3_STATIC_EXTENSIONS_DEFAULT_BUILD_TESTS})
 option(SDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS "Build benchmarks" ${SDL3_STATIC_EXTENSIONS_DEFAULT_BUILD_BENCHMARKS})
+# Shared libraries, on the platforms where a shared library is what people
+# expect. Not iOS (apps ship static, and a dynamic framework is a different
+# packaging format), not Android (the AAR already publishes a .so, built its
+# own way), not Emscripten (wasm has no comparable loading model). Those
+# platforms get their own idiomatic artifact instead, which is the point.
+set(SDL3_STATIC_EXTENSIONS_DEFAULT_SHARED_SDK ${SDL3_STATIC_EXTENSIONS_IS_TOP_LEVEL})
+if(ANDROID OR IOS OR EMSCRIPTEN)
+  set(SDL3_STATIC_EXTENSIONS_DEFAULT_SHARED_SDK OFF)
+endif()
+option(SDLSTATIC_BUILD_SHARED_SDK
+       "Build the C and C++ APIs as shared libraries as well as static"
+       ${SDL3_STATIC_EXTENSIONS_DEFAULT_SHARED_SDK})
+
+# Everything that ends up inside a shared library has to be position
+# independent, and that includes SDL3 and every vendored dependency — so this
+# is set before they are configured rather than on our own targets after.
+if(SDLSTATIC_BUILD_SHARED_SDK)
+  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+endif()
+
 # HTML5 canvas demo page for top-level Emscripten builds (see src/web/).
 option(SDL3_STATIC_EXTENSIONS_BUILD_WEB_DEMO "Build the web canvas demo (Emscripten only)" ${SDL3_STATIC_EXTENSIONS_IS_TOP_LEVEL})
 
@@ -360,6 +380,11 @@ if(SDLSTATIC_BUILD_LUA AND SDLSTATIC_BUILD_RUBY)
   endif()
 endif()
 
+# The libraries we ship — two static, two shared — assembled from every
+# component. Defined before the tests, which check the artifacts and so need
+# the targets to exist.
+include(SDK)
+
 if(SDL3_STATIC_EXTENSIONS_BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
@@ -393,8 +418,6 @@ if(SDL3_STATIC_EXTENSIONS_IS_TOP_LEVEL AND CMAKE_EXPORT_COMPILE_COMMANDS)
   endif()
 endif()
 
-# The one static library we ship: every component plus SDL3, in one archive.
-include(SDK)
 
 include(GNUInstallDirs)
 install(DIRECTORY include/

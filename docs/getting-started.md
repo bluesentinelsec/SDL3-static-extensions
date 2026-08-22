@@ -25,6 +25,12 @@ and link it. A desktop release ships three things:
 | `lib/libSDL3_static_extensions_sdk.a` | the C API: every module, SDL3, and the vendored libraries |
 | `lib/libSDL3_static_extensions_sdk_cxx.a` | all of that **plus** the C++ wrapper |
 | `bin/repl` | the runner: plays a Lua or Ruby game with no toolchain installed |
+| `lib/libSDL3_static_extensions.{so,dylib,dll}` | the C API as a shared library |
+| `lib/libSDL3_static_extensions_cxx.{so,dylib,dll}` | the C++ API as a shared library |
+
+Static is the default and what the documentation assumes; the shared
+libraries are for hosts that need to load code at runtime — a plugin
+system, an FFI binding from Python or C#, a language that is not C++.
 
 The C++ archive repeats the C one rather than depending on it, so a C++
 game links **one** library and a C game links the other. Neither needs to

@@ -19,7 +19,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_cmake_targets_defined "")
 set(_cmake_targets_not_defined "")
 set(_cmake_expected_targets "")
-foreach(_cmake_expected_target IN ITEMS SDL3-static-extensions::SDK SDL3-static-extensions::SDKCxx)
+foreach(_cmake_expected_target IN ITEMS SDL3-static-extensions::SDK SDL3-static-extensions::SDKCxx SDL3-static-extensions::SDKShared SDL3-static-extensions::SDKCxxShared)
   list(APPEND _cmake_expected_targets "${_cmake_expected_target}")
   if(TARGET "${_cmake_expected_target}")
     list(APPEND _cmake_targets_defined "${_cmake_expected_target}")
@@ -69,6 +69,20 @@ add_library(SDL3-static-extensions::SDKCxx STATIC IMPORTED)
 set_target_properties(SDL3-static-extensions::SDKCxx PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include"
   INTERFACE_LINK_LIBRARIES "-framework Foundation;-framework IOKit;m;-framework CoreMedia;-framework CoreVideo;-framework Cocoa;-weak_framework UniformTypeIdentifiers;-framework ForceFeedback;-framework Carbon;-framework CoreAudio;-framework AudioToolbox;-framework AVFoundation;-framework GameController;-framework Metal;-framework QuartzCore;-weak_framework CoreHaptics;c++"
+)
+
+# Create imported target SDL3-static-extensions::SDKShared
+add_library(SDL3-static-extensions::SDKShared SHARED IMPORTED)
+
+set_target_properties(SDL3-static-extensions::SDKShared PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include"
+)
+
+# Create imported target SDL3-static-extensions::SDKCxxShared
+add_library(SDL3-static-extensions::SDKCxxShared SHARED IMPORTED)
+
+set_target_properties(SDL3-static-extensions::SDKCxxShared PROPERTIES
+  INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include;${_IMPORT_PREFIX}/include"
 )
 
 # Load information for each installed configuration.
