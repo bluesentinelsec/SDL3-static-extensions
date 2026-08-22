@@ -663,8 +663,12 @@ if(SDLSTATIC_BUILD_SHARED_SDK)
       # semicolons at configure time joins the generator expressions
       # themselves, and each one then expands to a whole ;-separated list on
       # a single line — which __create_def reads as one impossible filename.
+      # Compiled Windows resources come through $<TARGET_OBJECTS> alongside
+      # real objects — freetype contributes ftver.rc.res — and __create_def
+      # reads them as "unrecognized file format". A .res holds version
+      # metadata and exports nothing, so dropping it costs nothing.
       file(GENERATE OUTPUT "${SDLSTATIC_SDK_DEF_OBJECTS_${_which}}"
-           CONTENT "$<JOIN:${_def_objects},\n>\n")
+           CONTENT "$<JOIN:$<FILTER:${_def_objects},EXCLUDE,\\.res$>,\n>\n")
 
       add_custom_command(TARGET ${sdk} PRE_LINK
         COMMAND ${CMAKE_COMMAND} -E __create_def
