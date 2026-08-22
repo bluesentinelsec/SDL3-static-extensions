@@ -5846,6 +5846,15 @@ static int GenL_SDLStatic_SceneIsActive(lua_State *L)
     return 1;
 }
 
+static int GenL_SDLStatic_SceneKey(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Scene *a0 = (SDLStatic_Scene *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Scene");
+    Sint64 rv = SDLStatic_SceneKey(a0);
+    lua_pushinteger(L, (lua_Integer)rv);
+    return 1;
+}
+
 static int GenL_SDLStatic_SceneName(lua_State *L)
 {
     (void)L;
@@ -5939,6 +5948,102 @@ static int GenL_SDLStatic_ScriptRun(lua_State *L)
     (void)L;
     SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
     bool rv = SDLStatic_ScriptRun(a0);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_ScriptSceneDefine(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    bool rv = SDLStatic_ScriptSceneDefine(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_ScriptSceneDefined(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    bool rv = SDLStatic_ScriptSceneDefined(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_ScriptScenePush(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    bool rv = SDLStatic_ScriptScenePush(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_ScriptSceneReplace(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    bool rv = SDLStatic_ScriptSceneReplace(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_ScriptSceneReset(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    bool rv = SDLStatic_ScriptSceneReset(a0, a1);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_ScriptSceneSetFlags(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    SDLStatic_SceneFlags a2 = (SDLStatic_SceneFlags)luaL_checkinteger(L, 3);
+    bool rv = SDLStatic_ScriptSceneSetFlags(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_ScriptSceneSetHook(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    SDLStatic_SceneHook a2 = (SDLStatic_SceneHook)luaL_checkinteger(L, 3);
+    Sint64 a3 = (Sint64)luaL_checkinteger(L, 4);
+    bool rv = SDLStatic_ScriptSceneSetHook(a0, a1, a2, a3);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_ScriptSceneSetStateSize(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    int a2 = (int)luaL_checkinteger(L, 3);
+    bool rv = SDLStatic_ScriptSceneSetStateSize(a0, a1, a2);
+    lua_pushboolean(L, (int)rv);
+    return 1;
+}
+
+static int GenL_SDLStatic_ScriptSceneTransitionTo(lua_State *L)
+{
+    (void)L;
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_LuaCheckHandle(L, 1, "SDLStatic_Engine");
+    const char *a1 = lua_isnoneornil(L, 2) ? NULL : luaL_checkstring(L, 2);
+    SDLStatic_SceneTransition a2 = (SDLStatic_SceneTransition)luaL_checkinteger(L, 3);
+    float a3 = (float)luaL_checknumber(L, 4);
+    bool rv = SDLStatic_ScriptSceneTransitionTo(a0, a1, a2, a3);
     lua_pushboolean(L, (int)rv);
     return 1;
 }
@@ -6573,7 +6678,7 @@ static int GenL_SDLStatic_WheelJointDefSetSpring(lua_State *L)
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L);
 int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
 {
-    lua_createtable(L, 0, 600);
+    lua_createtable(L, 0, 610);
     lua_pushcfunction(L, GenL_SDLStatic_ActionBind);
     lua_setfield(L, -2, "ActionBind");
     lua_pushcfunction(L, GenL_SDLStatic_ActionBindAxis);
@@ -7626,6 +7731,8 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "SceneFind");
     lua_pushcfunction(L, GenL_SDLStatic_SceneIsActive);
     lua_setfield(L, -2, "SceneIsActive");
+    lua_pushcfunction(L, GenL_SDLStatic_SceneKey);
+    lua_setfield(L, -2, "SceneKey");
     lua_pushcfunction(L, GenL_SDLStatic_SceneName);
     lua_setfield(L, -2, "SceneName");
     lua_pushcfunction(L, GenL_SDLStatic_ScenePop);
@@ -7646,6 +7753,24 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "ScriptHasHandlers");
     lua_pushcfunction(L, GenL_SDLStatic_ScriptRun);
     lua_setfield(L, -2, "ScriptRun");
+    lua_pushcfunction(L, GenL_SDLStatic_ScriptSceneDefine);
+    lua_setfield(L, -2, "ScriptSceneDefine");
+    lua_pushcfunction(L, GenL_SDLStatic_ScriptSceneDefined);
+    lua_setfield(L, -2, "ScriptSceneDefined");
+    lua_pushcfunction(L, GenL_SDLStatic_ScriptScenePush);
+    lua_setfield(L, -2, "ScriptScenePush");
+    lua_pushcfunction(L, GenL_SDLStatic_ScriptSceneReplace);
+    lua_setfield(L, -2, "ScriptSceneReplace");
+    lua_pushcfunction(L, GenL_SDLStatic_ScriptSceneReset);
+    lua_setfield(L, -2, "ScriptSceneReset");
+    lua_pushcfunction(L, GenL_SDLStatic_ScriptSceneSetFlags);
+    lua_setfield(L, -2, "ScriptSceneSetFlags");
+    lua_pushcfunction(L, GenL_SDLStatic_ScriptSceneSetHook);
+    lua_setfield(L, -2, "ScriptSceneSetHook");
+    lua_pushcfunction(L, GenL_SDLStatic_ScriptSceneSetStateSize);
+    lua_setfield(L, -2, "ScriptSceneSetStateSize");
+    lua_pushcfunction(L, GenL_SDLStatic_ScriptSceneTransitionTo);
+    lua_setfield(L, -2, "ScriptSceneTransitionTo");
     lua_pushcfunction(L, GenL_SDLStatic_ScriptSetHook);
     lua_setfield(L, -2, "ScriptSetHook");
     lua_pushcfunction(L, GenL_SDLStatic_ScriptUnbind);
@@ -8046,6 +8171,24 @@ int SDLStaticGen_OpenLua_sdlstatic(lua_State *L)
     lua_setfield(L, -2, "SDLSTATIC_SCENE_UPDATE_WHEN_COVERED");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_SCENE_TRANSPARENT);
     lua_setfield(L, -2, "SDLSTATIC_SCENE_TRANSPARENT");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_SCENE_HOOK_LOAD);
+    lua_setfield(L, -2, "SDLSTATIC_SCENE_HOOK_LOAD");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_SCENE_HOOK_ENTER);
+    lua_setfield(L, -2, "SDLSTATIC_SCENE_HOOK_ENTER");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_SCENE_HOOK_FIXED_UPDATE);
+    lua_setfield(L, -2, "SDLSTATIC_SCENE_HOOK_FIXED_UPDATE");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_SCENE_HOOK_UPDATE);
+    lua_setfield(L, -2, "SDLSTATIC_SCENE_HOOK_UPDATE");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_SCENE_HOOK_RENDER);
+    lua_setfield(L, -2, "SDLSTATIC_SCENE_HOOK_RENDER");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_SCENE_HOOK_EVENT);
+    lua_setfield(L, -2, "SDLSTATIC_SCENE_HOOK_EVENT");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_SCENE_HOOK_EXIT);
+    lua_setfield(L, -2, "SDLSTATIC_SCENE_HOOK_EXIT");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_SCENE_HOOK_UNLOAD);
+    lua_setfield(L, -2, "SDLSTATIC_SCENE_HOOK_UNLOAD");
+    lua_pushinteger(L, (lua_Integer)SDLSTATIC_SCENE_HOOK_COUNT);
+    lua_setfield(L, -2, "SDLSTATIC_SCENE_HOOK_COUNT");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_TRANSITION_NONE);
     lua_setfield(L, -2, "SDLSTATIC_TRANSITION_NONE");
     lua_pushinteger(L, (lua_Integer)SDLSTATIC_TRANSITION_FADE);

@@ -25,12 +25,12 @@ types). The full C API additionally stays reachable from C/C++.
 | libyaml | 48 | 0 | 0 | 48 | 2 | 46 |
 | mog HTTP/S | 69 | 54 | 0 | 12 | 67 | 2 |
 | cJSON | 78 | 57 | 0 | 20 | 70 | 8 |
-| SDLStatic modules | 634 | 75 | 106 | 449 | 600 | 34 |
-| **Total** | 3526 | 1093 | 330 | 2056 | 2898 | 628 |
+| SDLStatic modules | 645 | 75 | 116 | 450 | 610 | 35 |
+| **Total** | 3537 | 1093 | 340 | 2057 | 2908 | 629 |
 
 ## Script-surface skip reasons
 
-- 298: unmarshalable parameter type
+- 299: unmarshalable parameter type
 - 142: unmarshalable return type
 - 76: stdlib clone
 - 53: math clone
@@ -700,7 +700,7 @@ types). The full C API additionally stays reachable from C/C++.
 
 </details>
 
-<details><summary>SDLStatic modules (34)</summary>
+<details><summary>SDLStatic modules (35)</summary>
 
 - `SDLStatic_ActorEach` — param visit: <funcptr>*
 - `SDLStatic_ActorLight` — returns struct pointer
@@ -733,6 +733,7 @@ types). The full C API additionally stays reachable from C/C++.
 - `SDLStatic_SaveRead` — return type void*
 - `SDLStatic_SceneState` — return type void*
 - `SDLStatic_ScriptBind` — param language_state: void*
+- `SDLStatic_ScriptSetSceneDispatch` — param dispatch: SDLStatic_ScriptSceneDispatch
 - `SDLStatic_SpriteDefault` — return type SDLStatic_Sprite
 - `SDLStatic_TextFormat` — variadic
 - `SDLStatic_TextSystemLanguages` — param out: char**
