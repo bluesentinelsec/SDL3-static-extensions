@@ -154,6 +154,16 @@ endif()
 # libcurl via dlopen on Linux) — nothing shared is linked, so the link
 # audit holds.
 if(SDLSTATIC_BUILD_HTTP)
+  # mbedtls arrives under mog and installs itself. This switch suppresses its
+  # CMake package config, so an SDK prefix does not offer a consumer a second
+  # find_package() that resolves to something already inside our archive.
+  #
+  # It does not stop the archives themselves: mbedtls's install(TARGETS) runs
+  # unconditionally, with no upstream option to disable it, and we do not
+  # patch third-party projects. Those four redundant .a files are filtered out
+  # when the SDK is packaged instead (see the release packaging issue).
+  set(DISABLE_PACKAGE_CONFIG_AND_INSTALL ON CACHE BOOL "" FORCE)
+  set(ENABLE_PROGRAMS OFF CACHE BOOL "" FORCE)
   FetchContent_Declare(mog
     URL https://github.com/bluesentinelsec/mog/archive/refs/tags/v0.6.1.tar.gz
     URL_HASH SHA256=738a342b1a1d907c25784aa80c2544a00f9e3a0d7488916028e990c944be60e6

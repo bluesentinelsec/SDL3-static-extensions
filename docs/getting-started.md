@@ -11,6 +11,42 @@ description: "Consume SDL3 Static Extensions from CMake with FetchContent, build
 - No other dependencies: every library, codec, and language runtime is
   vendored source
 
+## Two ways in, and the one you want depends on how you build
+
+**From source, with FetchContent** — you are already using CMake and want
+the library built with your own flags and toolchain. Link the individual
+modules; this is the section below.
+
+**From a release, with `find_package`** — you want to download something
+and link it. The release SDK is one archive containing every module *and
+SDL3 itself*, so the link line is one library:
+
+```cmake
+cmake_minimum_required(VERSION 3.20)
+project(my_game C)
+
+find_package(SDL3-static-extensions REQUIRED)
+
+add_executable(my_game main.c)
+target_link_libraries(my_game PRIVATE SDL3-static-extensions::SDK)
+```
+
+```bash
+cmake -S . -B build -DCMAKE_PREFIX_PATH=/path/to/unpacked/sdk
+```
+
+Nothing else is needed: no separate SDL3, no per-module list, no link
+order to get right — the objects are in one archive, where order does not
+exist. The system libraries each platform requires (frameworks on macOS,
+`user32` and friends on Windows) come with the package.
+
+The archive contains C++ objects, so a C-only project links the C++
+runtime through the package. If your build reports a duplicate `-lc++`,
+that is why, and it is harmless.
+
+The same layout comes out of `cmake --install`, so an installed prefix and
+an unpacked release SDK are interchangeable.
+
 ## Consume from your game (FetchContent)
 
 ```cmake
@@ -96,9 +132,23 @@ ctest --test-dir build/debug
 The first configure downloads SDL3 and its satellites (pinned versions)
 via FetchContent; everything after that is offline.
 
-## Try the REPL
+## Run a script, or open a REPL
 
-An interactive REPL for both embedded languages builds with the tree:
+The runner builds with the tree and ships in the release SDK's `bin/`. It
+is statically linked like everything else here — it carries both
+interpreters and the whole engine, so it needs nothing installed on the
+machine.
+
+Point it at a script and it runs it. The language comes from the
+extension, so there is nothing to remember:
+
+```bash
+./build/debug/bin/repl game.lua
+./build/debug/bin/repl game.rb
+```
+
+With no script, it is an interactive REPL, and `-l` says which language
+when there is no file to infer it from:
 
 ```bash
 ./build/debug/bin/repl -l lua
@@ -106,6 +156,10 @@ An interactive REPL for both embedded languages builds with the tree:
 ./build/debug/bin/repl -l ruby
 > SDL.GetPlatform
 ```
+
+A script has the whole surface loaded — SDL3, the engine, the bindings —
+so it can drive the opinionated loop or write its own. See
+[Scripting](scripting.html).
 
 ## Where to go next
 
