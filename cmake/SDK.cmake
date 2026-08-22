@@ -513,3 +513,140 @@ if(ANDROID AND SDLSTATIC_ANDROID_PREFAB_HEADERS AND TARGET SDL3_static_extension
     add_dependencies(SDL3_static_extensions sdlstatic_stage_prefab_headers)
   endif()
 endif()
+
+# ---------------------------------------------------------------------------
+# Shared libraries
+#
+# The same objects again, linked as .so / .dylib / .dll. Two of them, matching
+# the static pair: the C API, and the C++ API which contains the C one.
+#
+# ### What gets exported
+#
+# Nothing in this project's headers is annotated with an export macro — 718
+# declarations across the components say plain `extern` — so exports are
+# controlled at the link line instead of in 718 places. The public surface is
+# a set of prefixes, which is what our headers actually publish:
+#
+#   SDLStatic_*   the engine and every component
+#   SDL_*         SDL3 itself, plus IMG_/TTF_/Mix_/NET_ for its satellites
+#   b2*           Box2D
+#   lua*/mrb_*    the interpreters, for a host embedding them
+#   PHYSFS_/nk_/toml_/cJSON_/yaml_/mog_
+#
+# Anything else — every internal helper in every vendored library — stays in.
+# That is the difference between a shared library and a bag of symbols, and
+# it is why the Android .so (built with --whole-archive, which publishes
+# everything) is not the same thing and is tracked separately.
+# ---------------------------------------------------------------------------
+if(SDLSTATIC_BUILD_SHARED_SDK)
+  set(SDLSTATIC_SDK_EXPORT_PREFIXES
+      SDLStatic_ SDL_ IMG_ TTF_ Mix_ NET_ b2 lua_ luaL_ luaopen_ mrb_ mrbc_
+      PHYSFS_ nk_ toml_ cJSON_ cJSON yaml_ mog_)
+
+  # The C++ API adds mangled names, which no prefix list can express
+  # readably; `sdlstatic` appears in every one of them because that is the
+  # namespace.
+  set(SDLSTATIC_SDK_CXX_EXPORT_PATTERNS "*sdlstatic*" "*SDL3_static_extensions*")
+
+  # Turn the prefixes into whatever the platform's linker wants.
+  function(sdlstatic_sdk_export_script target out_var)
+    set(patterns "")
+    foreach(prefix IN LISTS SDLSTATIC_SDK_EXPORT_PREFIXES)
+      list(APPEND patterns "${prefix}*")
+    endforeach()
+    if(target STREQUAL "cxx")
+      list(APPEND patterns ${SDLSTATIC_SDK_CXX_EXPORT_PATTERNS})
+    endif()
+
+    if(APPLE)
+      # An exported-symbols list, with the leading underscore Mach-O adds.
+      set(path "${CMAKE_CURRENT_BINARY_DIR}/sdk_exports_${target}.txt")
+      set(content "")
+      foreach(pattern IN LISTS patterns)
+        string(APPEND content "_${pattern}\n")
+      endforeach()
+      file(GENERATE OUTPUT "${path}" CONTENT "${content}")
+      set(${out_var} "-Wl,-exported_symbols_list,${path}" PARENT_SCOPE)
+    elseif(UNIX)
+      # A version script, which also names the ABI version.
+      set(path "${CMAKE_CURRENT_BINARY_DIR}/sdk_exports_${target}.map")
+      set(content "SDLSTATIC_${PROJECT_VERSION_MAJOR} {\n  global:\n")
+      foreach(pattern IN LISTS patterns)
+        string(APPEND content "    ${pattern};\n")
+      endforeach()
+      string(APPEND content "  local:\n    *;\n};\n")
+      file(GENERATE OUTPUT "${path}" CONTENT "${content}")
+      set(${out_var} "-Wl,--version-script,${path}" PARENT_SCOPE)
+    else()
+      # MSVC has no pattern form. Rather than generate a .def with tens of
+      # thousands of names, let CMake export what the objects define; the
+      # import library is what a consumer links against either way.
+      set(${out_var} "" PARENT_SCOPE)
+    endif()
+  endfunction()
+
+  add_library(SDLStatic_SDK_Shared SHARED
+    ${CMAKE_CURRENT_LIST_DIR}/sdk_anchor.c
+    ${_sdk_component_objects}
+    ${_sdk_vendored_objects}
+  )
+  add_library(SDLStatic::SDKShared ALIAS SDLStatic_SDK_Shared)
+  add_library(${PROJECT_NAME}::SDKShared ALIAS SDLStatic_SDK_Shared)
+
+  add_library(SDLStatic_SDK_Cxx_Shared SHARED
+    ${CMAKE_CURRENT_LIST_DIR}/sdk_anchor.c
+    ${_sdk_component_objects}
+    ${_sdk_vendored_objects}
+    ${_sdk_cxx_objects}
+  )
+  add_library(SDLStatic::SDKCxxShared ALIAS SDLStatic_SDK_Cxx_Shared)
+  add_library(${PROJECT_NAME}::SDKCxxShared ALIAS SDLStatic_SDK_Cxx_Shared)
+
+  set(SDLSTATIC_SDK_SHARED_TARGETS SDLStatic_SDK_Shared SDLStatic_SDK_Cxx_Shared)
+
+  sdlstatic_sdk_export_script(c _c_exports)
+  sdlstatic_sdk_export_script(cxx _cxx_exports)
+
+  foreach(sdk IN LISTS SDLSTATIC_SDK_SHARED_TARGETS)
+    if(sdk STREQUAL "SDLStatic_SDK_Shared")
+      set(_output_name SDL3_static_extensions)
+      set(_export_name SDKShared)
+      set(_exports "${_c_exports}")
+    else()
+      set(_output_name SDL3_static_extensions_cxx)
+      set(_export_name SDKCxxShared)
+      set(_exports "${_cxx_exports}")
+    endif()
+
+    set_target_properties(${sdk} PROPERTIES
+      OUTPUT_NAME ${_output_name}
+      EXPORT_NAME ${_export_name}
+      LINKER_LANGUAGE CXX
+      # libfoo.so.0.6.0 with a libfoo.so.0 SONAME, foo.0.dylib with an
+      # @rpath install name, foo.dll with its import library. A consumer that
+      # ships our .so beside their binary needs the SONAME to match what
+      # their linker recorded, which is why this is not left to default.
+      VERSION ${PROJECT_VERSION}
+      SOVERSION ${PROJECT_VERSION_MAJOR}
+      MACOSX_RPATH ON
+      WINDOWS_EXPORT_ALL_SYMBOLS ON
+    )
+    if(_exports)
+      target_link_options(${sdk} PRIVATE ${_exports})
+    endif()
+    target_link_libraries(${sdk} PRIVATE ${SDLSTATIC_SDK_SYSTEM_LIBS})
+
+    get_target_property(_iface SDLStatic_SDK INTERFACE_INCLUDE_DIRECTORIES)
+    if(_iface)
+      target_include_directories(${sdk} INTERFACE ${_iface})
+    endif()
+  endforeach()
+
+  install(TARGETS ${SDLSTATIC_SDK_SHARED_TARGETS}
+    EXPORT ${PROJECT_NAME}Targets
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  )
+endif()
