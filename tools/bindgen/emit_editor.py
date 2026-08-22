@@ -1,0 +1,365 @@
+"""Editor tooling: completions for scripts, and tags for the C headers.
+
+A script author's largest complaint about an embedded API is not that it is
+missing something — it is that the editor knows nothing about it.
+`SDLStaticC.` offers no completions, a typo in a function name is a runtime
+error three minutes later, and the argument list lives in a browser tab.
+
+Everything needed to fix that is already here. The generator knows every
+bound function and the signature the *script* sees, which is not always the
+C signature; that is what SCRIPT_API.md is written from. The same manifest
+produces:
+
+  sdlstatic.lua   ---@meta definitions for lua-language-server
+  sdlstatic.rbs   RBS signatures for Steep, Solargraph and friends
+  tags            a ctags file for the C and C++ headers
+
+Generated from the bindings rather than maintained beside them, so they
+cannot drift: a function that is bound is completable, and one that is not
+does not appear.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+
+from .classify import TK, ScriptPlan
+from .model import Manifest
+from .spec import LIBRARIES
+
+
+# Keywords in Lua or Ruby. A C parameter may legitimately be called any of
+# these — `def`, `end` and `next` all occur in the bound surface.
+_RESERVED = {
+    # Lua
+    "and", "break", "do", "else", "elseif", "end", "false", "for", "function",
+    "goto", "if", "in", "local", "nil", "not", "or", "repeat", "return",
+    "then", "true", "until", "while",
+    # Ruby
+    "alias", "begin", "case", "class", "def", "defined?", "ensure", "module",
+    "next", "redo", "rescue", "retry", "self", "super", "undef", "unless",
+    "when", "yield", "__FILE__", "__LINE__",
+}
+
+
+# --- shared: what a script sees -------------------------------------------
+
+def _lua_type(pp) -> str:
+    """The Lua type annotation for one parameter."""
+    kind = pp.info.kind
+    if pp.mode in ("blob_in", "mutstr_in"):
+        return "string"
+    if kind == TK.STRING:
+        return "string?"
+    if kind == TK.HANDLE:
+        # Handles are userdata; naming the C type gives the reader something
+        # to search for even though the language server treats it as opaque.
+        return "userdata"
+    if kind == TK.POD:
+        return "table"
+    if kind == TK.BOOL:
+        return "boolean"
+    if kind == TK.FLOAT:
+        return "number"
+    return "integer"
+
+
+def _rbs_type(pp) -> str:
+    kind = pp.info.kind
+    if pp.mode in ("blob_in", "mutstr_in"):
+        return "String"
+    if kind == TK.STRING:
+        return "String?"
+    if kind == TK.HANDLE:
+        return "untyped"
+    if kind == TK.POD:
+        return "Hash[Symbol, untyped]"
+    if kind == TK.BOOL:
+        return "bool"
+    if kind == TK.FLOAT:
+        return "Float"
+    return "Integer"
+
+
+def _lua_ret(info) -> str:
+    if info is None:
+        return "nil"
+    kind = info.kind
+    if kind == TK.STRING:
+        return "string?"
+    if kind == TK.HANDLE:
+        return "userdata?"
+    if kind == TK.POD:
+        return "table"
+    if kind == TK.BOOL:
+        return "boolean"
+    if kind == TK.FLOAT:
+        return "number"
+    if kind == TK.VOID:
+        return "nil"
+    return "integer"
+
+
+def _rbs_ret(info) -> str:
+    if info is None:
+        return "void"
+    kind = info.kind
+    if kind == TK.STRING:
+        return "String?"
+    if kind == TK.HANDLE:
+        return "untyped"
+    if kind == TK.POD:
+        return "Hash[Symbol, untyped]"
+    if kind == TK.BOOL:
+        return "bool"
+    if kind == TK.FLOAT:
+        return "Float"
+    if kind == TK.VOID:
+        return "void"
+    return "Integer"
+
+
+def _params(plan: ScriptPlan):
+    """Arguments as the script passes them, and the extra return values.
+
+    Out-parameters are not arguments — they come back after the return
+    value — and an in/out parameter is both. Getting this wrong in a
+    completion file is worse than having no completion file, because the
+    editor then confidently suggests the C signature.
+    """
+    args, extra = [], []
+    for index, pp in enumerate(plan.params):
+        label = pp.cname or f"arg{index}"
+        # C parameter names are not constrained by Lua's or Ruby's grammar,
+        # and several are keywords in one or both — `def` and `end` both
+        # appear in this API. A definition file that does not parse is worse
+        # than none, because the editor silently falls back to nothing.
+        if label in _RESERVED:
+            label = f"{label}_"
+        if pp.mode == "pod_out":
+            extra.append(pp)
+            continue
+        if pp.mode == "inout":
+            args.append((label, pp))
+            extra.append(pp)
+            continue
+        args.append((label, pp))
+    return args, extra
+
+
+# --- Lua ------------------------------------------------------------------
+
+def _emit_lua(manifest: Manifest, outcomes: dict) -> str:
+    from .emit_lua import lua_name
+
+    lua = outcomes["lua"]
+    out: list[str] = []
+    w = out.append
+    w("---@meta")
+    w("--")
+    w("-- GENERATED by `python3 -m tools.bindgen` - DO NOT EDIT.")
+    w("--")
+    w("-- Definitions for lua-language-server: completions, signatures and")
+    w("-- go-to-definition for every function the runner exposes.")
+    w("--")
+    w("-- Point your editor at this file — in .luarc.json:")
+    w("--")
+    w('--     { "workspace": { "library": ["path/to/sdlstatic.lua"] } }')
+    w("--")
+    w("-- Signatures are the ones a script sees, which differ from C where a")
+    w("-- (data, len) pair collapses into one string and where out-parameters")
+    w("-- return instead of being passed.")
+    w("")
+
+    for spec in LIBRARIES:
+        plans = lua.get(spec.key, {})
+        bound = {n: p for n, p in plans.items() if p.ok}
+        if not bound:
+            continue
+        module = spec.script_module
+        w(f"---{spec.title}")
+        w(f"---@class {module}")
+        w(f"{module} = {{}}")
+        w("")
+
+        taken: set[str] = set()
+        for cname in sorted(bound):
+            plan = bound[cname]
+            script_name = lua_name(cname, spec.prefix, taken)
+            args, extra = _params(plan)
+
+            w(f"---Calls `{cname}`.")
+            for label, pp in args:
+                w(f"---@param {label} {_lua_type(pp)}")
+            returns = []
+            if plan.ret is not None:
+                primary = _lua_ret(plan.ret)
+                if primary != "nil":
+                    returns.append(primary)
+            returns.extend(_lua_type(pp) for pp in extra)
+            if returns:
+                w(f"---@return {', '.join(returns)}")
+            arg_list = ", ".join(label for label, _ in args)
+            w(f"function {module}.{script_name}({arg_list}) end")
+            w("")
+    return "\n".join(out) + "\n"
+
+
+# --- Ruby -----------------------------------------------------------------
+
+def _emit_rbs(manifest: Manifest, outcomes: dict) -> str:
+    from .emit_lua import lua_name  # same name resolution on both surfaces
+
+    ruby = outcomes["ruby"]
+    out: list[str] = []
+    w = out.append
+    w("# GENERATED by `python3 -m tools.bindgen` - DO NOT EDIT.")
+    w("#")
+    w("# RBS signatures for the runner's Ruby surface: Steep, Solargraph and")
+    w("# any other RBS-aware tool will complete and type-check against these.")
+    w("#")
+    w("# Put the file on your RBS path — in rbs_collection.yaml or via")
+    w("# `steep check --repo`.")
+    w("#")
+    w("# Signatures are the ones a script sees: a (data, len) pair is one")
+    w("# String, and out-parameters come back rather than being passed.")
+    w("")
+
+    for spec in LIBRARIES:
+        plans = ruby.get(spec.key, {})
+        bound = {n: p for n, p in plans.items() if p.ok}
+        if not bound:
+            continue
+        w(f"# {spec.title}")
+        w(f"module {spec.script_module}")
+
+        taken: set[str] = set()
+        for cname in sorted(bound):
+            plan = bound[cname]
+            script_name = lua_name(cname, spec.prefix, taken)
+            args, extra = _params(plan)
+
+            arg_types = ", ".join(f"{_rbs_type(pp)} {label}" for label, pp in args)
+            returns = []
+            if plan.ret is not None:
+                primary = _rbs_ret(plan.ret)
+                if primary != "void":
+                    returns.append(primary)
+            returns.extend(_rbs_type(pp) for pp in extra)
+            if not returns:
+                ret = "void"
+            elif len(returns) == 1:
+                ret = returns[0]
+            else:
+                # Multiple returns arrive as an array, in the same order the
+                # Lua surface returns them.
+                ret = f"[{', '.join(returns)}]"
+            w(f"  def self.{script_name}: ({arg_types}) -> {ret}")
+        w("end")
+        w("")
+    return "\n".join(out) + "\n"
+
+
+# --- ctags ----------------------------------------------------------------
+
+def _header_paths(repo: Path, deps: Path) -> dict[str, str]:
+    """Map each header's basename to its path inside an installed include/.
+
+    The parser records only the file name, which is all the binding emitters
+    need. A tags file needs somewhere to jump to, and `engine.h` is not a
+    path anyone can open — `SDLStatic/engine.h` is, and that is exactly where
+    the SDK installs it. The rule is the same for our headers and for SDL's:
+    whatever follows the nearest `include/` directory.
+    """
+    from .spec import resolve_headers
+
+    paths: dict[str, str] = {}
+    for spec in LIBRARIES:
+        for header in resolve_headers(spec, repo, deps):
+            parts = header.parts
+            if "include" in parts:
+                index = len(parts) - 1 - parts[::-1].index("include")
+                relative = "/".join(parts[index + 1:])
+            else:
+                relative = header.name
+            # Relative to the SDK root, where the tags file sits and where an
+            # editor will be opened — not to include/, which is one level
+            # further in and would send every jump to a missing file.
+            relative = f"include/{relative}"
+            paths.setdefault(header.name, relative)
+    return paths
+
+
+def _emit_tags(manifest: Manifest, header_paths: dict[str, str]) -> str:
+    """A ctags file for the C and C++ headers.
+
+    Written from the parsed manifest rather than by running `ctags`, so it
+    needs no extra tool in CI and covers exactly what we ship. Paths are
+    relative to the SDK root, which is where an editor opens it.
+
+    The format is the original one: NAME<TAB>FILE<TAB>ADDRESS;" <TAB>KIND.
+    The address is a search pattern rather than a line number, so the file
+    stays valid when a header changes underneath it.
+    """
+    entries: list[tuple[str, str, str, str]] = []
+
+    def add(name: str, header: str, pattern: str, kind: str) -> None:
+        if not name or not header:
+            return
+        header = header_paths.get(header, header)
+        # Escape the pattern the way vi expects.
+        escaped = pattern.replace("\\", "\\\\").replace("/", "\\/")
+        entries.append((name, header, escaped, kind))
+
+    for spec in LIBRARIES:
+        lib = manifest.libraries.get(spec.key)
+        if lib is None:
+            continue
+        for fn in lib.functions.values():
+            header = fn.header or ""
+            add(fn.name, header, f"^.*{fn.name} *(", "f")
+        for name, struct in lib.structs.items():
+            add(name, lib.header_names[0] if lib.header_names else "",
+                f"^.*{name}", "s" if not struct.is_union else "u")
+            for field in struct.fields:
+                add(field.name, lib.header_names[0] if lib.header_names else "",
+                    f"^.*{field.name}", "m")
+        for name, enum in lib.enums.items():
+            add(name, lib.header_names[0] if lib.header_names else "",
+                f"^.*{name}", "g")
+            for value in enum.values:
+                add(value, lib.header_names[0] if lib.header_names else "",
+                    f"^.*{value}", "e")
+
+    lines = [
+        "!_TAG_FILE_FORMAT\t2\t/extended format/",
+        "!_TAG_FILE_SORTED\t1\t/0=unsorted, 1=sorted/",
+        "!_TAG_PROGRAM_NAME\tsdlstatic-bindgen\t//",
+        "!_TAG_PROGRAM_URL\thttps://github.com/bluesentinelsec/SDL3-static-extensions\t//",
+    ]
+    seen: set[tuple[str, str]] = set()
+    for name, header, pattern, kind in sorted(entries):
+        key = (name, header)
+        if key in seen:
+            continue
+        seen.add(key)
+        lines.append(f'{name}\t{header}\t/{pattern}/;"\t{kind}')
+    return "\n".join(lines) + "\n"
+
+
+def emit_editor(manifest: Manifest, outcomes: dict, target: Path, deps: Path,
+                source_root: Path) -> None:
+    """Write the editor files into `target`.
+
+    `source_root` is separate because where the headers *live* is a property
+    of the source tree, not of wherever the output is going: the freshness
+    check regenerates into a temporary directory, and resolving header paths
+    against that produced a tags file that differed from the committed one
+    for no reason but the output location.
+    """
+    out_dir = target / "bindings" / "generated" / "editor"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / "sdlstatic.lua").write_text(_emit_lua(manifest, outcomes), encoding="utf-8")
+    (out_dir / "sdlstatic.rbs").write_text(_emit_rbs(manifest, outcomes), encoding="utf-8")
+    (out_dir / "tags").write_text(
+        _emit_tags(manifest, _header_paths(source_root, deps)), encoding="utf-8")

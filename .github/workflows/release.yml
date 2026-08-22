@@ -283,11 +283,99 @@ jobs:
           find "${prefix}/include" -iname "sdlstatic.h" | grep -q . \
             || { echo "Missing the C++ headers" >&2; exit 1; }
 
+          # The editor tooling, which is the difference between an API you
+          # can complete and one you read in a browser tab.
+          test -f "${prefix}/tags"
+          test -f "${prefix}/share/${APP_NAME}/editor/sdlstatic.lua"
+          test -f "${prefix}/share/${APP_NAME}/editor/sdlstatic.rbs"
+
+          # Documentation. A library whose SDK explains nothing offline is a
+          # library you can only use with a browser open.
+          test -f "${prefix}/share/doc/${APP_NAME}/getting-started.md"
+          test -f "${prefix}/share/doc/${APP_NAME}/scripting.md"
+          test -f "${prefix}/share/doc/${APP_NAME}/SCRIPT_API.md"
+
           # No test binaries. They were the entire download for six releases.
           if find "${prefix}" -name "*_test*" -o -name "*_bench*" | grep -q .; then
             echo "Test binaries leaked into the SDK" >&2
             exit 1
           fi
+
+      # The runner on its own, for someone who wants to play a Lua or Ruby
+      # game and never intends to compile anything. It carries the script
+      # completions with it: an embedded API with no editor support is an
+      # API read from a browser tab.
+      - name: Package the runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(tr -d '[:space:]' < VERSION | sed 's/^v//;s/^V//;s/#.*//')"
+          case "${RUNNER_OS}" in
+            Linux) os=linux ;;
+            macOS) os=macos ;;
+            Windows) os=windows ;;
+            *) os="$(echo "${RUNNER_OS}" | tr '[:upper:]' '[:lower:]')" ;;
+          esac
+          case "${RUNNER_ARCH}" in
+            X64) arch=x86_64 ;;
+            ARM64) arch=arm64 ;;
+            *) arch="$(echo "${RUNNER_ARCH}" | tr '[:upper:]' '[:lower:]')" ;;
+          esac
+          stem="${APP_NAME}-runner-${os}-${arch}-release-${version}"
+          out="${PWD}/dist/${stem}"
+          rm -rf "${out}"
+          mkdir -p "${out}/editor"
+
+          sdk="${{ steps.pkg.outputs.prefix }}"
+          if [ -f "${sdk}/bin/repl.exe" ]; then
+            cp "${sdk}/bin/repl.exe" "${out}/"
+          else
+            cp "${sdk}/bin/repl" "${out}/"
+          fi
+          cp "${sdk}/share/${APP_NAME}/editor/sdlstatic.lua" "${out}/editor/"
+          cp "${sdk}/share/${APP_NAME}/editor/sdlstatic.rbs" "${out}/editor/"
+          cp LICENSE "${out}/LICENSE"
+
+          # The two pages a script author actually needs, offline: how to
+          # write a game in Lua or Ruby, and the signature every bound
+          # function has *as a script sees it*.
+          mkdir -p "${out}/docs"
+          cp "${sdk}/share/doc/${APP_NAME}/scripting.md" "${out}/docs/"
+          cp "${sdk}/share/doc/${APP_NAME}/engine.md" "${out}/docs/"
+          cp "${sdk}/share/doc/${APP_NAME}/SCRIPT_API.md" "${out}/docs/"
+
+          cat > "${out}/README.md" <<'README'
+          # The runner
+
+          Plays a game written in Lua or Ruby. Nothing needs to be installed:
+          the interpreters, the engine and SDL3 are inside the executable.
+
+              ./repl game.lua
+              ./repl game.rb
+              ./repl -l lua          # an interactive shell
+
+          The language comes from the file's extension; `-l` says which when
+          there is no file to infer it from.
+
+          ## Completions
+
+          `docs/` has the scripting guide, the engine guide, and the full
+          signature of every bound function as a script sees it.
+
+          `editor/` holds definitions generated from the same source as the
+          bindings, so they describe exactly what this build exposes.
+
+          **Lua** — lua-language-server, in `.luarc.json`:
+
+              { "workspace": { "library": ["editor/sdlstatic.lua"] } }
+
+          **Ruby** — RBS, for Steep or Solargraph: put `editor/sdlstatic.rbs`
+          on your RBS path.
+          README
+
+          echo "runner_name=${stem}" >> "${GITHUB_OUTPUT}"
+          echo "runner_path=dist/${stem}.zip" >> "${GITHUB_OUTPUT}"
+        id: runner_pkg
 
       - name: Archive the SDK
         shell: bash
@@ -297,6 +385,21 @@ jobs:
           (cd dist && 7z a -tzip "${stem}.zip" "${stem}" >/dev/null 2>&1 \
             || zip -r "${stem}.zip" "${stem}" >/dev/null)
           ls -lh "dist/${stem}.zip"
+
+      - name: Archive the runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          stem="${{ steps.runner_pkg.outputs.runner_name }}"
+          (cd dist && 7z a -tzip "${stem}.zip" "${stem}" >/dev/null 2>&1 \
+            || zip -r "${stem}.zip" "${stem}" >/dev/null)
+          ls -lh "dist/${stem}.zip"
+
+      - name: Upload the runner
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.runner_pkg.outputs.runner_name }}
+          path: ${{ steps.runner_pkg.outputs.runner_path }}
 
       - name: Upload Release zip (workflow artifact)
         uses: actions/upload-artifact@v7
@@ -506,9 +609,56 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  build-docs:
+    name: build-docs (HTML site)
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install pandoc
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+
+      # The same script the Pages deployment runs, so the offline copy and
+      # the website cannot drift into being different documents.
+      - name: Build the site
+        run: bash scripts/build-docs.sh site
+
+      - name: Package the docs
+        id: pkg
+        run: |
+          set -euo pipefail
+          stem="${APP_NAME}-docs-${{ needs.prepare.outputs.version }}"
+          rm -rf "dist/${stem}"
+          mkdir -p "dist/${stem}"
+          cp -R site/. "dist/${stem}/"
+          cp LICENSE "dist/${stem}/LICENSE"
+
+          # The generated references are not part of the site build — they
+          # come out of the binding generator — and they are the two pages a
+          # script author needs most.
+          cp bindings/generated/SCRIPT_API.md bindings/generated/COVERAGE.md \
+             "dist/${stem}/"
+
+          test -f "dist/${stem}/index.html"
+          test -f "dist/${stem}/scripting.html"
+          (cd dist && zip -r "${stem}.zip" "${stem}" >/dev/null)
+          echo "artifact_name=${stem}" >> "${GITHUB_OUTPUT}"
+          echo "artifact_path=dist/${stem}.zip" >> "${GITHUB_OUTPUT}"
+        env:
+          APP_NAME: SDL3-static-extensions
+
+      - name: Upload the docs
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.pkg.outputs.artifact_name }}
+          path: ${{ steps.pkg.outputs.artifact_path }}
+
   publish:
     name: Publish GitHub Release
-    needs: [prepare, build, build-android, build-ios, build-web]
+    needs: [prepare, build, build-android, build-ios, build-web, build-docs]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

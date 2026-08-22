@@ -445,6 +445,44 @@ foreach(dir IN LISTS _sdl3_header_dirs)
   )
 endforeach()
 
+# Editor tooling, generated from the same manifest as the bindings: a tags
+# file for the C and C++ headers, and completion definitions for the two
+# scripting languages. They ship with the SDK because an API nobody's editor
+# knows about is an API read from a browser tab.
+set(_editor_dir "${CMAKE_CURRENT_LIST_DIR}/../bindings/generated/editor")
+if(EXISTS "${_editor_dir}/tags")
+  install(FILES "${_editor_dir}/tags" DESTINATION .)
+  install(FILES "${_editor_dir}/sdlstatic.lua" "${_editor_dir}/sdlstatic.rbs"
+          DESTINATION ${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}/editor)
+endif()
+
+# Documentation, as Markdown, in every SDK on every platform. Markdown
+# rather than the rendered site because it needs no pandoc in the packaging
+# job and reads fine in a terminal or an editor; the release also carries a
+# built HTML site for anyone who would rather have that.
+#
+# The generated API references go with it: SCRIPT_API.md is the only place a
+# script author can read the signature a *script* sees rather than the C one,
+# and COVERAGE.md records what is bound and what was skipped and why.
+set(_doc_dest ${CMAKE_INSTALL_DATADIR}/doc/${PROJECT_NAME})
+file(GLOB _doc_pages "${CMAKE_CURRENT_LIST_DIR}/../docs/*.md")
+if(_doc_pages)
+  install(FILES ${_doc_pages} DESTINATION ${_doc_dest})
+  install(DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/../docs/assets/"
+          DESTINATION ${_doc_dest}/assets OPTIONAL)
+endif()
+foreach(reference SCRIPT_API.md COVERAGE.md)
+  if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../bindings/generated/${reference}")
+    install(FILES "${CMAKE_CURRENT_LIST_DIR}/../bindings/generated/${reference}"
+            DESTINATION ${_doc_dest})
+  endif()
+endforeach()
+foreach(top README.md LICENSE)
+  if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../${top}")
+    install(FILES "${CMAKE_CURRENT_LIST_DIR}/../${top}" DESTINATION ${_doc_dest})
+  endif()
+endforeach()
+
 install(TARGETS ${SDLSTATIC_SDK_TARGETS}
   EXPORT ${PROJECT_NAME}Targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}

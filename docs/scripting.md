@@ -298,6 +298,47 @@ for m in Regex.new("\\d+"):gmatch("a1b22") do print(m[0]) end
 Both are linked in by `SDLStatic::Bindings`, so nothing extra is needed.
 See [Regex](regex.html) for the full surface and its limits.
 
+## Completions in your editor
+
+An embedded API that your editor knows nothing about is an API you read in
+a browser tab. The runner ships definitions for both languages, generated
+from the same source as the bindings — so they describe exactly what your
+build exposes, and a function that is not bound does not appear.
+
+**Lua**, for lua-language-server. In `.luarc.json`:
+
+```json
+{ "workspace": { "library": ["editor/sdlstatic.lua"] } }
+```
+
+Then `SDLStaticC.` completes, hovering shows the signature, and a typo is
+a red squiggle rather than a runtime error three minutes in.
+
+**Ruby**, as RBS, for Steep and Solargraph: put `editor/sdlstatic.rbs` on
+your RBS path.
+
+They are in `editor/` beside the runner, and in
+`share/SDL3-static-extensions/editor/` in the SDK.
+
+The signatures are the ones a *script* sees, not the C ones — a
+`(data, len)` pair is one string, and out-parameters come back rather than
+being passed. That distinction is the main reason to generate these rather
+than hand-write them.
+
+### C and C++
+
+The SDK ships a `tags` file at its root, covering every public function,
+struct, enum and field across all the headers — including SDL3's. Vim,
+Emacs and anything else that reads ctags will jump to a declaration
+without a language server:
+
+```vim
+:set tags=/path/to/sdk/tags
+```
+
+For clangd, no extra file is needed: point it at your own project's
+`compile_commands.json` and it reads the SDK's headers directly.
+
 ## The REPL
 
 `tools/repl` builds an interactive shell for both languages with all

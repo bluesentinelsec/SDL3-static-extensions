@@ -88,6 +88,9 @@ def main() -> int:
     outcomes["lua"] = emit_lua(manifest, target)
     outcomes["ruby"] = emit_ruby(manifest, target)
     emit_report(manifest, outcomes, target)
+
+    from .emit_editor import emit_editor
+    emit_editor(manifest, outcomes, target, args.deps, args.repo)
     emit_script_api(manifest, outcomes, target)
 
     if args.check:
@@ -100,8 +103,12 @@ def main() -> int:
         for rel_dir in ("cpp/include/sdlstatic/gen", "bindings/generated"):
             fresh_dir = target / rel_dir
             committed_dir = args.repo / rel_dir
-            for fresh in sorted(fresh_dir.iterdir()):
-                committed = committed_dir / fresh.name
+            # Recursive: bindings/generated has subdirectories now (editor/),
+            # and iterdir() would hand a directory to read_bytes().
+            for fresh in sorted(fresh_dir.rglob("*")):
+                if fresh.is_dir():
+                    continue
+                committed = committed_dir / fresh.relative_to(fresh_dir)
                 if not committed.exists() or normalized(fresh) != normalized(committed):
                     stale.append(str(committed))
         if stale:

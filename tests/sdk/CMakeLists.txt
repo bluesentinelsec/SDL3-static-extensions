@@ -74,3 +74,35 @@ if(TARGET SDLStatic_SDK_Shared AND NOT _sdk_sanitized)
       PROPERTIES TIMEOUT 300)
   endif()
 endif()
+
+# The editor definitions have to parse, or an editor silently ignores them
+# and the author gets no completions with no error to explain why.
+#
+# The Lua file is checked with our own interpreter — the runner already
+# embeds Lua 5.4, so this needs no language server installed. loadfile
+# compiles without executing, which is what a definition file is for.
+if(TARGET repl)
+  add_test(NAME editor_lua_definitions_parse
+    COMMAND $<TARGET_FILE:repl> -l lua -e
+      "local f, err = loadfile('${CMAKE_CURRENT_SOURCE_DIR}/../../bindings/generated/editor/sdlstatic.lua') if not f then error(err) end print('definitions parse')"
+  )
+  set_tests_properties(editor_lua_definitions_parse PROPERTIES
+    PASS_REGULAR_EXPRESSION "definitions parse")
+endif()
+
+# The RBS file is checked for shape rather than parsed: rbs is a gem we do
+# not require anyone to install. Every signature must be a well-formed
+# `def self.NAME: (...) -> ...`, and the modules must balance.
+find_package(Python3 COMPONENTS Interpreter)
+if(Python3_Interpreter_FOUND)
+  add_test(NAME editor_rbs_definitions_shape
+    COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/../editor/check_rbs.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../bindings/generated/editor/sdlstatic.rbs
+  )
+  add_test(NAME editor_tags_shape
+    COMMAND ${Python3_EXECUTABLE}
+            ${CMAKE_CURRENT_SOURCE_DIR}/../editor/check_tags.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/../../bindings/generated/editor/tags
+  )
+endif()
