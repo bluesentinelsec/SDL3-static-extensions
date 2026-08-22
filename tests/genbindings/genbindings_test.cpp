@@ -826,4 +826,294 @@ TEST(GenRuby, AScriptCanCreateAndDriveAnEngine)
     SDL_Quit();
 }
 
+
+// ---------------------------------------------------------------------------
+// Scenes from a script
+//
+// A scene is defined by its callbacks, so unlike every other definition in
+// the engine a builder alone would produce a scene that does nothing. These
+// check the bridge that closes it: the lifecycle in order, per-scene
+// identity, and the stack behaviour that is the whole reason scenes are a
+// stack rather than a pointer.
+
+TEST(GenLua, ScenesRunTheirLifecycleInOrder)
+{
+    ASSERT_TRUE(SDL_Init(0));
+    RunLua(
+        "local cfg = SDLStaticC.ConfigCreate()\n"
+        "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
+        "SDLStaticC.ConfigSetManualClock(cfg, true)\n"
+        "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
+        "local e = SDLStaticC.CreateEngine(cfg)\n"
+        "SDLStaticC.ConfigDestroy(cfg)\n"
+        "assert(e ~= nil)\n"
+        "local log = {}\n"
+        "SDLStaticC.SceneDefine(e, 'title')\n"
+        "SDLStaticC.SceneOn(e, 'title', 'load', function(scene)\n"
+        "  log[#log + 1] = 'load'\n"
+        "  assert(SDLStaticC.SceneName(scene) == 'title')\n"
+        "  return true\n"
+        "end)\n"
+        "SDLStaticC.SceneOn(e, 'title', 'enter', function(s) log[#log+1] = 'enter' end)\n"
+        "SDLStaticC.SceneOn(e, 'title', 'update', function(s, dt) log[#log+1] = 'update' end)\n"
+        "SDLStaticC.SceneOn(e, 'title', 'render', function(s, a) log[#log+1] = 'render' end)\n"
+        "SDLStaticC.SceneOn(e, 'title', 'exit', function(s) log[#log+1] = 'exit' end)\n"
+        "SDLStaticC.SceneOn(e, 'title', 'unload', function(s) log[#log+1] = 'unload' end)\n"
+        "assert(SDLStaticC.ScriptScenePush(e, 'title'))\n"
+        // The push is deferred to the end of the frame, so nothing has run
+        // yet — which is what lets a scene push from inside its own update.
+        "assert(#log == 0, 'the push is deferred, got ' .. #log)\n"
+        "for i = 1, 3 do\n"
+        "  SDLStaticC.EngineAdvance(e, 16666667)\n"
+        "  SDLStaticC.EngineTick(e)\n"
+        "end\n"
+        "assert(log[1] == 'load' and log[2] == 'enter',\n"
+        "       'load then enter, got ' .. table.concat(log, ','))\n"
+        "assert(SDLStaticC.SceneDepth(e) == 1)\n"
+        "local seen_update, seen_render = false, false\n"
+        "for _, entry in ipairs(log) do\n"
+        "  if entry == 'update' then seen_update = true end\n"
+        "  if entry == 'render' then seen_render = true end\n"
+        "end\n"
+        "assert(seen_update and seen_render, table.concat(log, ','))\n"
+        // Popping runs the other half of the lifecycle, in the mirror order.
+        "SDLStaticC.ScenePop(e)\n"
+        "SDLStaticC.EngineAdvance(e, 16666667)\n"
+        "SDLStaticC.EngineTick(e)\n"
+        "assert(log[#log] == 'unload' and log[#log - 1] == 'exit',\n"
+        "       'exit then unload, got ' .. table.concat(log, ','))\n"
+        "assert(SDLStaticC.SceneDepth(e) == 0)\n"
+        "SDLStaticC.DestroyEngine(e)\n");
+    SDL_Quit();
+}
+
+// The reason scenes are a stack: a pause menu leaves the level underneath
+// intact, so popping it returns to exactly where the player was.
+TEST(GenLua, ScenesStackAndTheCoveredOneStops)
+{
+    ASSERT_TRUE(SDL_Init(0));
+    RunLua(
+        "local cfg = SDLStaticC.ConfigCreate()\n"
+        "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
+        "SDLStaticC.ConfigSetManualClock(cfg, true)\n"
+        "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
+        "local e = SDLStaticC.CreateEngine(cfg)\n"
+        "SDLStaticC.ConfigDestroy(cfg)\n"
+        "local level_updates, menu_updates = 0, 0\n"
+        "SDLStaticC.SceneDefine(e, 'level')\n"
+        "SDLStaticC.SceneOn(e, 'level', 'update', function(s, dt)\n"
+        "  level_updates = level_updates + 1\n"
+        "end)\n"
+        "SDLStaticC.SceneDefine(e, 'menu')\n"
+        "SDLStaticC.SceneOn(e, 'menu', 'update', function(s, dt)\n"
+        "  menu_updates = menu_updates + 1\n"
+        "end)\n"
+        "SDLStaticC.ScriptScenePush(e, 'level')\n"
+        "for i = 1, 3 do\n"
+        "  SDLStaticC.EngineAdvance(e, 16666667); SDLStaticC.EngineTick(e)\n"
+        "end\n"
+        "local before = level_updates\n"
+        "assert(before > 0, 'the level ran')\n"
+        "SDLStaticC.ScriptScenePush(e, 'menu')\n"
+        // The push applies at the end of the frame, so the level is still
+        // the top scene for this one; measure from after it settles.
+        "SDLStaticC.EngineAdvance(e, 16666667); SDLStaticC.EngineTick(e)\n"
+        "before = level_updates\n"
+        "for i = 1, 3 do\n"
+        "  SDLStaticC.EngineAdvance(e, 16666667); SDLStaticC.EngineTick(e)\n"
+        "end\n"
+        "assert(SDLStaticC.SceneDepth(e) == 2, 'both are on the stack')\n"
+        "assert(menu_updates > 0, 'the menu runs')\n"
+        // Covered scenes stop by default — that is what "paused" means.
+        "assert(level_updates == before,\n"
+        "       'the covered level stopped, ran ' .. (level_updates - before) .. ' more')\n"
+        "SDLStaticC.ScenePop(e)\n"
+        "for i = 1, 3 do\n"
+        "  SDLStaticC.EngineAdvance(e, 16666667); SDLStaticC.EngineTick(e)\n"
+        "end\n"
+        "assert(level_updates > before, 'the level resumed where it was')\n"
+        "SDLStaticC.DestroyEngine(e)\n");
+    SDL_Quit();
+}
+
+// One definition, several live scenes: the callback is given its scene, so
+// a script keys its own state by that — what SDLStatic_SceneState does for
+// C, done the way a script would do it.
+TEST(GenLua, OneDefinitionBacksSeveralLiveScenes)
+{
+    ASSERT_TRUE(SDL_Init(0));
+    RunLua(
+        "local cfg = SDLStaticC.ConfigCreate()\n"
+        "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
+        "SDLStaticC.ConfigSetManualClock(cfg, true)\n"
+        "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
+        "local e = SDLStaticC.CreateEngine(cfg)\n"
+        "SDLStaticC.ConfigDestroy(cfg)\n"
+        "local state = {}\n"
+        "local distinct = 0\n"
+        "SDLStaticC.SceneDefine(e, 'room')\n"
+        // Transparent, so pushing a second room leaves the first drawing —
+        // and updating, so both are live at once.
+        "SDLStaticC.ScriptSceneSetFlags(e, 'room', 3)\n"
+        // Keyed by SceneKey, not by the scene itself: a handle is boxed
+        // fresh each time it crosses into Lua, so the scene is a different
+        // table key every frame and per-scene state never finds itself.
+        "SDLStaticC.SceneOn(e, 'room', 'update', function(scene, dt)\n"
+        "  local key = SDLStaticC.SceneKey(scene)\n"
+        "  if state[key] == nil then\n"
+        "    state[key] = 0\n"
+        "    distinct = distinct + 1\n"
+        "  end\n"
+        "  state[key] = state[key] + 1\n"
+        "end)\n"
+        "SDLStaticC.ScriptScenePush(e, 'room')\n"
+        "for i = 1, 2 do SDLStaticC.EngineAdvance(e, 16666667); SDLStaticC.EngineTick(e) end\n"
+        "SDLStaticC.ScriptScenePush(e, 'room')\n"
+        "for i = 1, 2 do SDLStaticC.EngineAdvance(e, 16666667); SDLStaticC.EngineTick(e) end\n"
+        "assert(SDLStaticC.SceneDepth(e) == 2)\n"
+        "assert(distinct == 2, 'two live scenes from one definition, saw ' .. distinct)\n"
+        "SDLStaticC.DestroyEngine(e)\n");
+    SDL_Quit();
+}
+
+TEST(GenLua, UnknownSceneHookIsAnErrorNotSilence)
+{
+    ASSERT_TRUE(SDL_Init(0));
+    lua_State *L = SDLStatic_CreateLuaState();
+    ASSERT_NE(L, nullptr);
+    ASSERT_TRUE(SDLStatic_OpenLuaBindings(L));
+    // A typo in a hook name must name the hooks that exist, rather than
+    // registering nothing and leaving a scene that quietly does not draw.
+    const int rc = luaL_dostring(
+        L,
+        "local cfg = SDLStaticC.ConfigCreate()\n"
+        "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
+        "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
+        "local e = SDLStaticC.CreateEngine(cfg)\n"
+        "SDLStaticC.SceneDefine(e, 'title')\n"
+        "SDLStaticC.SceneOn(e, 'title', 'raender', function(s, a) end)\n");
+    EXPECT_NE(rc, LUA_OK) << "a misspelled hook should raise";
+    const char *message = lua_tostring(L, -1);
+    ASSERT_NE(message, nullptr);
+    EXPECT_NE(std::string(message).find("unknown scene hook"), std::string::npos) << message;
+    EXPECT_NE(std::string(message).find("render"), std::string::npos)
+        << "the error should name the hooks that exist: " << message;
+    lua_close(L);
+    SDL_Quit();
+}
+
+TEST(GenLua, PushingAnUndefinedSceneFails)
+{
+    ASSERT_TRUE(SDL_Init(0));
+    RunLua(
+        "local cfg = SDLStaticC.ConfigCreate()\n"
+        "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
+        "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
+        "local e = SDLStaticC.CreateEngine(cfg)\n"
+        "SDLStaticC.ConfigDestroy(cfg)\n"
+        "SDLStaticC.SceneDefine(e, 'title')\n"
+        "assert(SDLStaticC.ScriptSceneDefined(e, 'title'))\n"
+        "assert(not SDLStaticC.ScriptSceneDefined(e, 'level'))\n"
+        "assert(not SDLStaticC.ScriptScenePush(e, 'level'),\n"
+        "       'pushing an undefined scene reports failure')\n"
+        "SDLStaticC.DestroyEngine(e)\n");
+    SDL_Quit();
+}
+
+// Redefining a name replaces its handlers rather than shadowing them. A
+// script reloaded during development should get its new callbacks, not the
+// old ones held alive underneath.
+TEST(GenLua, RedefiningASceneReplacesItsHandlers)
+{
+    ASSERT_TRUE(SDL_Init(0));
+    RunLua(
+        "local cfg = SDLStaticC.ConfigCreate()\n"
+        "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
+        "SDLStaticC.ConfigSetManualClock(cfg, true)\n"
+        "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
+        "local e = SDLStaticC.CreateEngine(cfg)\n"
+        "SDLStaticC.ConfigDestroy(cfg)\n"
+        "local old_ran, new_ran = 0, 0\n"
+        "SDLStaticC.SceneDefine(e, 'title')\n"
+        "SDLStaticC.SceneOn(e, 'title', 'update', function(s, dt) old_ran = old_ran + 1 end)\n"
+        "SDLStaticC.SceneDefine(e, 'title')  -- same name, fresh definition\n"
+        "SDLStaticC.SceneOn(e, 'title', 'update', function(s, dt) new_ran = new_ran + 1 end)\n"
+        "SDLStaticC.ScriptScenePush(e, 'title')\n"
+        "for i = 1, 3 do SDLStaticC.EngineAdvance(e, 16666667); SDLStaticC.EngineTick(e) end\n"
+        "assert(new_ran > 0, 'the new handler runs')\n"
+        "assert(old_ran == 0, 'the replaced handler does not, ran ' .. old_ran)\n"
+        "SDLStaticC.DestroyEngine(e)\n");
+    SDL_Quit();
+}
+
+TEST(GenRuby, ScenesRunTheirLifecycleInOrder)
+{
+    ASSERT_TRUE(SDL_Init(0));
+    RunRuby(
+        "cfg = SDLStaticC.ConfigCreate\n"
+        "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
+        "SDLStaticC.ConfigSetManualClock(cfg, true)\n"
+        "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
+        "e = SDLStaticC.CreateEngine(cfg)\n"
+        "SDLStaticC.ConfigDestroy(cfg)\n"
+        "raise 'engine' if e.nil?\n"
+        "$log = []\n"
+        "SDLStaticC.SceneDefine(e, 'title')\n"
+        "SDLStaticC.SceneOn(e, 'title', 'load') { |scene| $log << 'load'; true }\n"
+        "SDLStaticC.SceneOn(e, 'title', 'enter') { |scene| $log << 'enter' }\n"
+        "SDLStaticC.SceneOn(e, 'title', 'update') { |scene, dt| $log << 'update' }\n"
+        "SDLStaticC.SceneOn(e, 'title', 'exit') { |scene| $log << 'exit' }\n"
+        "SDLStaticC.SceneOn(e, 'title', 'unload') { |scene| $log << 'unload' }\n"
+        "raise 'push' unless SDLStaticC.ScriptScenePush(e, 'title')\n"
+        "3.times do\n"
+        "  SDLStaticC.EngineAdvance(e, 16666667)\n"
+        "  SDLStaticC.EngineTick(e)\n"
+        "end\n"
+        "raise \"order: #{$log}\" unless $log[0] == 'load' && $log[1] == 'enter'\n"
+        "raise 'update' unless $log.include?('update')\n"
+        "raise 'depth' unless SDLStaticC.SceneDepth(e) == 1\n"
+        "SDLStaticC.ScenePop(e)\n"
+        "SDLStaticC.EngineAdvance(e, 16666667)\n"
+        "SDLStaticC.EngineTick(e)\n"
+        "raise \"teardown: #{$log}\" unless $log[-1] == 'unload' && $log[-2] == 'exit'\n"
+        "SDLStaticC.DestroyEngine(e)\n");
+    SDL_Quit();
+}
+
+TEST(GenRuby, ScenesStackAndTheCoveredOneStops)
+{
+    ASSERT_TRUE(SDL_Init(0));
+    RunRuby(
+        "cfg = SDLStaticC.ConfigCreate\n"
+        "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
+        "SDLStaticC.ConfigSetManualClock(cfg, true)\n"
+        "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
+        "e = SDLStaticC.CreateEngine(cfg)\n"
+        "SDLStaticC.ConfigDestroy(cfg)\n"
+        "$level = 0\n"
+        "$menu = 0\n"
+        "SDLStaticC.SceneDefine(e, 'level')\n"
+        "SDLStaticC.SceneOn(e, 'level', 'update') { |s, dt| $level += 1 }\n"
+        "SDLStaticC.SceneDefine(e, 'menu')\n"
+        "SDLStaticC.SceneOn(e, 'menu', 'update') { |s, dt| $menu += 1 }\n"
+        "SDLStaticC.ScriptScenePush(e, 'level')\n"
+        "3.times { SDLStaticC.EngineAdvance(e, 16666667); SDLStaticC.EngineTick(e) }\n"
+        "before = $level\n"
+        "raise 'level' unless before > 0\n"
+        "SDLStaticC.ScriptScenePush(e, 'menu')\n"
+        // The push applies at the end of the frame, so the level is still
+        // on top for this one; measure from after it settles.
+        "SDLStaticC.EngineAdvance(e, 16666667); SDLStaticC.EngineTick(e)\n"
+        "before = $level\n"
+        "3.times { SDLStaticC.EngineAdvance(e, 16666667); SDLStaticC.EngineTick(e) }\n"
+        "raise 'depth' unless SDLStaticC.SceneDepth(e) == 2\n"
+        "raise 'menu' unless $menu > 0\n"
+        "raise 'the covered level kept running' unless $level == before\n"
+        "SDLStaticC.ScenePop(e)\n"
+        "3.times { SDLStaticC.EngineAdvance(e, 16666667); SDLStaticC.EngineTick(e) }\n"
+        "raise 'the level did not resume' unless $level > before\n"
+        "SDLStaticC.DestroyEngine(e)\n");
+    SDL_Quit();
+}
+
 } // namespace

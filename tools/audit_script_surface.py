@@ -59,9 +59,28 @@ for spec in LIBRARIES:
             if pp.info.kind == TK.HANDLE:
                 consumed[pp.info.base].append((spec.key, name, pp.cname))
 
+# Types whose C entry point still takes a struct no script can build, but
+# where a script-shaped path to the same capability exists. The raw call
+# stays unreachable on purpose: reporting these as gaps would be wrong, and
+# silently dropping them would hide a real one that appeared later.
+SUPERSEDED = {
+    "SDLStatic_SceneDef":
+        "SDLStaticC.SceneDefine/SceneOn + ScriptScenePush — a scene is its "
+        "callbacks, so it needs a bridge rather than a builder",
+    "SDL_GPUStorageBufferReadWriteBinding":
+        "SDLStatic_GPUComputeBindingsAddBuffer + GPUBeginComputePass",
+    "SDL_GPUStorageTextureReadWriteBinding":
+        "SDLStatic_GPUComputeBindingsAddTexture + GPUBeginComputePass",
+}
+
 missing = {b: u for b, u in consumed.items() if b not in produced}
+covered = {b: u for b, u in missing.items() if b in SUPERSEDED}
+missing = {b: u for b, u in missing.items() if b not in SUPERSEDED}
+
 print(f"handle types a script can obtain : {len(produced)}")
-print(f"handle types it cannot           : {len(missing)}\n")
+print(f"handle types it cannot           : {len(missing)}")
+print(f"reachable another way            : {len(covered)}\n")
+
 for base in sorted(missing, key=lambda b: (-len(missing[b]), b)):
     uses = missing[base]
     print(f"{base}  — {len(uses)} function(s) take it, none return it")
@@ -69,3 +88,15 @@ for base in sorted(missing, key=lambda b: (-len(missing[b]), b)):
         print(f"      {lib}: {fn}({param})")
     if len(uses) > 3:
         print(f"      ... and {len(uses) - 3} more")
+
+if covered:
+    print("\nreachable another way:")
+    for base in sorted(covered):
+        print(f"  {base}\n      use {SUPERSEDED[base]}")
+
+# A superseded entry that stops appearing means its raw call became
+# constructible, and the note is now stale rather than harmless.
+stale = sorted(set(SUPERSEDED) - set(covered))
+if stale:
+    print("\nstale SUPERSEDED entries (now constructible, drop the note): "
+          + ", ".join(stale))

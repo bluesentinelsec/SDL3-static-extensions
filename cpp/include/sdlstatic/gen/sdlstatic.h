@@ -716,8 +716,38 @@ inline Status ScriptHasHandlers(SDLStatic_Engine *engine) {
 inline Status ScriptRun(SDLStatic_Engine *engine) {
   return ::SDLStatic_ScriptRun(engine) ? Status() : Status::FromSdl();
 }
+inline Status ScriptSceneDefine(SDLStatic_Engine *engine, const char *name) {
+  return ::SDLStatic_ScriptSceneDefine(engine, name) ? Status() : Status::FromSdl();
+}
+inline Status ScriptSceneDefined(SDLStatic_Engine *engine, const char *name) {
+  return ::SDLStatic_ScriptSceneDefined(engine, name) ? Status() : Status::FromSdl();
+}
+inline Status ScriptScenePush(SDLStatic_Engine *engine, const char *name) {
+  return ::SDLStatic_ScriptScenePush(engine, name) ? Status() : Status::FromSdl();
+}
+inline Status ScriptSceneReplace(SDLStatic_Engine *engine, const char *name) {
+  return ::SDLStatic_ScriptSceneReplace(engine, name) ? Status() : Status::FromSdl();
+}
+inline Status ScriptSceneReset(SDLStatic_Engine *engine, const char *name) {
+  return ::SDLStatic_ScriptSceneReset(engine, name) ? Status() : Status::FromSdl();
+}
+inline Status ScriptSceneSetFlags(SDLStatic_Engine *engine, const char *name, SDLStatic_SceneFlags flags) {
+  return ::SDLStatic_ScriptSceneSetFlags(engine, name, flags) ? Status() : Status::FromSdl();
+}
+inline Status ScriptSceneSetHook(SDLStatic_Engine *engine, const char *name, SDLStatic_SceneHook hook, Sint64 handle) {
+  return ::SDLStatic_ScriptSceneSetHook(engine, name, hook, handle) ? Status() : Status::FromSdl();
+}
+inline Status ScriptSceneSetStateSize(SDLStatic_Engine *engine, const char *name, int state_size) {
+  return ::SDLStatic_ScriptSceneSetStateSize(engine, name, state_size) ? Status() : Status::FromSdl();
+}
+inline Status ScriptSceneTransitionTo(SDLStatic_Engine *engine, const char *name, SDLStatic_SceneTransition transition, float seconds) {
+  return ::SDLStatic_ScriptSceneTransitionTo(engine, name, transition, seconds) ? Status() : Status::FromSdl();
+}
 inline Status ScriptSetHook(SDLStatic_Engine *engine, SDLStatic_ScriptHook hook, Sint64 handle) {
   return ::SDLStatic_ScriptSetHook(engine, hook, handle) ? Status() : Status::FromSdl();
+}
+inline Status ScriptSetSceneDispatch(SDLStatic_Engine *engine, SDLStatic_ScriptSceneDispatch dispatch) {
+  return ::SDLStatic_ScriptSetSceneDispatch(engine, dispatch) ? Status() : Status::FromSdl();
 }
 inline Status SetDeviceMotion(SDLStatic_Engine *engine, bool enabled) {
   return ::SDLStatic_SetDeviceMotion(engine, enabled) ? Status() : Status::FromSdl();
@@ -1151,6 +1181,7 @@ inline constexpr auto& SceneCurrent = ::SDLStatic_SceneCurrent;
 inline constexpr auto& SceneDepth = ::SDLStatic_SceneDepth;
 inline constexpr auto& SceneEngine = ::SDLStatic_SceneEngine;
 inline constexpr auto& SceneFind = ::SDLStatic_SceneFind;
+inline constexpr auto& SceneKey = ::SDLStatic_SceneKey;
 inline constexpr auto& SceneName = ::SDLStatic_SceneName;
 inline constexpr auto& SceneSetTransitionColor = ::SDLStatic_SceneSetTransitionColor;
 inline constexpr auto& SceneState = ::SDLStatic_SceneState;

@@ -2913,6 +2913,7 @@ returns as an array.
 | `SDLStaticC.SceneEngine(scene: SDLStatic_Scene)` | SDLStatic_Engine|nil |
 | `SDLStaticC.SceneFind(engine: SDLStatic_Engine, name: string|nil)` | SDLStatic_Scene|nil |
 | `SDLStaticC.SceneIsActive(scene: SDLStatic_Scene)` | boolean |
+| `SDLStaticC.SceneKey(scene: SDLStatic_Scene)` | integer |
 | `SDLStaticC.SceneName(scene: SDLStatic_Scene)` | string|nil |
 | `SDLStaticC.ScenePop(engine: SDLStatic_Engine)` | boolean |
 | `SDLStaticC.ScenePush(engine: SDLStatic_Engine, def: SDLStatic_SceneDef)` | boolean |
@@ -2923,6 +2924,15 @@ returns as an array.
 | `SDLStaticC.SceneTransitioning(engine: SDLStatic_Engine)` | boolean |
 | `SDLStaticC.ScriptHasHandlers(engine: SDLStatic_Engine)` | boolean |
 | `SDLStaticC.ScriptRun(engine: SDLStatic_Engine)` | boolean |
+| `SDLStaticC.ScriptSceneDefine(engine: SDLStatic_Engine, name: string|nil)` | boolean |
+| `SDLStaticC.ScriptSceneDefined(engine: SDLStatic_Engine, name: string|nil)` | boolean |
+| `SDLStaticC.ScriptScenePush(engine: SDLStatic_Engine, name: string|nil)` | boolean |
+| `SDLStaticC.ScriptSceneReplace(engine: SDLStatic_Engine, name: string|nil)` | boolean |
+| `SDLStaticC.ScriptSceneReset(engine: SDLStatic_Engine, name: string|nil)` | boolean |
+| `SDLStaticC.ScriptSceneSetFlags(engine: SDLStatic_Engine, name: string|nil, flags: integer)` | boolean |
+| `SDLStaticC.ScriptSceneSetHook(engine: SDLStatic_Engine, name: string|nil, hook: integer, handle: integer)` | boolean |
+| `SDLStaticC.ScriptSceneSetStateSize(engine: SDLStatic_Engine, name: string|nil, state_size: integer)` | boolean |
+| `SDLStaticC.ScriptSceneTransitionTo(engine: SDLStatic_Engine, name: string|nil, transition: integer, seconds: number)` | boolean |
 | `SDLStaticC.ScriptSetHook(engine: SDLStatic_Engine, hook: integer, handle: integer)` | boolean |
 | `SDLStaticC.ScriptUnbind(engine: SDLStatic_Engine)` | nil |
 | `SDLStaticC.SetDebugTextSize(ptsize: number)` | nil |

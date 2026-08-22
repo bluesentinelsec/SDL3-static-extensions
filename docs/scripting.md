@@ -121,6 +121,90 @@ Functions that cannot cross a script boundary (callbacks, varargs,
 threading) are skipped **with the reason recorded** in
 [`COVERAGE.md`](https://github.com/bluesentinelsec/SDL3-static-extensions/blob/main/bindings/generated/COVERAGE.md).
 
+## Scenes from a script
+
+Every other definition in this engine is a struct a script can build —
+an actor, a body, a light. A scene is not, because a scene *is* its
+callbacks: what makes a title screen different from a level is what it
+does on load and render, not any field. A builder alone would hand back
+a scene that does nothing.
+
+So scenes get the same kind of bridge the game hooks got. A script
+defines a scene **by name** and pushes it by that name:
+
+```lua
+SDLStaticC.SceneDefine(engine, "title")
+
+SDLStaticC.SceneOn(engine, "title", "load", function(scene)
+  title_font = SDLStaticC.LoadTexture(engine, "ui/title.png")
+  return true            -- returning false aborts the push
+end)
+SDLStaticC.SceneOn(engine, "title", "render", function(scene, alpha)
+  draw_title(alpha)
+end)
+SDLStaticC.SceneOn(engine, "title", "event", function(scene, event)
+  if SDLStaticC.EventType(event) == SDL.EVENT_KEY_DOWN then
+    SDLStaticC.ScriptSceneReplace(engine, "level")
+  end
+end)
+
+SDLStaticC.ScriptScenePush(engine, "title")
+```
+
+In Ruby the handler is a block:
+
+```ruby
+SDLStaticC.SceneDefine(engine, "title")
+SDLStaticC.SceneOn(engine, "title", "render") { |scene, alpha| draw_title(alpha) }
+SDLStaticC.ScriptScenePush(engine, "title")
+```
+
+The hooks are `load`, `enter`, `fixed_update`, `update`, `render`,
+`event`, `exit` and `unload` — the lifecycle documented in
+[Scenes](engine.html#scenes), in that order. They are named rather than
+numbered so that a typo is an error naming the hooks that exist, instead
+of a scene that quietly never draws.
+
+**The name is the identity**, not a pointer, and that is what makes this
+work from a script at all. The engine copies a definition when it pushes
+one, so a C game passes a local and forgets it; a script has nowhere to
+keep a struct in the first place. A name outlives both, and it is what a
+callback can be traced back from.
+
+The stack operations take that name: `ScriptScenePush`,
+`ScriptSceneReplace`, `ScriptSceneReset`, `ScriptSceneTransitionTo`. The
+rest of the scene API — `ScenePop`, `SceneDepth`, `SceneCurrent`,
+`SceneName` — is the ordinary bound C surface and needs no wrapper.
+
+### Per-scene state: key by `SceneKey`, not by the scene
+
+One definition can back several live scenes, so every callback is given
+its scene. To keep state per scene, index by `SDLStaticC.SceneKey(scene)`:
+
+```lua
+local state = {}
+SDLStaticC.SceneOn(engine, "room", "update", function(scene, dt)
+  local key = SDLStaticC.SceneKey(scene)
+  state[key] = (state[key] or 0) + dt
+end)
+```
+
+Using the scene *itself* as the key is the obvious thing and it fails
+quietly: a handle is boxed fresh each time it crosses into a script, so
+the same scene arrives as a different key every frame — the table grows
+without bound and never finds what it stored. `SceneKey` is the identity
+underneath the box. It is an address, so it is good for the scene's
+lifetime and means nothing across a run; do not put it in a save.
+
+`ScriptSceneSetStateSize` is there for the other direction: a script
+scene that C code will also read with `SDLStatic_SceneState`.
+
+### Redefining a name replaces it
+
+Defining a name that already exists releases its handlers and starts
+over, so reloading a script during development gets the new callbacks
+rather than shadowing them with closures the old definition still holds.
+
 ## The GPU API from a script
 
 SDL's GPU API is bound in full — device, pipelines, passes, buffers,

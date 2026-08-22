@@ -43,6 +43,7 @@
 #define SDLSTATIC_ENGINE_SCRIPT_H
 
 #include <SDLStatic/engine.h>
+#include <SDLStatic/engine_scene.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -114,6 +115,118 @@ extern bool SDLStatic_ScriptRun(SDLStatic_Engine *engine);
 /** Drop every handler and the bridge. Called when a script state goes
  *  away, so the engine stops calling into a dead interpreter. */
 extern void SDLStatic_ScriptUnbind(SDLStatic_Engine *engine);
+
+/* --- scenes ---------------------------------------------------------------- */
+
+/**
+ * ### Scenes from a script
+ *
+ * A scene is defined by its callbacks — that is the whole of what makes a
+ * title screen different from a level — so unlike the other definitions in
+ * this engine, a builder alone would produce a scene that does nothing.
+ * It needs the same bridge the game hooks got, one level down.
+ *
+ * A script defines a scene **by name**, once, and then pushes it by that
+ * name:
+ *
+ *     SDLStaticC.SceneDefine(engine, "level")
+ *     SDLStaticC.SceneOn(engine, "level", "load",  function(scene) ... end)
+ *     SDLStaticC.SceneOn(engine, "level", "render", function(scene, alpha) ... end)
+ *     SDLStaticC.ScriptScenePush(engine, "level")
+ *
+ * The name is the identity, not a pointer, which is what makes this work
+ * from a script at all: the engine copies a definition when it pushes one,
+ * so a C game may pass a local and forget it, while a script has nowhere to
+ * keep a struct in the first place. A name outlives both.
+ *
+ * Every callback receives the scene, so one definition can back several
+ * live scenes and tell them apart — a script keeps per-scene data in a
+ * table keyed by the scene, the way C uses SDLStatic_SceneState.
+ */
+
+/** Which scene callback a registration is for; mirrors SDLStatic_SceneDef. */
+typedef enum SDLStatic_SceneHook
+{
+    SDLSTATIC_SCENE_HOOK_LOAD = 0,
+    SDLSTATIC_SCENE_HOOK_ENTER,
+    SDLSTATIC_SCENE_HOOK_FIXED_UPDATE,
+    SDLSTATIC_SCENE_HOOK_UPDATE,
+    SDLSTATIC_SCENE_HOOK_RENDER,
+    SDLSTATIC_SCENE_HOOK_EVENT,
+    SDLSTATIC_SCENE_HOOK_EXIT,
+    SDLSTATIC_SCENE_HOOK_UNLOAD,
+    SDLSTATIC_SCENE_HOOK_COUNT
+} SDLStatic_SceneHook;
+
+/**
+ * How the bridge calls a scene callback back into a language.
+ *
+ * Separate from SDLStatic_ScriptDispatch because a scene callback carries
+ * more: which scene it is for, and — for the event hook — the event. Only
+ * LOAD's return value is read, where false aborts the push.
+ */
+typedef bool (*SDLStatic_ScriptSceneDispatch)(void *language_state, Sint64 handle,
+                                              SDLStatic_SceneHook hook,
+                                              SDLStatic_Scene *scene, float value,
+                                              const SDL_Event *event);
+
+/** Install the scene dispatcher. Called by a language's binding layer
+ *  alongside SDLStatic_ScriptBind. */
+extern bool SDLStatic_ScriptSetSceneDispatch(SDLStatic_Engine *engine,
+                                             SDLStatic_ScriptSceneDispatch dispatch);
+
+/** Begin (or reset) a scene definition under this name. Defining a name
+ *  that already exists releases its handlers and starts over, so reloading
+ *  a script does not accumulate stale closures. */
+extern bool SDLStatic_ScriptSceneDefine(SDLStatic_Engine *engine, const char *name);
+
+/** Register a script function for one of the scene's callbacks. */
+extern bool SDLStatic_ScriptSceneSetHook(SDLStatic_Engine *engine, const char *name,
+                                         SDLStatic_SceneHook hook, Sint64 handle);
+
+/** Set the scene's flags — transparent, or updating while covered. */
+extern bool SDLStatic_ScriptSceneSetFlags(SDLStatic_Engine *engine, const char *name,
+                                          SDLStatic_SceneFlags flags);
+
+/** How many bytes of engine-owned state the scene wants. Scripts usually
+ *  leave this at zero and keep state on their own side, keyed by the scene;
+ *  it is here so a script can hand the same scene to C code that expects
+ *  SDLStatic_SceneState to work. */
+extern bool SDLStatic_ScriptSceneSetStateSize(SDLStatic_Engine *engine, const char *name,
+                                              int state_size);
+
+/**
+ * A stable key for one live scene, for a script to index its own state by.
+ *
+ * The obvious thing — using the scene itself as a table key — does not
+ * work, and fails quietly: a handle crossing into a script is boxed fresh
+ * each time it is passed, so the same scene arrives as a different key
+ * every frame and a table of per-scene state grows without bound. This
+ * returns the identity underneath the box.
+ *
+ *     local state = {}
+ *     SDLStaticC.SceneOn(engine, "room", "update", function(scene, dt)
+ *       local key = SDLStaticC.SceneKey(scene)
+ *       state[key] = (state[key] or 0) + dt
+ *     end)
+ *
+ * Valid until the scene is destroyed, and not reused while it lives. It is
+ * the scene's address, so do not persist it — across a save, or a run, it
+ * means nothing.
+ */
+extern Sint64 SDLStatic_SceneKey(SDLStatic_Scene *scene);
+
+/** Is a definition registered under this name? */
+extern bool SDLStatic_ScriptSceneDefined(SDLStatic_Engine *engine, const char *name);
+
+/* The stack operations, by name. Each mirrors the SDLStatic_Scene* call of
+   the same shape and defers in exactly the same way. */
+extern bool SDLStatic_ScriptScenePush(SDLStatic_Engine *engine, const char *name);
+extern bool SDLStatic_ScriptSceneReplace(SDLStatic_Engine *engine, const char *name);
+extern bool SDLStatic_ScriptSceneReset(SDLStatic_Engine *engine, const char *name);
+extern bool SDLStatic_ScriptSceneTransitionTo(SDLStatic_Engine *engine, const char *name,
+                                              SDLStatic_SceneTransition transition,
+                                              float seconds);
 
 #ifdef __cplusplus
 }

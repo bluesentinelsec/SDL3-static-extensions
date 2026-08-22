@@ -8105,6 +8105,19 @@ static mrb_value GenR_SDLStatic_SceneIsActive(mrb_state *mrb, mrb_value self)
     }
 }
 
+static mrb_value GenR_SDLStatic_SceneKey(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Scene *a0 = (SDLStatic_Scene *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Scene");
+    Sint64 rv = SDLStatic_SceneKey(a0);
+    return mrb_int_value(mrb, (mrb_int)rv);
+    }
+}
+
 static mrb_value GenR_SDLStatic_SceneName(mrb_state *mrb, mrb_value self)
 {
     const mrb_value *argv = NULL;
@@ -8239,6 +8252,138 @@ static mrb_value GenR_SDLStatic_ScriptRun(mrb_state *mrb, mrb_value self)
     {
     SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
     bool rv = SDLStatic_ScriptRun(a0);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_ScriptSceneDefine(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool rv = SDLStatic_ScriptSceneDefine(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_ScriptSceneDefined(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool rv = SDLStatic_ScriptSceneDefined(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_ScriptScenePush(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool rv = SDLStatic_ScriptScenePush(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_ScriptSceneReplace(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool rv = SDLStatic_ScriptSceneReplace(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_ScriptSceneReset(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    bool rv = SDLStatic_ScriptSceneReset(a0, a1);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_ScriptSceneSetFlags(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_SceneFlags a2 = (SDLStatic_SceneFlags)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    bool rv = SDLStatic_ScriptSceneSetFlags(a0, a1, a2);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_ScriptSceneSetHook(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_SceneHook a2 = (SDLStatic_SceneHook)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    Sint64 a3 = (Sint64)SDLStaticGen_RubyToInt(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    bool rv = SDLStatic_ScriptSceneSetHook(a0, a1, a2, a3);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_ScriptSceneSetStateSize(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    int a2 = (int)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    bool rv = SDLStatic_ScriptSceneSetStateSize(a0, a1, a2);
+    return mrb_bool_value((mrb_bool)(rv != 0));
+    }
+}
+
+static mrb_value GenR_SDLStatic_ScriptSceneTransitionTo(mrb_state *mrb, mrb_value self)
+{
+    const mrb_value *argv = NULL;
+    mrb_int argc = 0;
+    (void)self;
+    mrb_get_args(mrb, "*", &argv, &argc);
+    {
+    SDLStatic_Engine *a0 = (SDLStatic_Engine *)SDLStaticGen_RubyCheckHandle(mrb, (argc > 0 ? argv[0] : mrb_nil_value()), "SDLStatic_Engine");
+    const char *a1 = SDLStaticGen_RubyToStr(mrb, (argc > 1 ? argv[1] : mrb_nil_value()));
+    SDLStatic_SceneTransition a2 = (SDLStatic_SceneTransition)SDLStaticGen_RubyToInt(mrb, (argc > 2 ? argv[2] : mrb_nil_value()));
+    float a3 = (float)SDLStaticGen_RubyToNum(mrb, (argc > 3 ? argv[3] : mrb_nil_value()));
+    bool rv = SDLStatic_ScriptSceneTransitionTo(a0, a1, a2, a3);
     return mrb_bool_value((mrb_bool)(rv != 0));
     }
 }
@@ -9692,6 +9837,7 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "SceneEngine", GenR_SDLStatic_SceneEngine, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SceneFind", GenR_SDLStatic_SceneFind, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SceneIsActive", GenR_SDLStatic_SceneIsActive, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "SceneKey", GenR_SDLStatic_SceneKey, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SceneName", GenR_SDLStatic_SceneName, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ScenePop", GenR_SDLStatic_ScenePop, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ScenePush", GenR_SDLStatic_ScenePush, MRB_ARGS_ANY());
@@ -9702,6 +9848,15 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_module_function(mrb, mod, "SceneTransitioning", GenR_SDLStatic_SceneTransitioning, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ScriptHasHandlers", GenR_SDLStatic_ScriptHasHandlers, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ScriptRun", GenR_SDLStatic_ScriptRun, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ScriptSceneDefine", GenR_SDLStatic_ScriptSceneDefine, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ScriptSceneDefined", GenR_SDLStatic_ScriptSceneDefined, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ScriptScenePush", GenR_SDLStatic_ScriptScenePush, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ScriptSceneReplace", GenR_SDLStatic_ScriptSceneReplace, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ScriptSceneReset", GenR_SDLStatic_ScriptSceneReset, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ScriptSceneSetFlags", GenR_SDLStatic_ScriptSceneSetFlags, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ScriptSceneSetHook", GenR_SDLStatic_ScriptSceneSetHook, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ScriptSceneSetStateSize", GenR_SDLStatic_ScriptSceneSetStateSize, MRB_ARGS_ANY());
+    mrb_define_module_function(mrb, mod, "ScriptSceneTransitionTo", GenR_SDLStatic_ScriptSceneTransitionTo, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ScriptSetHook", GenR_SDLStatic_ScriptSetHook, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "ScriptUnbind", GenR_SDLStatic_ScriptUnbind, MRB_ARGS_ANY());
     mrb_define_module_function(mrb, mod, "SetDebugTextSize", GenR_SDLStatic_SetDebugTextSize, MRB_ARGS_ANY());
@@ -9902,6 +10057,15 @@ void SDLStaticGen_OpenRuby_sdlstatic(mrb_state *mrb)
     mrb_define_const(mrb, mod, "SDLSTATIC_SCENE_DEFAULT", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SCENE_DEFAULT));
     mrb_define_const(mrb, mod, "SDLSTATIC_SCENE_UPDATE_WHEN_COVERED", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SCENE_UPDATE_WHEN_COVERED));
     mrb_define_const(mrb, mod, "SDLSTATIC_SCENE_TRANSPARENT", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SCENE_TRANSPARENT));
+    mrb_define_const(mrb, mod, "SDLSTATIC_SCENE_HOOK_LOAD", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SCENE_HOOK_LOAD));
+    mrb_define_const(mrb, mod, "SDLSTATIC_SCENE_HOOK_ENTER", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SCENE_HOOK_ENTER));
+    mrb_define_const(mrb, mod, "SDLSTATIC_SCENE_HOOK_FIXED_UPDATE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SCENE_HOOK_FIXED_UPDATE));
+    mrb_define_const(mrb, mod, "SDLSTATIC_SCENE_HOOK_UPDATE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SCENE_HOOK_UPDATE));
+    mrb_define_const(mrb, mod, "SDLSTATIC_SCENE_HOOK_RENDER", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SCENE_HOOK_RENDER));
+    mrb_define_const(mrb, mod, "SDLSTATIC_SCENE_HOOK_EVENT", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SCENE_HOOK_EVENT));
+    mrb_define_const(mrb, mod, "SDLSTATIC_SCENE_HOOK_EXIT", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SCENE_HOOK_EXIT));
+    mrb_define_const(mrb, mod, "SDLSTATIC_SCENE_HOOK_UNLOAD", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SCENE_HOOK_UNLOAD));
+    mrb_define_const(mrb, mod, "SDLSTATIC_SCENE_HOOK_COUNT", mrb_int_value(mrb, (mrb_int)SDLSTATIC_SCENE_HOOK_COUNT));
     mrb_define_const(mrb, mod, "SDLSTATIC_TRANSITION_NONE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_TRANSITION_NONE));
     mrb_define_const(mrb, mod, "SDLSTATIC_TRANSITION_FADE", mrb_int_value(mrb, (mrb_int)SDLSTATIC_TRANSITION_FADE));
     mrb_define_const(mrb, mod, "SDLSTATIC_HOOK_LOAD", mrb_int_value(mrb, (mrb_int)SDLSTATIC_HOOK_LOAD));
