@@ -53,7 +53,11 @@ endif()
 # the same compiler that built it and never asks whether the symbols are
 # exported. Python asks nothing of the build system — it opens the file and
 # looks names up — which is what a plugin host or an FFI binding does.
-if(TARGET SDLStatic_SDK_Shared)
+# Not under sanitizers, for the same reason the install-consumer test is
+# skipped there: the library's objects reference the ASan runtime, and a
+# plain Python interpreter has not loaded it, so the dlopen fails on a
+# missing __asan_* rather than on anything we did wrong.
+if(TARGET SDLStatic_SDK_Shared AND NOT _sdk_sanitized)
   find_package(Python3 COMPONENTS Interpreter)
   if(Python3_Interpreter_FOUND)
     add_test(NAME shared_library_ctypes_c

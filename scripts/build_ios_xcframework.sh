@@ -63,11 +63,14 @@ configure_and_build() {
         -DSDL3_STATIC_EXTENSIONS_WITH_JSON=OFF \
         -DSDL3_STATIC_EXTENSIONS_WITH_SPDLOG=OFF
 
-    # The SDK, not the version library. Building only the latter is how the
-    # XCFramework came to hold a version string and nothing else while every
-    # check in this workflow passed.
+    # Both SDKs. The XCFramework packages the C++ one, because it contains
+    # the C API as well and Apple's idiom is a single framework rather than a
+    # choice of two; the C archive is built because the install step below
+    # stages headers from the same tree and installs whatever the project
+    # defines. Building only one target is what broke this after the C++ SDK
+    # was added — the install then looked for an archive nobody had built.
     cmake --build "${build_dir}" --config "${configuration}" \
-        --target "SDLStatic_SDK" --parallel
+        --target "SDLStatic_SDK" "SDLStatic_SDK_Cxx" --parallel
 }
 
 combine_archives() {
@@ -75,9 +78,10 @@ combine_archives() {
     local destination="$2"
     local candidate
 
-    candidate="$(find "${build_dir}" -type f -name "libSDL3_static_extensions_sdk.a" -path "*/${configuration}*" -print -quit)"
+    # The C++ archive: it holds the C API too, so one framework serves both.
+    candidate="$(find "${build_dir}" -type f -name "libSDL3_static_extensions_sdk_cxx.a" -path "*/${configuration}*" -print -quit)"
     if [[ -z "${candidate}" ]]; then
-        echo "Missing libSDL3_static_extensions_sdk.a in ${build_dir}" >&2
+        echo "Missing libSDL3_static_extensions_sdk_cxx.a in ${build_dir}" >&2
         exit 1
     fi
 

@@ -61,15 +61,24 @@ jobs:
           -DSDL3_STATIC_EXTENSIONS_WITH_JSON=OFF
           -DSDL3_STATIC_EXTENSIONS_WITH_SPDLOG=OFF
 
-      # The SDK target, so every component is compiled. Building only the
-      # version library is what let "iOS is green" mean nothing.
-      - name: Build the SDK
-        run: cmake --build build/ios --config Release --target SDLStatic_SDK --parallel
+      # Both SDK targets, so every component is compiled and the pair stays in
+      # step. Building only one is what broke the full iOS run after the C++
+      # SDK was added: the install found an archive nobody had built.
+      - name: Build the SDKs
+        run: >
+          cmake --build build/ios --config Release
+          --target SDLStatic_SDK SDLStatic_SDK_Cxx --parallel
+
+      # The install rules, which the packaging script relies on to stage
+      # headers. They are a different code path from the build and have
+      # broken independently of it.
+      - name: Install to a prefix
+        run: cmake --install build/ios --config Release --prefix build/ios-prefix
 
       - name: Verify the archive carries the engine
         run: |
           set -euo pipefail
-          archive="$(find build/ios -name libSDL3_static_extensions_sdk.a -print -quit)"
+          archive="$(find build/ios -name libSDL3_static_extensions_sdk_cxx.a -print -quit)"
           test -n "${archive}"
           size="$(stat -f%z "${archive}")"
           if [ "${size}" -lt 5000000 ]; then
