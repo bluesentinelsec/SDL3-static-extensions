@@ -22,10 +22,25 @@ target_compile_options(SDL3_static_extensions_ios_test PRIVATE -fobjc-arc)
 target_compile_definitions(SDL3_static_extensions_ios_test PRIVATE
   SDL3_STATIC_EXTENSIONS_EXPECTED_VERSION="${SDL3_STATIC_EXTENSIONS_EXPECTED_VERSION}"
 )
+# The XCFramework now carries SDL3's objects as well as ours, so this app
+# links what SDL3 needs on iOS. Before, an empty library needed nothing.
 target_link_libraries(SDL3_static_extensions_ios_test PRIVATE
   "${SDL3_STATIC_EXTENSIONS_XCFRAMEWORK}"
+  "-framework AVFoundation"
+  "-framework AudioToolbox"
+  "-framework CoreAudio"
+  "-framework CoreBluetooth"
+  "-framework CoreGraphics"
+  "-framework CoreMedia"
+  "-framework CoreMotion"
+  "-framework CoreVideo"
   "-framework Foundation"
+  "-framework GameController"
+  "-framework Metal"
+  "-framework OpenGLES"
+  "-framework QuartzCore"
   "-framework UIKit"
+  "-weak_framework CoreHaptics"
 )
 
 set_target_properties(SDL3_static_extensions_ios_test PROPERTIES

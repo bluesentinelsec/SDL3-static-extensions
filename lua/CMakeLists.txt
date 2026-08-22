@@ -22,6 +22,15 @@ target_include_directories(SDLStatic_Lua SYSTEM
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
+# iOS has no system(3) — the symbol exists in the SDK and is marked
+# unavailable, so os.execute fails to compile rather than at runtime. Lua
+# upstream anticipates this: LUA_USE_IOS turns l_system into a stub that
+# reports "no shell available", which is the truthful answer on a platform
+# where a game cannot spawn one anyway.
+if(IOS)
+  target_compile_definitions(SDLStatic_Lua PRIVATE LUA_USE_IOS)
+endif()
+
 target_link_libraries(SDLStatic_Lua PUBLIC SDL3::SDL3 SDLStatic::VFS)
 if(UNIX AND NOT APPLE)
   target_link_libraries(SDLStatic_Lua PRIVATE m)

@@ -52,6 +52,17 @@ target_compile_definitions(SDLStatic_VFS
     PHYSFS_SUPPORTS_ZIP=1
 )
 
+# PhysFS's Apple backend is Objective-C. Makefile and Ninja builds get away
+# with treating a .m file as C because clang infers the dialect from the
+# extension; the Xcode generator passes an explicit `-x c` and the file fails
+# on the first line of Foundation. Saying so is what makes an iOS build
+# possible at all.
+if(APPLE)
+  enable_language(OBJC)
+  set_source_files_properties(src/physfs/physfs_platform_apple.m PROPERTIES
+    LANGUAGE OBJC)
+endif()
+
 target_link_libraries(SDLStatic_VFS PUBLIC SDL3::SDL3 SDLStatic::Extras)
 if(APPLE)
   target_link_libraries(SDLStatic_VFS PUBLIC "-framework Foundation" "-framework IOKit")

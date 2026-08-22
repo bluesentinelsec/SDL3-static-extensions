@@ -4,6 +4,10 @@ plugins {
 
 def repositoryRoot = rootProject.projectDir.parentFile
 def prefabHeaders = file("${buildDir}/generated/prefab-headers")
+// SDL3's Java glue. Anything loading a library that contains SDL3 needs
+// org.libsdl.app.SDLActivity present, or the process aborts on load — so
+// these classes belong in the AAR beside the objects that ask for them.
+def sdlJavaDir = file("${buildDir}/generated/sdl-java")
 def packageVersion = new File(repositoryRoot, "VERSION").readLines()[0]
         .replaceFirst(/^[vV]/, "")
         .replaceFirst(/[ \t]*#.*$/, "")
@@ -26,6 +30,11 @@ android {
         externalNativeBuild {
             cmake {
                 arguments "-DANDROID_STL=c++_shared",
+                          // Where the native build stages the public headers.
+                          // Gradle's own copy task runs at preBuild, before
+                          // CMake has fetched SDL3, so it cannot do this.
+                          "-DSDLSTATIC_ANDROID_PREFAB_HEADERS=${prefabHeaders.absolutePath}",
+                          "-DSDLSTATIC_ANDROID_JAVA_DIR=${sdlJavaDir.absolutePath}",
                           "-DSDL3_STATIC_EXTENSIONS_BUILD_APP=OFF",
                           "-DSDL3_STATIC_EXTENSIONS_BUILD_TESTS=OFF",
                           "-DSDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS=OFF",
@@ -40,6 +49,15 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+        }
+    }
+
+    // SDL3's Java classes are compiled into the AAR alongside our own, so a
+    // consumer gets org.libsdl.app.* by depending on this package and not by
+    // being told to go and find SDL's Android project.
+    sourceSets {
+        main {
+            java.srcDirs += sdlJavaDir
         }
     }
 
@@ -95,4 +113,16 @@ tasks.register("preparePrefabHeaders") {
 
 tasks.named("preBuild").configure {
     dependsOn("preparePrefabHeaders")
+}
+
+// The CMake configure is what copies SDL's Java sources into place, and
+// Gradle would otherwise be free to compile Java before that had happened —
+// leaving the classes out of the AAR, which is a failure that only appears
+// later, at load time, on a device.
+tasks.whenTaskAdded { task ->
+    if (task.name.startsWith("configureCMake")) {
+        tasks.matching { it.name ==~ /compile.*JavaWithJavac/ }.configureEach {
+            dependsOn(task)
+        }
+    }
 }

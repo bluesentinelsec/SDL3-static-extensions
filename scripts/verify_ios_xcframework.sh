@@ -33,8 +33,13 @@ fi
 
 simulator_identifier="$(basename "$(dirname "${simulator_library}")")"
 for identifier in ios-arm64 "${simulator_identifier}"; do
-    header_root="${xcframework}/${identifier}/Headers/SDL3_static_extensions"
-    test -f "${header_root}/version.hpp"
+    header_root="${xcframework}/${identifier}/Headers"
+    test -f "${header_root}/SDL3_static_extensions/version.hpp"
+    # A consumer that cannot include the engine has nothing to link against,
+    # so the headers are checked as carefully as the slices.
+    test -f "${header_root}/SDLStatic/engine.h"
+    test -f "${header_root}/SDLStatic/bindings.h"
+    test -f "${header_root}/SDL3/SDL.h"
 done
 
 version_major="${expected_version%%.*}"
@@ -51,6 +56,25 @@ symbols_file="$(mktemp)"
 trap 'rm -f "${symbols_file}"' EXIT
 nm -g "${device_library}" >"${symbols_file}"
 grep -qE '[ST] _?_ZN22SDL3_static_extensions7Version' "${symbols_file}"
+
+# The engine itself. Checking the version symbol alone is what let this
+# framework ship holding a version string and nothing else, through a
+# verification that passed every time.
+for symbol in _SDLStatic_CreateEngine _SDLStatic_ActorSpawn _SDLStatic_OpenLuaBindings \
+              _SDLStatic_CreateGui _SDL_CreateWindow; do
+    if ! grep -qE "[ST] ${symbol}\$" "${symbols_file}"; then
+        echo "Missing ${symbol} in ${device_library} — the framework is not carrying the engine" >&2
+        exit 1
+    fi
+done
+
+# Size is the coarse version of the same question, and catches a regression
+# that keeps the symbols but drops most of the code.
+library_size="$(wc -c <"${device_library}")"
+if (( library_size < 5000000 )); then
+    echo "${device_library} is ${library_size} bytes — that is a placeholder, not the SDK" >&2
+    exit 1
+fi
 
 echo "Verified iOS XCFramework ${expected_version}"
 echo "  device: ${device_arches}"

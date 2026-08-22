@@ -68,7 +68,9 @@ browser WebAssembly, and all of it is exercised by CI on every platform.
 
 ## Proof it works
 
-The test suite runs 319 tests across six CI platforms plus an iOS
-XCFramework build, with a dedicated AddressSanitizer + UBSan job. The
+The test suite runs 583 tests across six CI platforms, with a dedicated
+AddressSanitizer + UBSan job, an iOS build gate on every pull request and
+a full XCFramework validation on demand. Which components build where is
+on the [platform matrix](platforms-matrix.html). The
 repository includes four complete Pong implementations — one each in C,
 C++, Lua, and Ruby — built purely against the public APIs.

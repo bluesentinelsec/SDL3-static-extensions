@@ -79,6 +79,34 @@ jobs:
           # emcc -O3 minifies the shell (strips attribute quotes); match the tag.
           grep -qi "<canvas" build/web-release/bin/SDL3-static-extensions.html
 
+      - name: Verify the wasm SDK carries the engine
+        run: |
+          set -euo pipefail
+          prefix="${PWD}/build/web-verify"
+          cmake --install build/web-release --prefix "${prefix}"
+
+          archive="${prefix}/lib/libSDL3_static_extensions_sdk.a"
+          test -f "${archive}"
+          size="$(stat -c%s "${archive}")"
+          if [ "${size}" -lt 5000000 ]; then
+            echo "${archive} is ${size} bytes — that is a placeholder, not the SDK" >&2
+            exit 1
+          fi
+
+          # The shipped archive was 686 bytes for several releases while every
+          # check in this workflow passed, because none of them looked inside.
+          emar t "${archive}" > web-objects.txt
+          for object in sdlstatic_engine.c.o sdlstatic_engine_actor.c.o SDL_video.c.o; do
+            if ! grep -qx "${object}" web-objects.txt; then
+              echo "Missing ${object} — the wasm SDK is not carrying the engine" >&2
+              exit 1
+            fi
+          done
+
+          for header in SDLStatic/engine.h SDLStatic/bindings.h SDL3/SDL.h; do
+            test -f "${prefix}/include/${header}"
+          done
+
       - name: Package web library and demo
         id: package
         run: |

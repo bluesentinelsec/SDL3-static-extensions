@@ -9,8 +9,15 @@
 #include <SDLStatic/engine.h>
 #include <SDLStatic/engine_actor.h>
 #include <SDLStatic/engine_config.h>
+#include <SDLStatic/bindings.h>
+#include <SDLStatic/lua.h>
+#include <SDLStatic/vfs.h>
 
 #include <SDL3/SDL.h>
+#include <SDL3_image/SDL_image.h>
+#include <SDL3_ttf/SDL_ttf.h>
+
+#include <mog/mog_c.h>
 
 #include <stdio.h>
 
@@ -65,6 +72,41 @@ int main(void)
                 (unsigned long long)frames, actors);
         return 1;
     }
+    /* One call into each component that pulls in a vendored dependency. The
+       engine alone does not: the HTTP core was missing from the archive
+       entirely and this test still passed, because nothing it called needed
+       it. A consumer discovers that at link time, in their project. */
+    /* SDLStatic::Http has no headers of its own — it re-exports mog's C API,
+       and mog's C++ core is the archive's largest vendored piece. */
+    mog_request *request = mog_request_new("GET", "http://127.0.0.1:1/");
+    if (mog_version() == NULL || request == NULL)
+    {
+        fprintf(stderr, "the HTTP core is not linked\n");
+        return 1;
+    }
+    mog_request_free(request);
+
+    if (!TTF_Init())
+    {
+        fprintf(stderr, "TTF_Init failed: %s\n", SDL_GetError());
+        return 1;
+    }
+    TTF_Quit();
+
+    if (IMG_Version() <= 0)
+    {
+        fprintf(stderr, "SDL_image is not linked\n");
+        return 1;
+    }
+
+    lua_State *lua = SDLStatic_CreateLuaState();
+    if (lua == NULL || !SDLStatic_OpenLuaBindings(lua))
+    {
+        fprintf(stderr, "the Lua bindings are not linked: %s\n", SDL_GetError());
+        return 1;
+    }
+    lua_close(lua);
+
     printf("SDK consumer ok: %llu frames, %d actor, SDL %d.%d.%d\n",
            (unsigned long long)frames, actors, SDL_MAJOR_VERSION, SDL_MINOR_VERSION,
            SDL_MICRO_VERSION);

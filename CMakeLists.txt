@@ -346,8 +346,15 @@ if(SDLSTATIC_BUILD_LUA AND SDLSTATIC_BUILD_RUBY)
   # a static library and a way to run a game are both part of "the default
   # build" — and off when we are a subdirectory of someone else's game,
   # which does not want our executable in its bin/.
-  option(SDLSTATIC_BUILD_RUNNER "Build the Lua/Ruby script runner"
-         ${SDL3_STATIC_EXTENSIONS_IS_TOP_LEVEL})
+  #
+  # Off on iOS and Android regardless: there is no command line to run it
+  # from, and CMake treats every executable there as an app bundle, so even
+  # installing it wants a BUNDLE DESTINATION for a binary nobody can launch.
+  set(_runner_default ${SDL3_STATIC_EXTENSIONS_IS_TOP_LEVEL})
+  if(IOS OR ANDROID)
+    set(_runner_default OFF)
+  endif()
+  option(SDLSTATIC_BUILD_RUNNER "Build the Lua/Ruby script runner" ${_runner_default})
   if(SDLSTATIC_BUILD_RUNNER)
     add_subdirectory(tools/repl)
   endif()

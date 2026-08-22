@@ -3,23 +3,90 @@
 # libraries, package and verify the XCFramework, and run the consumer package
 # tests in an iOS Simulator.
 #
-# Iteration-phase policy: manual dispatch only (~17 min per run is too heavy
-# for the per-push loop). Desktop/Sanitizers/Web/Android still validate every
-# push, and release.yml's build-ios job remains the hard gate before any
-# release ships. Run this on demand to batch-validate iOS, and restore
-# push/pull_request triggers once the early heavy-iteration phase is over.
+# Two jobs, because the full run and the useful-on-every-PR run are different
+# sizes:
+#
+#   ios-build   pull requests. Configures and builds the simulator SDK, and
+#               nothing else — no device slice, no packaging, no simulator.
+#               Roughly half the cost, and it catches the whole class of
+#               failure that dispatch-only left undetected: a configure error
+#               or a source file that does not compile for iOS. Both have
+#               happened, and both reached main.
+#   ios         manual dispatch. The full XCFramework: device and simulator
+#               slices, packaging, verification and the simulator test run.
+#               Still the batch validation before and after merges, and
+#               release.yml's build-ios job is still the hard gate before a
+#               release ships.
 name: iOS
 
 on:
   workflow_dispatch:
+  pull_request:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
+  # The PR gate: does it configure, and does it compile?
+  ios-build:
+    name: iOS (simulator SDK builds)
+    if: github.event_name == 'pull_request'
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install latest CMake and Ninja
+        uses: lukka/get-cmake@latest
+
+      - name: Configure for the iOS Simulator
+        run: >
+          cmake -S . -B build/ios -G Xcode
+          -DCMAKE_SYSTEM_NAME=iOS
+          -DCMAKE_OSX_SYSROOT=iphonesimulator
+          -DCMAKE_OSX_ARCHITECTURES=arm64
+          -DCMAKE_OSX_DEPLOYMENT_TARGET=13.0
+          -DCMAKE_XCODE_ATTRIBUTE_CODE_SIGNING_ALLOWED=NO
+          -DSDL3_STATIC_EXTENSIONS_BUILD_APP=OFF
+          -DSDL3_STATIC_EXTENSIONS_BUILD_TESTS=OFF
+          -DSDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS=OFF
+          -DSDL3_STATIC_EXTENSIONS_WITH_CLI11=OFF
+          -DSDL3_STATIC_EXTENSIONS_WITH_JSON=OFF
+          -DSDL3_STATIC_EXTENSIONS_WITH_SPDLOG=OFF
+
+      # The SDK target, so every component is compiled. Building only the
+      # version library is what let "iOS is green" mean nothing.
+      - name: Build the SDK
+        run: cmake --build build/ios --config Release --target SDLStatic_SDK --parallel
+
+      - name: Verify the archive carries the engine
+        run: |
+          set -euo pipefail
+          archive="$(find build/ios -name libSDL3_static_extensions_sdk.a -print -quit)"
+          test -n "${archive}"
+          size="$(stat -f%z "${archive}")"
+          if [ "${size}" -lt 5000000 ]; then
+            echo "${archive} is ${size} bytes — that is a placeholder, not the SDK" >&2
+            exit 1
+          fi
+          nm -g "${archive}" > ios-symbols.txt
+          for symbol in _SDLStatic_CreateEngine _SDLStatic_OpenLuaBindings _SDL_CreateWindow; do
+            if ! grep -qE "[ST] ${symbol}$" ios-symbols.txt; then
+              echo "Missing ${symbol} — the iOS archive is not carrying the engine" >&2
+              exit 1
+            fi
+          done
+
   ios:
     name: iOS (XCFramework / simulator)
+    if: github.event_name == 'workflow_dispatch'
     runs-on: macos-latest
     timeout-minutes: 35
 
