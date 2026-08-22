@@ -289,6 +289,12 @@ jobs:
           test -f "${prefix}/share/${APP_NAME}/editor/sdlstatic.lua"
           test -f "${prefix}/share/${APP_NAME}/editor/sdlstatic.rbs"
 
+          # Documentation. A library whose SDK explains nothing offline is a
+          # library you can only use with a browser open.
+          test -f "${prefix}/share/doc/${APP_NAME}/getting-started.md"
+          test -f "${prefix}/share/doc/${APP_NAME}/scripting.md"
+          test -f "${prefix}/share/doc/${APP_NAME}/SCRIPT_API.md"
+
           # No test binaries. They were the entire download for six releases.
           if find "${prefix}" -name "*_test*" -o -name "*_bench*" | grep -q .; then
             echo "Test binaries leaked into the SDK" >&2
@@ -330,6 +336,14 @@ jobs:
           cp "${sdk}/share/${APP_NAME}/editor/sdlstatic.rbs" "${out}/editor/"
           cp LICENSE "${out}/LICENSE"
 
+          # The two pages a script author actually needs, offline: how to
+          # write a game in Lua or Ruby, and the signature every bound
+          # function has *as a script sees it*.
+          mkdir -p "${out}/docs"
+          cp "${sdk}/share/doc/${APP_NAME}/scripting.md" "${out}/docs/"
+          cp "${sdk}/share/doc/${APP_NAME}/engine.md" "${out}/docs/"
+          cp "${sdk}/share/doc/${APP_NAME}/SCRIPT_API.md" "${out}/docs/"
+
           cat > "${out}/README.md" <<'README'
           # The runner
 
@@ -344,6 +358,9 @@ jobs:
           there is no file to infer it from.
 
           ## Completions
+
+          `docs/` has the scripting guide, the engine guide, and the full
+          signature of every bound function as a script sees it.
 
           `editor/` holds definitions generated from the same source as the
           bindings, so they describe exactly what this build exposes.
@@ -592,9 +609,56 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+  build-docs:
+    name: build-docs (HTML site)
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install pandoc
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+
+      # The same script the Pages deployment runs, so the offline copy and
+      # the website cannot drift into being different documents.
+      - name: Build the site
+        run: bash scripts/build-docs.sh site
+
+      - name: Package the docs
+        id: pkg
+        run: |
+          set -euo pipefail
+          stem="${APP_NAME}-docs-${{ needs.prepare.outputs.version }}"
+          rm -rf "dist/${stem}"
+          mkdir -p "dist/${stem}"
+          cp -R site/. "dist/${stem}/"
+          cp LICENSE "dist/${stem}/LICENSE"
+
+          # The generated references are not part of the site build — they
+          # come out of the binding generator — and they are the two pages a
+          # script author needs most.
+          cp bindings/generated/SCRIPT_API.md bindings/generated/COVERAGE.md \
+             "dist/${stem}/"
+
+          test -f "dist/${stem}/index.html"
+          test -f "dist/${stem}/scripting.html"
+          (cd dist && zip -r "${stem}.zip" "${stem}" >/dev/null)
+          echo "artifact_name=${stem}" >> "${GITHUB_OUTPUT}"
+          echo "artifact_path=dist/${stem}.zip" >> "${GITHUB_OUTPUT}"
+        env:
+          APP_NAME: SDL3-static-extensions
+
+      - name: Upload the docs
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.pkg.outputs.artifact_name }}
+          path: ${{ steps.pkg.outputs.artifact_path }}
+
   publish:
     name: Publish GitHub Release
-    needs: [prepare, build, build-android, build-ios, build-web]
+    needs: [prepare, build, build-android, build-ios, build-web, build-docs]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

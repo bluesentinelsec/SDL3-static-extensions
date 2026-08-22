@@ -27,6 +27,8 @@ and link it. A desktop release ships three things:
 | `bin/repl` | the runner: plays a Lua or Ruby game with no toolchain installed |
 | `lib/libSDL3_static_extensions.{so,dylib,dll}` | the C API as a shared library |
 | `lib/libSDL3_static_extensions_cxx.{so,dylib,dll}` | the C++ API as a shared library |
+| `share/doc/…` | this documentation, offline, plus the generated API references |
+| `tags`, `share/…/editor/` | ctags and script completions |
 
 Static is the default and what the documentation assumes; the shared
 libraries are for hosts that need to load code at runtime — a plugin
