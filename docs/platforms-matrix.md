@@ -68,16 +68,23 @@ Desktop ships both linkages, in both APIs:
 with a SONAME (`libfoo.so.0`), an `@rpath` install name on macOS, and an
 import library on Windows.
 
-On Linux and macOS, exports are filtered to the public prefixes —
-`SDLStatic_`, `SDL_`, `b2`, `lua_`, `mrb_`, `nk_` and the rest — so every
-vendored library's internal helpers stay inside rather than becoming part of
-an ABI we would then owe compatibility to.
+Exports are filtered to the public prefixes — `SDLStatic_`, `SDL_`, `b2`,
+`lua_`, `mrb_`, `nk_` and the rest — so every vendored library's internal
+helpers stay inside rather than becoming part of an ABI we would then owe
+compatibility to.
 
-**Windows does not filter yet.** MSVC has no pattern form for export lists,
-so the DLL exports whatever the objects define, mbedtls internals included.
-The DLL works — it loads and runs the engine under ctypes on every CI run —
-but its surface is larger than it should be. The test reports that on each
-run instead of asserting it, so the gap is visible rather than forgotten.
+Three platforms, three mechanisms, one list of prefixes:
+
+| | |
+|---|---|
+| Linux | `--version-script` |
+| macOS | `-exported_symbols_list` |
+| Windows | a `.def` filtered from the full symbol list CMake generates |
+
+Windows has no pattern form of its own, so the list is *produced* rather than
+described: CMake writes every symbol the objects define, and the filter keeps
+the ones we publish. The ctypes test asserts on all three that
+`mbedtls_ssl_init` and friends are unreachable.
 
 **The other platforms do not get one, and that is the idiomatic answer
 rather than a gap:**

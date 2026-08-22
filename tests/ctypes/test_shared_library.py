@@ -106,13 +106,10 @@ def check_hidden(lib: ctypes.CDLL) -> None:
     turns every vendored library's private helper into part of our ABI —
     something we would then be obliged not to break.
 
-    This holds on ELF and Mach-O, where the export set comes from a version
-    script and an exported-symbols list. It does **not** hold on Windows:
-    MSVC has no pattern form, so the DLL currently exports whatever the
-    objects define. That is a real gap, not a quirk of the test, and it is
-    reported here rather than asserted so that the difference is visible on
-    every run instead of being discovered by whoever binds to a symbol we
-    never meant to publish.
+    All three desktop platforms enforce this, by three different mechanisms
+    that read from one list of prefixes: a version script on ELF, an
+    exported-symbols list on Mach-O, and on Windows a .def filtered from the
+    full symbol list CMake generates.
     """
     leaked = []
     for name in ("mbedtls_ssl_init", "stbi__zbuild_huffman", "physfs_platform_init"):
@@ -124,11 +121,6 @@ def check_hidden(lib: ctypes.CDLL) -> None:
 
     if not leaked:
         print("  internals are hidden")
-        return
-
-    if sys.platform == "win32":
-        print(f"  WARNING: {len(leaked)} internal symbol(s) exported "
-              f"({', '.join(leaked)}) — Windows has no export filter yet")
         return
 
     raise SystemExit(
