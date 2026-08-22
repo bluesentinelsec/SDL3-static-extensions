@@ -66,10 +66,18 @@ Desktop ships both linkages, in both APIs:
 | `libSDL3_static_extensions_cxx.{so,dylib,dll}` | the C++ API, containing the C one |
 
 with a SONAME (`libfoo.so.0`), an `@rpath` install name on macOS, and an
-import library on Windows. Exports are filtered to the public prefixes —
+import library on Windows.
+
+On Linux and macOS, exports are filtered to the public prefixes —
 `SDLStatic_`, `SDL_`, `b2`, `lua_`, `mrb_`, `nk_` and the rest — so every
 vendored library's internal helpers stay inside rather than becoming part of
 an ABI we would then owe compatibility to.
+
+**Windows does not filter yet.** MSVC has no pattern form for export lists,
+so the DLL exports whatever the objects define, mbedtls internals included.
+The DLL works — it loads and runs the engine under ctypes on every CI run —
+but its surface is larger than it should be. The test reports that on each
+run instead of asserting it, so the gap is visible rather than forgotten.
 
 **The other platforms do not get one, and that is the idiomatic answer
 rather than a gap:**
