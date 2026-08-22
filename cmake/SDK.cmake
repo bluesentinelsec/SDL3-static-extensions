@@ -60,6 +60,12 @@ function(sdlstatic_sdk_find_components dir out_var)
 endfunction()
 
 sdlstatic_sdk_find_components("${CMAKE_CURRENT_SOURCE_DIR}" SDLSTATIC_SDK_COMPONENTS)
+
+# The C++ wrapper is the one component that separates the two SDKs. Everything
+# else is C API — implemented in C or C++, but called from C — and belongs in
+# both.
+set(SDLSTATIC_SDK_CXX_ONLY SDLStatic_Cpp)
+list(REMOVE_ITEM SDLSTATIC_SDK_COMPONENTS ${SDLSTATIC_SDK_CXX_ONLY})
 # The scaffold library carries the version API, which is public surface.
 list(APPEND SDLSTATIC_SDK_COMPONENTS ${PROJECT_NAME}_lib)
 # The SDK itself must not try to absorb itself if this file is re-included.
@@ -114,9 +120,22 @@ endforeach()
 # this file runs in the root scope, where the project declared only C++.
 enable_language(C)
 
+# Two SDKs, and the C++ one is not a supplement to the C one.
+#
+#   ..._sdk.a      the C API: every component, SDL3, the vendored libraries
+#   ..._sdk_cxx.a  all of that *plus* the C++ wrapper
+#
+# The second repeats the first rather than depending on it, because a link
+# line reading `-lfoo_sdk_cxx -lfoo_sdk` invites exactly one question — which
+# order? — and the answer is a support thread. A C++ game links one archive;
+# a C game links the other; neither needs to know the other exists. The cost
+# is disk, which is the cheapest thing in this trade.
+#
 # The anchor source is not optional: see cmake/sdk_anchor.c. A static library
 # built purely from other targets' objects produces no archive under the
 # Xcode generator, and reports success while doing it.
+sdlstatic_sdk_collect(_sdk_cxx_objects ${SDLSTATIC_SDK_CXX_ONLY})
+
 add_library(SDLStatic_SDK STATIC
   ${CMAKE_CURRENT_LIST_DIR}/sdk_anchor.c
   ${_sdk_component_objects}
@@ -125,12 +144,31 @@ add_library(SDLStatic_SDK STATIC
 add_library(SDLStatic::SDK ALIAS SDLStatic_SDK)
 add_library(${PROJECT_NAME}::SDK ALIAS SDLStatic_SDK)
 
+add_library(SDLStatic_SDK_Cxx STATIC
+  ${CMAKE_CURRENT_LIST_DIR}/sdk_anchor.c
+  ${_sdk_component_objects}
+  ${_sdk_vendored_objects}
+  ${_sdk_cxx_objects}
+)
+add_library(SDLStatic::SDKCxx ALIAS SDLStatic_SDK_Cxx)
+add_library(${PROJECT_NAME}::SDKCxx ALIAS SDLStatic_SDK_Cxx)
+
 set_target_properties(SDLStatic_SDK PROPERTIES
   OUTPUT_NAME SDL3_static_extensions_sdk
   EXPORT_NAME SDK
   POSITION_INDEPENDENT_CODE ON
   LINKER_LANGUAGE CXX
 )
+set_target_properties(SDLStatic_SDK_Cxx PROPERTIES
+  OUTPUT_NAME SDL3_static_extensions_sdk_cxx
+  EXPORT_NAME SDKCxx
+  POSITION_INDEPENDENT_CODE ON
+  LINKER_LANGUAGE CXX
+)
+
+# Everything below applies to both. The C++ SDK differs only in what it
+# contains, not in how it is used.
+set(SDLSTATIC_SDK_TARGETS SDLStatic_SDK SDLStatic_SDK_Cxx)
 
 # The headers a consumer includes. Under BUILD_INTERFACE these are the source
 # directories; from an install they are one flattened include tree, which is
@@ -141,16 +179,18 @@ set_target_properties(SDLStatic_SDK PROPERTIES
 # these directories exist while building, and after an install the headers
 # are somewhere else entirely.
 function(sdlstatic_sdk_add_includes)
-  foreach(dir IN LISTS ARGN)
-    if(dir MATCHES "^\\$<")
-      target_include_directories(SDLStatic_SDK INTERFACE "${dir}")
-    else()
-      target_include_directories(SDLStatic_SDK INTERFACE "$<BUILD_INTERFACE:${dir}>")
-    endif()
+  foreach(sdk IN LISTS SDLSTATIC_SDK_TARGETS)
+    foreach(dir IN LISTS ARGN)
+      if(dir MATCHES "^\\$<")
+        target_include_directories(${sdk} INTERFACE "${dir}")
+      else()
+        target_include_directories(${sdk} INTERFACE "$<BUILD_INTERFACE:${dir}>")
+      endif()
+    endforeach()
   endforeach()
 endfunction()
 
-foreach(component IN LISTS SDLSTATIC_SDK_COMPONENTS)
+foreach(component IN LISTS SDLSTATIC_SDK_COMPONENTS SDLSTATIC_SDK_CXX_ONLY)
   if(TARGET ${component})
     get_target_property(dirs ${component} INTERFACE_INCLUDE_DIRECTORIES)
     if(dirs)
@@ -158,9 +198,11 @@ foreach(component IN LISTS SDLSTATIC_SDK_COMPONENTS)
     endif()
   endif()
 endforeach()
-target_include_directories(SDLStatic_SDK INTERFACE
-  $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-)
+foreach(sdk IN LISTS SDLSTATIC_SDK_TARGETS)
+  target_include_directories(${sdk} INTERFACE
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+  )
+endforeach()
 
 # ---------------------------------------------------------------------------
 # Xcode: assemble by merging archives instead of collecting objects
@@ -178,30 +220,39 @@ target_include_directories(SDLStatic_SDK INTERFACE
 # the merge only adds what Xcode dropped.
 # ---------------------------------------------------------------------------
 if(CMAKE_GENERATOR STREQUAL "Xcode")
-  set(_sdk_archives "")
-  foreach(target IN LISTS SDLSTATIC_SDK_COMPONENTS SDLSTATIC_SDK_VENDORED)
-    if(NOT TARGET ${target})
-      continue()
+  # Each SDK gets the archives it is made of: the C one everything except the
+  # C++ wrapper, the C++ one everything.
+  foreach(sdk IN LISTS SDLSTATIC_SDK_TARGETS)
+    set(_sdk_sources ${SDLSTATIC_SDK_COMPONENTS} ${SDLSTATIC_SDK_VENDORED})
+    if(sdk STREQUAL "SDLStatic_SDK_Cxx")
+      list(APPEND _sdk_sources ${SDLSTATIC_SDK_CXX_ONLY})
     endif()
-    get_target_property(type ${target} TYPE)
-    get_target_property(imported ${target} IMPORTED)
-    if(type STREQUAL "STATIC_LIBRARY" AND NOT imported)
-      list(APPEND _sdk_archives "$<TARGET_FILE:${target}>")
-      add_dependencies(SDLStatic_SDK ${target})
+
+    set(_sdk_archives "")
+    foreach(target IN LISTS _sdk_sources)
+      if(NOT TARGET ${target})
+        continue()
+      endif()
+      get_target_property(type ${target} TYPE)
+      get_target_property(imported ${target} IMPORTED)
+      if(type STREQUAL "STATIC_LIBRARY" AND NOT imported)
+        list(APPEND _sdk_archives "$<TARGET_FILE:${target}>")
+        add_dependencies(${sdk} ${target})
+      endif()
+    endforeach()
+
+    if(_sdk_archives)
+      add_custom_command(TARGET ${sdk} POST_BUILD
+        COMMAND libtool -static -no_warning_for_no_symbols
+                -o "$<TARGET_FILE:${sdk}>.merged"
+                "$<TARGET_FILE:${sdk}>" ${_sdk_archives}
+        COMMAND ${CMAKE_COMMAND} -E rename
+                "$<TARGET_FILE:${sdk}>.merged" "$<TARGET_FILE:${sdk}>"
+        COMMENT "Merging component archives into ${sdk} (Xcode)"
+        VERBATIM
+      )
     endif()
   endforeach()
-
-  if(_sdk_archives)
-    add_custom_command(TARGET SDLStatic_SDK POST_BUILD
-      COMMAND libtool -static -no_warning_for_no_symbols
-              -o "$<TARGET_FILE:SDLStatic_SDK>.merged"
-              "$<TARGET_FILE:SDLStatic_SDK>" ${_sdk_archives}
-      COMMAND ${CMAKE_COMMAND} -E rename
-              "$<TARGET_FILE:SDLStatic_SDK>.merged" "$<TARGET_FILE:SDLStatic_SDK>"
-      COMMENT "Merging component archives into the SDK (Xcode)"
-      VERBATIM
-    )
-  endif()
 endif()
 
 # SDL3's headers are part of our public surface — <SDLStatic/engine.h> opens
@@ -303,7 +354,8 @@ function(sdlstatic_sdk_system_libs out_var)
 endfunction()
 
 sdlstatic_sdk_system_libs(SDLSTATIC_SDK_SYSTEM_LIBS
-  ${SDLSTATIC_SDK_COMPONENTS} ${SDLSTATIC_SDK_VENDORED} SDL3::SDL3)
+  ${SDLSTATIC_SDK_COMPONENTS} ${SDLSTATIC_SDK_CXX_ONLY} ${SDLSTATIC_SDK_VENDORED}
+  SDL3::SDL3)
 
 # The C++ runtime. The archive holds C++ objects — the C++ wrapper, Box2D's
 # debug draw, parts of the GUI — so a consumer whose own project is C only
@@ -324,7 +376,9 @@ if(SDLSTATIC_SDK_SYSTEM_LIBS)
   list(REMOVE_DUPLICATES SDLSTATIC_SDK_SYSTEM_LIBS)
 endif()
 message(STATUS "SDK: system libraries a consumer still links: ${SDLSTATIC_SDK_SYSTEM_LIBS}")
-target_link_libraries(SDLStatic_SDK INTERFACE ${SDLSTATIC_SDK_SYSTEM_LIBS})
+foreach(sdk IN LISTS SDLSTATIC_SDK_TARGETS)
+  target_link_libraries(${sdk} INTERFACE ${SDLSTATIC_SDK_SYSTEM_LIBS})
+endforeach()
 
 # ---------------------------------------------------------------------------
 # Installing
@@ -361,7 +415,10 @@ include(GNUInstallDirs)
 # by hand: a component that adds a header directory should not have to
 # remember to update the install rules, because it will not.
 set(_interface_dirs "")
-foreach(component IN LISTS SDLSTATIC_SDK_COMPONENTS)
+# The C++ wrapper's headers too: it is not in the C SDK's object list, but
+# its headers ship with the prefix either way — a C++ consumer includes them
+# and the C++ archive is built from them.
+foreach(component IN LISTS SDLSTATIC_SDK_COMPONENTS SDLSTATIC_SDK_CXX_ONLY)
   if(TARGET ${component})
     get_target_property(dirs ${component} INTERFACE_INCLUDE_DIRECTORIES)
     if(dirs)
@@ -388,7 +445,7 @@ foreach(dir IN LISTS _sdl3_header_dirs)
   )
 endforeach()
 
-install(TARGETS SDLStatic_SDK
+install(TARGETS ${SDLSTATIC_SDK_TARGETS}
   EXPORT ${PROJECT_NAME}Targets
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}

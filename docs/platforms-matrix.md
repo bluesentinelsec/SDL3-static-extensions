@@ -47,7 +47,7 @@ build failure, which is exactly why they are called out here.
 
 | Platform | Artifact | Runner |
 |---|---|---|
-| Linux, macOS, Windows | static SDK — one archive, headers, CMake package | yes |
+| Linux, macOS, Windows | two static SDKs — C and C++ — plus headers and a CMake package | yes |
 | Android | Prefab AAR, one `.so` per ABI | no¹ |
 | iOS | XCFramework, device + simulator slices | no¹ |
 | Web | wasm archive, headers, CMake package | not yet² |

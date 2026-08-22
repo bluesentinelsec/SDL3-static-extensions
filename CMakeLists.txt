@@ -406,13 +406,11 @@ install(DIRECTORY ${SDL3_STATIC_EXTENSIONS_GENERATED_INCLUDE_DIR}/
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   FILES_MATCHING PATTERN "*.hpp" PATTERN "*.h"
 )
-install(TARGETS ${PROJECT_NAME}_lib
-  EXPORT ${PROJECT_NAME}Targets
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
+# The scaffold library is deliberately *not* installed. It holds version.cpp
+# and nothing else, its objects are inside both SDKs already, and shipping it
+# beside them offers a consumer a 950-byte archive that links and does
+# nothing — which is the exact failure this project spent a week removing.
+# It stays as an internal target for the app and the tests.
 
 # CMake package config so consumers can find_package(SDL3-static-extensions).
 install(EXPORT ${PROJECT_NAME}Targets
