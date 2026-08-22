@@ -390,17 +390,49 @@ jobs:
         run: |
           set -euo pipefail
           stem="${{ steps.pkg.outputs.artifact_name }}"
-          (cd dist && 7z a -tzip "${stem}.zip" "${stem}" >/dev/null 2>&1 \
-            || zip -r "${stem}.zip" "${stem}" >/dev/null)
+
+          # -y stores symbolic links as links. Without it, zip follows them
+          # and writes a full copy for every name: the three
+          # libfoo.so / .so.0 / .so.0.7.0 entries became three 16 MB files
+          # in v0.7.0, and a consumer unpacking them got copies where their
+          # linker expects a link.
+          #
+          # zip is preferred over 7z here rather than second: 7z dereferences
+          # too, and running it first meant it won on Linux and macOS as well
+          # as on Windows, which is the only platform that needs it.
+          if command -v zip >/dev/null 2>&1; then
+            (cd dist && zip -r -y "${stem}.zip" "${stem}" >/dev/null)
+          else
+            (cd dist && 7z a -tzip "${stem}.zip" "${stem}" >/dev/null)
+          fi
           ls -lh "dist/${stem}.zip"
+
+          # The links have to survive the round trip, which is invisible
+          # until someone unpacks the archive — so unpack it here.
+          if [ "${RUNNER_OS}" != "Windows" ]; then
+            rm -rf dist/_linkcheck && mkdir -p dist/_linkcheck
+            (cd dist/_linkcheck && unzip -q "../${stem}.zip")
+            link="$(find "dist/_linkcheck/${stem}/lib" \
+                      \( -name 'libSDL3_static_extensions.so' \
+                         -o -name 'libSDL3_static_extensions.dylib' \) -print -quit)"
+            if [ -z "${link}" ] || [ ! -L "${link}" ]; then
+              echo "the shared library's version links were flattened into copies" >&2
+              ls -l "dist/_linkcheck/${stem}/lib" >&2
+              exit 1
+            fi
+            rm -rf dist/_linkcheck
+          fi
 
       - name: Archive the runner
         shell: bash
         run: |
           set -euo pipefail
           stem="${{ steps.runner_pkg.outputs.runner_name }}"
-          (cd dist && 7z a -tzip "${stem}.zip" "${stem}" >/dev/null 2>&1 \
-            || zip -r "${stem}.zip" "${stem}" >/dev/null)
+          if command -v zip >/dev/null 2>&1; then
+            (cd dist && zip -r -y "${stem}.zip" "${stem}" >/dev/null)
+          else
+            (cd dist && 7z a -tzip "${stem}.zip" "${stem}" >/dev/null)
+          fi
           ls -lh "dist/${stem}.zip"
 
       - name: Upload the runner
@@ -605,7 +637,7 @@ jobs:
           mkdir -p "${prefix}/demo"
           cp build/web-release/bin/SDL3-static-extensions.html build/web-release/bin/SDL3-static-extensions.js \
              build/web-release/bin/SDL3-static-extensions.wasm "${prefix}/demo/"
-          (cd dist && zip -r "${stem}.zip" "${stem}" >/dev/null)
+          (cd dist && zip -r -y "${stem}.zip" "${stem}" >/dev/null)
           echo "artifact_name=${stem}" >> "${GITHUB_OUTPUT}"
           echo "artifact_path=dist/${stem}.zip" >> "${GITHUB_OUTPUT}"
 
@@ -652,7 +684,7 @@ jobs:
 
           test -f "dist/${stem}/index.html"
           test -f "dist/${stem}/scripting.html"
-          (cd dist && zip -r "${stem}.zip" "${stem}" >/dev/null)
+          (cd dist && zip -r -y "${stem}.zip" "${stem}" >/dev/null)
           echo "artifact_name=${stem}" >> "${GITHUB_OUTPUT}"
           echo "artifact_path=dist/${stem}.zip" >> "${GITHUB_OUTPUT}"
         env:
