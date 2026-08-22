@@ -110,7 +110,18 @@ foreach(required IN ITEMS SDL3-static mog_lib freetype)
   endif()
 endforeach()
 
-add_library(SDLStatic_SDK STATIC ${_sdk_component_objects} ${_sdk_vendored_objects})
+# The anchor is C, and the components enable C in their own directories —
+# this file runs in the root scope, where the project declared only C++.
+enable_language(C)
+
+# The anchor source is not optional: see cmake/sdk_anchor.c. A static library
+# built purely from other targets' objects produces no archive under the
+# Xcode generator, and reports success while doing it.
+add_library(SDLStatic_SDK STATIC
+  ${CMAKE_CURRENT_LIST_DIR}/sdk_anchor.c
+  ${_sdk_component_objects}
+  ${_sdk_vendored_objects}
+)
 add_library(SDLStatic::SDK ALIAS SDLStatic_SDK)
 add_library(${PROJECT_NAME}::SDK ALIAS SDLStatic_SDK)
 
@@ -176,44 +187,81 @@ endif()
 # CMake targets — those are the system libraries, and they are exactly what an
 # installed consumer still has to link.
 # ---------------------------------------------------------------------------
-# SDL3 states these as generator expressions —
+# Every folded-in target's system libraries, not just SDL3's.
+#
+# The archive holds the objects; it cannot hold ws2_32, winhttp or Cocoa. A
+# consumer still links those, and which ones depends on what is inside —
+# SDL_net wants the socket libraries, mog's WinHTTP backend wants winhttp,
+# SDL3 wants a dozen frameworks on Apple. Reading SDL3's list alone was
+# enough only until the consumer test called something other than the engine.
+#
+# Both link properties are read: for a static library the private
+# dependencies do not disappear, they defer to whoever links it.
+#
+# The entries arrive as generator expressions —
 #
 #   $<LINK_ONLY:m>
 #   $<LINK_ONLY:$<LINK_LIBRARY:FRAMEWORK,Cocoa>>
-#   $<LINK_ONLY:$<LINK_LIBRARY:WEAK_FRAMEWORK,CoreHaptics>>
 #
-# — so they have to be unwrapped rather than passed along. The frameworks
-# become plain `-framework X` flags: the LINK_LIBRARY form needs CMake 3.24,
-# and an installed SDK should not impose a newer CMake on its consumers than
-# the project itself requires.
-set(SDLSTATIC_SDK_SYSTEM_LIBS "")
-set(_sdl_link_interface "")
-foreach(sdl_target IN ITEMS SDL3-static SDL3::SDL3)
-  if(TARGET ${sdl_target} AND NOT _sdl_link_interface)
-    get_target_property(_sdl_link_interface ${sdl_target} INTERFACE_LINK_LIBRARIES)
-  endif()
-endforeach()
+# — so they are unwrapped here. Frameworks become plain `-framework X`
+# flags: the LINK_LIBRARY form needs CMake 3.24, and an installed SDK should
+# not impose a newer CMake on its consumers than the project itself requires.
+function(sdlstatic_sdk_system_libs out_var)
+  set(collected "")
+  foreach(target IN LISTS ARGN)
+    if(NOT TARGET ${target})
+      continue()
+    endif()
+    set(deps "")
+    foreach(property INTERFACE_LINK_LIBRARIES LINK_LIBRARIES)
+      get_target_property(value ${target} ${property})
+      if(value)
+        list(APPEND deps ${value})
+      endif()
+    endforeach()
 
-foreach(dep IN LISTS _sdl_link_interface)
-  # $<LINK_ONLY:...> only says "link, do not propagate usage requirements",
-  # which is already true of everything here.
-  if(dep MATCHES "^\\$<LINK_ONLY:(.+)>$")
-    set(dep "${CMAKE_MATCH_1}")
-  endif()
+    foreach(dep IN LISTS deps)
+      # $<LINK_ONLY:...> only says "link, do not propagate usage
+      # requirements", which is already true of everything here.
+      if(dep MATCHES "^\\$<LINK_ONLY:(.+)>$")
+        set(dep "${CMAKE_MATCH_1}")
+      endif()
 
-  if(dep MATCHES "^\\$<LINK_LIBRARY:WEAK_FRAMEWORK,(.+)>$")
-    list(APPEND SDLSTATIC_SDK_SYSTEM_LIBS "-weak_framework ${CMAKE_MATCH_1}")
-  elseif(dep MATCHES "^\\$<LINK_LIBRARY:FRAMEWORK,(.+)>$")
-    list(APPEND SDLSTATIC_SDK_SYSTEM_LIBS "-framework ${CMAKE_MATCH_1}")
-  elseif(dep MATCHES "^\\$<TARGET_NAME:(.+)>$" OR dep MATCHES "^\\$<")
-    # A target we have already absorbed, or an expression that names one.
-    continue()
-  elseif(TARGET ${dep})
-    continue()
-  elseif(dep)
-    list(APPEND SDLSTATIC_SDK_SYSTEM_LIBS "${dep}")
-  endif()
-endforeach()
+      if(dep MATCHES "^\\$<LINK_LIBRARY:WEAK_FRAMEWORK,(.+)>$")
+        list(APPEND collected "-weak_framework ${CMAKE_MATCH_1}")
+      elseif(dep MATCHES "^\\$<LINK_LIBRARY:FRAMEWORK,(.+)>$")
+        list(APPEND collected "-framework ${CMAKE_MATCH_1}")
+      elseif(dep MATCHES "^\\$<TARGET_NAME:(.+)>$" OR dep MATCHES "^\\$<")
+        # A target we have already absorbed, or an expression naming one.
+        continue()
+      elseif(TARGET ${dep})
+        continue()
+      elseif(dep STREQUAL "Threads::Threads")
+        # A real requirement wearing a target's name. if(TARGET) misses it
+        # because an imported target is only visible in the scope that
+        # created it, so translate it to the flag it stands for — on most
+        # Linux distributions that is now empty, since libpthread was folded
+        # into libc, and on the ones where it is not, this is what breaks.
+        if(CMAKE_THREAD_LIBS_INIT)
+          list(APPEND collected "${CMAKE_THREAD_LIBS_INIT}")
+        endif()
+      elseif(dep MATCHES "::")
+        # CMake's own directory-scope markers (`::@(0x...)`) and any other
+        # namespaced target. Nothing with a `::` in it is a system library.
+        continue()
+      elseif(dep MATCHES "^-")
+        # A raw linker flag someone set deliberately.
+        list(APPEND collected "${dep}")
+      elseif(dep)
+        list(APPEND collected "${dep}")
+      endif()
+    endforeach()
+  endforeach()
+  set(${out_var} "${collected}" PARENT_SCOPE)
+endfunction()
+
+sdlstatic_sdk_system_libs(SDLSTATIC_SDK_SYSTEM_LIBS
+  ${SDLSTATIC_SDK_COMPONENTS} ${SDLSTATIC_SDK_VENDORED} SDL3::SDL3)
 
 # The C++ runtime. The archive holds C++ objects — the C++ wrapper, Box2D's
 # debug draw, parts of the GUI — so a consumer whose own project is C only
@@ -243,37 +291,44 @@ target_link_libraries(SDLStatic_SDK INTERFACE ${SDLSTATIC_SDK_SYSTEM_LIBS})
 # SDK looks the same as an installed prefix and both look like every other
 # CMake package a consumer has used.
 # ---------------------------------------------------------------------------
-include(GNUInstallDirs)
-
-# Each component's public headers. Read from the targets rather than listed
-# by hand: a component that adds a header directory should not have to
-# remember to update the install rules, because it will not.
-set(_installed_include_dirs "")
-foreach(component IN LISTS SDLSTATIC_SDK_COMPONENTS)
-  if(NOT TARGET ${component})
-    continue()
-  endif()
-  get_target_property(dirs ${component} INTERFACE_INCLUDE_DIRECTORIES)
-  if(NOT dirs)
-    continue()
-  endif()
-  foreach(dir IN LISTS dirs)
-    # Only the build-tree side of the interface names a real directory;
-    # $<INSTALL_INTERFACE:...> is where these headers are going, not where
-    # they are.
+# Turn an interface include list into real directories: strip the
+# $<BUILD_INTERFACE:...> wrapper, drop anything else expressed as a
+# generator expression (it describes where headers are *going*, not where
+# they are), and keep what exists on disk.
+function(sdlstatic_sdk_real_dirs out_var)
+  set(dirs "")
+  foreach(dir IN LISTS ARGN)
     if(dir MATCHES "\\$<BUILD_INTERFACE:(.+)>")
       set(dir "${CMAKE_MATCH_1}")
     elseif(dir MATCHES "\\$<")
       continue()
     endif()
     if(IS_DIRECTORY "${dir}")
-      list(APPEND _installed_include_dirs "${dir}")
+      list(APPEND dirs "${dir}")
     endif()
   endforeach()
+  if(dirs)
+    list(REMOVE_DUPLICATES dirs)
+  endif()
+  set(${out_var} "${dirs}" PARENT_SCOPE)
+endfunction()
+
+include(GNUInstallDirs)
+
+# Each component's public headers. Read from the targets rather than listed
+# by hand: a component that adds a header directory should not have to
+# remember to update the install rules, because it will not.
+set(_interface_dirs "")
+foreach(component IN LISTS SDLSTATIC_SDK_COMPONENTS)
+  if(TARGET ${component})
+    get_target_property(dirs ${component} INTERFACE_INCLUDE_DIRECTORIES)
+    if(dirs)
+      list(APPEND _interface_dirs ${dirs})
+    endif()
+  endif()
 endforeach()
-if(_installed_include_dirs)
-  list(REMOVE_DUPLICATES _installed_include_dirs)
-endif()
+sdlstatic_sdk_real_dirs(_installed_include_dirs ${_interface_dirs})
+sdlstatic_sdk_real_dirs(_sdl3_header_dirs ${_sdl3_includes})
 foreach(dir IN LISTS _installed_include_dirs)
   install(DIRECTORY "${dir}/"
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
@@ -284,21 +339,12 @@ endforeach()
 # SDL3's headers, for the same reason its objects are in the archive: our
 # public headers include them, so they are part of what we ship whether we
 # like it or not.
-if(_sdl3_includes)
-  foreach(dir IN LISTS _sdl3_includes)
-    if(dir MATCHES "\\$<BUILD_INTERFACE:(.+)>")
-      set(dir "${CMAKE_MATCH_1}")
-    elseif(dir MATCHES "\\$<")
-      continue()
-    endif()
-    if(IS_DIRECTORY "${dir}")
-      install(DIRECTORY "${dir}/"
-        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        FILES_MATCHING PATTERN "*.h"
-      )
-    endif()
-  endforeach()
-endif()
+foreach(dir IN LISTS _sdl3_header_dirs)
+  install(DIRECTORY "${dir}/"
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILES_MATCHING PATTERN "*.h"
+  )
+endforeach()
 
 install(TARGETS SDLStatic_SDK
   EXPORT ${PROJECT_NAME}Targets
@@ -320,12 +366,10 @@ install(TARGETS SDLStatic_SDK
 # ---------------------------------------------------------------------------
 if(ANDROID AND SDLSTATIC_ANDROID_PREFAB_HEADERS AND TARGET SDL3_static_extensions)
   set(_stage_commands "")
-  foreach(dir IN LISTS _installed_include_dirs _sdl3_includes)
-    if(IS_DIRECTORY "${dir}")
-      list(APPEND _stage_commands
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-                "${dir}" "${SDLSTATIC_ANDROID_PREFAB_HEADERS}")
-    endif()
+  foreach(dir IN LISTS _installed_include_dirs _sdl3_header_dirs)
+    list(APPEND _stage_commands
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+              "${dir}" "${SDLSTATIC_ANDROID_PREFAB_HEADERS}")
   endforeach()
   if(_stage_commands)
     # A custom target rather than POST_BUILD: add_custom_command(TARGET ...)
