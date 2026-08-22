@@ -63,8 +63,11 @@ configure_and_build() {
         -DSDL3_STATIC_EXTENSIONS_WITH_JSON=OFF \
         -DSDL3_STATIC_EXTENSIONS_WITH_SPDLOG=OFF
 
+    # The SDK, not the version library. Building only the latter is how the
+    # XCFramework came to hold a version string and nothing else while every
+    # check in this workflow passed.
     cmake --build "${build_dir}" --config "${configuration}" \
-        --target "SDL3-static-extensions_lib" --parallel
+        --target "SDLStatic_SDK" --parallel
 }
 
 combine_archives() {
@@ -72,9 +75,9 @@ combine_archives() {
     local destination="$2"
     local candidate
 
-    candidate="$(find "${build_dir}" -type f -name "libSDL3_static_extensions.a" -path "*/${configuration}*" -print -quit)"
+    candidate="$(find "${build_dir}" -type f -name "libSDL3_static_extensions_sdk.a" -path "*/${configuration}*" -print -quit)"
     if [[ -z "${candidate}" ]]; then
-        echo "Missing libSDL3_static_extensions.a in ${build_dir}" >&2
+        echo "Missing libSDL3_static_extensions_sdk.a in ${build_dir}" >&2
         exit 1
     fi
 
@@ -89,6 +92,14 @@ combine_archives "${simulator_build}" "${combined_root}/libSDL3_static_extension
 
 cmake -E make_directory "${headers_root}/SDL3_static_extensions"
 cmake -E copy_directory "${repository_root}/include/SDL3_static_extensions" "${headers_root}/SDL3_static_extensions"
+
+# Every component's headers, and SDL3's, since our public headers include
+# them. Taken from the install tree so this cannot drift from what the
+# desktop SDK ships.
+cmake --install "${simulator_build}" --config "${configuration}" \
+    --prefix "${headers_root}/staged" >/dev/null
+cmake -E copy_directory "${headers_root}/staged/include" "${headers_root}"
+cmake -E rm -rf "${headers_root}/staged"
 cmake -E rm -f "${headers_root}/SDL3_static_extensions/.gitkeep"
 cmake -E copy "${device_build}/generated/include/SDL3_static_extensions/version.hpp" \
     "${headers_root}/SDL3_static_extensions/version.hpp"

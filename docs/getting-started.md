@@ -167,3 +167,4 @@ so it can drive the opinionated loop or write its own. See
 - [C++ bindings](cpp.html) — RAII, `Status`/`Result`, no exceptions
 - [Lua &amp; Ruby](scripting.html) — embedded scripting, require-from-zip
 - [Platforms](platforms.html) — Android, iOS, and WebAssembly specifics
+- [Platform matrix](platforms-matrix.html) — which components build where, and what each platform ships

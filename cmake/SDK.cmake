@@ -70,16 +70,45 @@ message(STATUS "SDK: ${CMAKE_PROJECT_NAME} components folded in: ${SDLSTATIC_SDK
 # Third-party code the components need. SDL3 is included deliberately: an
 # extensions library that made you find and match your own SDL3 build would
 # reintroduce exactly the version-mismatch problem static linking avoids.
+# Named as the targets actually are, which is not always the obvious thing:
+# mog's C++ core is `mog_lib`, while `mog` is its own Android shared library
+# and has no objects to give. Getting that wrong is silent — the collector
+# skips what it cannot use — so the check below fails the build instead.
 set(SDLSTATIC_SDK_VENDORED
   SDL3-static
   freetype
   mbedtls mbedx509 mbedcrypto everest p256m
   miniz
-  mog
+  mog_lib
 )
 
 sdlstatic_sdk_collect(_sdk_component_objects ${SDLSTATIC_SDK_COMPONENTS})
 sdlstatic_sdk_collect(_sdk_vendored_objects ${SDLSTATIC_SDK_VENDORED})
+
+# A vendored dependency that is built but not folded in produces an archive
+# that links for anyone who does not happen to call it — which is how the
+# HTTP core went missing without a single test noticing. If a component is
+# enabled, the library underneath it has to be in the archive.
+set(_folded "")
+foreach(candidate IN LISTS SDLSTATIC_SDK_VENDORED)
+  list(FIND _sdk_vendored_objects "$<TARGET_OBJECTS:${candidate}>" _at)
+  if(NOT _at EQUAL -1)
+    list(APPEND _folded ${candidate})
+  endif()
+endforeach()
+message(STATUS "SDK: vendored libraries folded in: ${_folded}")
+
+foreach(required IN ITEMS SDL3-static mog_lib freetype)
+  if(TARGET ${required})
+    list(FIND _sdk_vendored_objects "$<TARGET_OBJECTS:${required}>" _found)
+    if(_found EQUAL -1)
+      message(FATAL_ERROR
+        "${required} exists in this build but contributes no objects to the "
+        "SDK — it is probably not a static library under this configuration, "
+        "and anything depending on it will fail to link for a consumer.")
+    endif()
+  endif()
+endforeach()
 
 add_library(SDLStatic_SDK STATIC ${_sdk_component_objects} ${_sdk_vendored_objects})
 add_library(SDLStatic::SDK ALIAS SDLStatic_SDK)
@@ -276,3 +305,38 @@ install(TARGETS SDLStatic_SDK
   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
+
+# ---------------------------------------------------------------------------
+# Android: staging headers into the Prefab package
+#
+# Gradle snapshots a header directory into the AAR, and its own task runs at
+# preBuild — before CMake has configured, and so before SDL3 has even been
+# downloaded. That is why the AAR shipped version.hpp and nothing else: at
+# the moment Gradle looked, nothing else existed.
+#
+# Staging them from here instead means it happens after the native build,
+# from the same directory list the desktop SDK installs, so the two cannot
+# drift apart.
+# ---------------------------------------------------------------------------
+if(ANDROID AND SDLSTATIC_ANDROID_PREFAB_HEADERS AND TARGET SDL3_static_extensions)
+  set(_stage_commands "")
+  foreach(dir IN LISTS _installed_include_dirs _sdl3_includes)
+    if(IS_DIRECTORY "${dir}")
+      list(APPEND _stage_commands
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+                "${dir}" "${SDLSTATIC_ANDROID_PREFAB_HEADERS}")
+    endif()
+  endforeach()
+  if(_stage_commands)
+    # A custom target rather than POST_BUILD: add_custom_command(TARGET ...)
+    # only works in the directory that created the target, and the Android
+    # library is created in src/android while the header list is only known
+    # here, after every component has been added.
+    add_custom_target(sdlstatic_stage_prefab_headers
+      ${_stage_commands}
+      COMMENT "Staging public headers into the Prefab package"
+      VERBATIM
+    )
+    add_dependencies(SDL3_static_extensions sdlstatic_stage_prefab_headers)
+  endif()
+endif()

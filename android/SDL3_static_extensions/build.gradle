@@ -26,6 +26,10 @@ android {
         externalNativeBuild {
             cmake {
                 arguments "-DANDROID_STL=c++_shared",
+                          // Where the native build stages the public headers.
+                          // Gradle's own copy task runs at preBuild, before
+                          // CMake has fetched SDL3, so it cannot do this.
+                          "-DSDLSTATIC_ANDROID_PREFAB_HEADERS=${prefabHeaders.absolutePath}",
                           "-DSDL3_STATIC_EXTENSIONS_BUILD_APP=OFF",
                           "-DSDL3_STATIC_EXTENSIONS_BUILD_TESTS=OFF",
                           "-DSDL3_STATIC_EXTENSIONS_BUILD_BENCHMARKS=OFF",

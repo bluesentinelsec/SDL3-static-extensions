@@ -57,6 +57,30 @@ jobs:
           version="$(tr -d '[:space:]' < VERSION | sed 's/^v//;s/^V//;s/#.*//')"
           unzip -p "${aar}" prefab/prefab.json | grep -q "\"version\"[[:space:]]*:[[:space:]]*\"${version}\""
 
+          # The headers a consumer actually includes. Shipping only
+          # version.hpp is why nobody noticed the library was empty.
+          for header in SDLStatic/engine.h SDLStatic/bindings.h SDL3/SDL.h; do
+            grep -qx "prefab/modules/SDL3_static_extensions/include/${header}" aar-entries.txt
+          done
+
+          # And the engine itself. ABIs, paths and version were all true of a
+          # library containing one object file, so check for the code.
+          mkdir -p aar-check && unzip -o -q "${aar}" -d aar-check
+          so="aar-check/jni/arm64-v8a/libSDL3_static_extensions.so"
+          size="$(stat -c%s "${so}")"
+          if [ "${size}" -lt 5000000 ]; then
+            echo "${so} is ${size} bytes — that is a placeholder, not the SDK" >&2
+            exit 1
+          fi
+          nm -D --defined-only "${so}" > aar-symbols.txt
+          for symbol in SDLStatic_CreateEngine SDLStatic_ActorSpawn \
+                        SDLStatic_OpenLuaBindings SDLStatic_CreateGui SDL_CreateWindow; do
+            if ! grep -qw "${symbol}" aar-symbols.txt; then
+              echo "Missing ${symbol} — the AAR is not carrying the engine" >&2
+              exit 1
+            fi
+          done
+
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
