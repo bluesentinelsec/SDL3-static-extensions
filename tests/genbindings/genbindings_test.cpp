@@ -982,22 +982,35 @@ TEST(GenLua, UnknownSceneHookIsAnErrorNotSilence)
     lua_State *L = SDLStatic_CreateLuaState();
     ASSERT_NE(L, nullptr);
     ASSERT_TRUE(SDLStatic_OpenLuaBindings(L));
+    // Set up in its own chunk, and with globals: the raise below abandons
+    // whatever chunk it is in, so an engine created alongside it would
+    // never be destroyed — which the leak checker reports as a bug in the
+    // engine rather than in the test.
+    ASSERT_EQ(luaL_dostring(L,
+                            "cfg = SDLStaticC.ConfigCreate()\n"
+                            "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
+                            "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
+                            "engine = SDLStaticC.CreateEngine(cfg)\n"
+                            "SDLStaticC.SceneDefine(engine, 'title')\n"),
+              LUA_OK)
+        << lua_tostring(L, -1);
+
     // A typo in a hook name must name the hooks that exist, rather than
     // registering nothing and leaving a scene that quietly does not draw.
-    const int rc = luaL_dostring(
-        L,
-        "local cfg = SDLStaticC.ConfigCreate()\n"
-        "SDLStaticC.ConfigSetHeadless(cfg, true)\n"
-        "SDLStaticC.ConfigSetAutoMount(cfg, false)\n"
-        "local e = SDLStaticC.CreateEngine(cfg)\n"
-        "SDLStaticC.SceneDefine(e, 'title')\n"
-        "SDLStaticC.SceneOn(e, 'title', 'raender', function(s, a) end)\n");
+    const int rc =
+        luaL_dostring(L, "SDLStaticC.SceneOn(engine, 'title', 'raender', function(s, a) end)\n");
     EXPECT_NE(rc, LUA_OK) << "a misspelled hook should raise";
     const char *message = lua_tostring(L, -1);
     ASSERT_NE(message, nullptr);
     EXPECT_NE(std::string(message).find("unknown scene hook"), std::string::npos) << message;
     EXPECT_NE(std::string(message).find("render"), std::string::npos)
         << "the error should name the hooks that exist: " << message;
+    lua_pop(L, 1);
+
+    EXPECT_EQ(luaL_dostring(L, "SDLStaticC.DestroyEngine(engine)\n"
+                               "SDLStaticC.ConfigDestroy(cfg)\n"),
+              LUA_OK)
+        << lua_tostring(L, -1);
     lua_close(L);
     SDL_Quit();
 }
