@@ -342,7 +342,13 @@ if(SDLSTATIC_BUILD_LUA AND SDLSTATIC_BUILD_RUBY)
     endif()
   endforeach()
   add_subdirectory(bindings)
-  if(SDL3_STATIC_EXTENSIONS_IS_TOP_LEVEL)
+  # The script runner. On by default when this is the project being built —
+  # a static library and a way to run a game are both part of "the default
+  # build" — and off when we are a subdirectory of someone else's game,
+  # which does not want our executable in its bin/.
+  option(SDLSTATIC_BUILD_RUNNER "Build the Lua/Ruby script runner"
+         ${SDL3_STATIC_EXTENSIONS_IS_TOP_LEVEL})
+  if(SDLSTATIC_BUILD_RUNNER)
     add_subdirectory(tools/repl)
   endif()
 endif()
@@ -379,6 +385,9 @@ if(SDL3_STATIC_EXTENSIONS_IS_TOP_LEVEL AND CMAKE_EXPORT_COMPILE_COMMANDS)
     )
   endif()
 endif()
+
+# The one static library we ship: every component plus SDL3, in one archive.
+include(SDK)
 
 include(GNUInstallDirs)
 install(DIRECTORY include/

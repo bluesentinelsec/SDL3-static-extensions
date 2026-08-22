@@ -58,3 +58,6 @@ if(SDLSTATIC_BUILD_TILED AND SDLSTATIC_BUILD_CPP AND SDLSTATIC_BUILD_LUA AND SDL
   add_subdirectory(tiled)
   add_subdirectory(genbindings)
 endif()
+
+# The installed SDK and the shipped runner, checked as a consumer sees them.
+add_subdirectory(sdk)

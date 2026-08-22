@@ -27,7 +27,8 @@
 
 static int Usage(void)
 {
-    fprintf(stderr, "usage: repl -l <lua|ruby> [-e code] [script] [args...]\n");
+    fprintf(stderr, "usage: repl [-l <lua|ruby>] [-e code] [script] [args...]\n");
+    fprintf(stderr, "       the language is inferred from a .lua or .rb script\n");
     return 2;
 }
 
@@ -194,6 +195,25 @@ int main(int argc, char **argv)
             script = argv[i];
             script_args_at = i + 1;
             break;
+        }
+    }
+    /* `repl game.lua` should run the game. Requiring -l for a file whose
+       extension already says which language it is makes the common case
+       type more to say less; an explicit -l still wins, for a script with
+       an unusual name or none at all. */
+    if (language == NULL && script != NULL)
+    {
+        const char *dot = strrchr(script, '.');
+        if (dot != NULL)
+        {
+            if (strcmp(dot, ".lua") == 0)
+            {
+                language = "lua";
+            }
+            else if (strcmp(dot, ".rb") == 0)
+            {
+                language = "ruby";
+            }
         }
     }
     if (language == NULL)
