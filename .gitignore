@@ -11,6 +11,12 @@ compile_commands.json
 tags
 TAGS
 .tags
+# ...except the one the generator writes and the SDK ships. The negation
+# has to come last: gitignore takes the final matching pattern, and on a
+# case-insensitive filesystem `TAGS` matches `tags` too — so a negation
+# placed above it still left the file ignored, and locally there was
+# nothing to see but a file that quietly never got committed.
+!bindings/generated/editor/tags
 
 # Doxygen
 docs/html/
