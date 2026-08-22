@@ -185,43 +185,97 @@ jobs:
             exit 1
           fi
 
-      - name: Package Release zip
+      - name: Package Release SDK
         id: pkg
         run: |
           set -euo pipefail
-          python3 - <<'PY'
-          import os, re, shutil, subprocess
-          from pathlib import Path
+          version="$(tr -d '[:space:]' < VERSION | sed 's/^v//;s/^V//;s/#.*//')"
+          case "${RUNNER_OS}" in
+            Linux) os=linux ;;
+            macOS) os=macos ;;
+            Windows) os=windows ;;
+            *) os="$(echo "${RUNNER_OS}" | tr '[:upper:]' '[:lower:]')" ;;
+          esac
+          case "${RUNNER_ARCH}" in
+            X64) arch=x86_64 ;;
+            ARM64) arch=arm64 ;;
+            X86) arch=x86 ;;
+            *) arch="$(echo "${RUNNER_ARCH}" | tr '[:upper:]' '[:lower:]')" ;;
+          esac
+          stem="${APP_NAME}-${os}-${arch}-release-${version}"
+          prefix="${PWD}/dist/${stem}"
 
-          app = os.environ["APP_NAME"]
-          version = os.environ["RELEASE_VERSION"]
-          os_name = {"Linux": "linux", "macOS": "macos", "Windows": "windows"}.get(
-              os.environ.get("RUNNER_OS", ""), os.environ.get("RUNNER_OS", "unknown").lower()
-          )
-          arch = {"X64": "x86_64", "ARM64": "arm64", "X86": "x86"}.get(
-              os.environ.get("RUNNER_ARCH", ""), os.environ.get("RUNNER_ARCH", "unknown").lower()
-          )
-          config = "release"
-          bin_dir = Path("build") / config / "bin"
-          stem = f"{app}-{os_name}-{arch}-{config}-{version}"
-          staging = Path("dist") / stem
-          if staging.exists():
-              shutil.rmtree(staging)
-          staging.mkdir(parents=True)
-          if not bin_dir.is_dir():
-              raise SystemExit(f"missing {bin_dir}")
-          for p in bin_dir.iterdir():
-              dest = staging / p.name
-              if p.is_file():
-                  shutil.copy2(p, dest)
-              elif p.is_dir():
-                  shutil.copytree(p, dest)
-          archive = shutil.make_archive(str(Path("dist") / stem), "zip", root_dir="dist", base_dir=stem)
-          print(f"Created {archive}")
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
-              fh.write(f"artifact_name={stem}\n")
-              fh.write(f"artifact_path={archive}\n")
-          PY
+          # From the install tree, not from bin/. Copying bin/ is how the
+          # release came to be 99 MB of gtest binaries with no library in it.
+          rm -rf "${prefix}"
+          cmake --install build/release --prefix "${prefix}" --config Release
+
+          # mbedtls installs its own archives with no upstream switch to stop
+          # it, and we do not patch third-party projects. They are redundant —
+          # their objects are already inside ours — and a consumer cannot tell
+          # that by looking, so they are dropped here instead.
+          for stray in libmbedtls libmbedx509 libmbedcrypto libeverest libp256m libmog; do
+            rm -f "${prefix}/lib/${stray}."* || true
+          done
+          rm -rf "${prefix}/lib/cmake/mog" || true
+
+          cp LICENSE "${prefix}/LICENSE"
+          cp VERSION "${prefix}/VERSION"
+
+          echo "artifact_name=${stem}" >> "${GITHUB_OUTPUT}"
+          echo "artifact_path=dist/${stem}.zip" >> "${GITHUB_OUTPUT}"
+          echo "prefix=${prefix}" >> "${GITHUB_OUTPUT}"
+
+      - name: Verify the SDK before shipping it
+        shell: bash
+        run: |
+          set -euo pipefail
+          prefix="${{ steps.pkg.outputs.prefix }}"
+
+          # Three artifacts, and a release that is missing one of them is a
+          # release nobody can use for that half of the audience.
+          for lib in SDL3_static_extensions_sdk SDL3_static_extensions_sdk_cxx; do
+            found="$(find "${prefix}/lib" -name "*${lib}.*" -print -quit)"
+            if [ -z "${found}" ]; then
+              echo "Missing ${lib} from the SDK" >&2
+              exit 1
+            fi
+            size="$(wc -c <"${found}")"
+            if [ "${size}" -lt 1000000 ]; then
+              echo "${found} is ${size} bytes — a placeholder, not the SDK" >&2
+              exit 1
+            fi
+          done
+
+          runner="${prefix}/bin/repl"
+          [ -f "${runner}" ] || runner="${prefix}/bin/repl.exe"
+          if [ ! -f "${runner}" ]; then
+            echo "Missing the runner from the SDK" >&2
+            exit 1
+          fi
+
+          for header in SDLStatic/engine.h SDL3/SDL.h; do
+            test -f "${prefix}/include/${header}"
+          done
+          # The C++ headers live under a differently-cased directory, which is
+          # one directory on macOS and two on Linux.
+          find "${prefix}/include" -iname "sdlstatic.h" | grep -q . \
+            || { echo "Missing the C++ headers" >&2; exit 1; }
+
+          # No test binaries. They were the entire download for six releases.
+          if find "${prefix}" -name "*_test*" -o -name "*_bench*" | grep -q .; then
+            echo "Test binaries leaked into the SDK" >&2
+            exit 1
+          fi
+
+      - name: Archive the SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          stem="${{ steps.pkg.outputs.artifact_name }}"
+          (cd dist && 7z a -tzip "${stem}.zip" "${stem}" >/dev/null 2>&1 \
+            || zip -r "${stem}.zip" "${stem}" >/dev/null)
+          ls -lh "dist/${stem}.zip"
 
       - name: Upload Release zip (workflow artifact)
         uses: actions/upload-artifact@v7
