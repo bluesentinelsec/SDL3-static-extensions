@@ -63,6 +63,18 @@ jobs:
             grep -qx "prefab/modules/SDL3_static_extensions/include/${header}" aar-entries.txt
           done
 
+          # SDL3's Java glue. Without org.libsdl.app.SDLActivity in the AAR,
+          # loading the library aborts the process on a device — which is
+          # invisible to every check that only reads the archive.
+          unzip -p "${aar}" classes.jar > aar-classes.jar
+          unzip -Z1 aar-classes.jar > aar-classes.txt
+          for class in org/libsdl/app/SDLActivity.class org/libsdl/app/SDLAudioManager.class; do
+            if ! grep -qx "${class}" aar-classes.txt; then
+              echo "Missing ${class} — the AAR will abort on load" >&2
+              exit 1
+            fi
+          done
+
           # And the engine itself. ABIs, paths and version were all true of a
           # library containing one object file, so check for the code.
           mkdir -p aar-check && unzip -o -q "${aar}" -d aar-check

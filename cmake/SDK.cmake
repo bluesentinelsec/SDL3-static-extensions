@@ -395,6 +395,36 @@ install(TARGETS SDLStatic_SDK
 )
 
 # ---------------------------------------------------------------------------
+# Android: SDL3's Java glue
+#
+# Loading a shared object that contains SDL3 runs its JNI_OnLoad, which looks
+# up org.libsdl.app.SDLActivity and aborts the process if it is missing:
+#
+#   ClassNotFoundException: org.libsdl.app.SDLActivity
+#     at java.lang.Runtime.nativeLoad
+#
+# So the AAR has to carry SDL's Java classes as well as its objects. It never
+# did, and nothing noticed, because the library it shipped had no SDL3 in it
+# to ask for them.
+#
+# The copy happens at configure time rather than build time: Gradle compiles
+# Java on its own schedule, and a source directory that fills in later is a
+# source directory that was empty when it mattered.
+# ---------------------------------------------------------------------------
+if(ANDROID AND SDLSTATIC_ANDROID_JAVA_DIR AND DEFINED sdl3_SOURCE_DIR)
+  set(_sdl_java "${sdl3_SOURCE_DIR}/android-project/app/src/main/java")
+  if(IS_DIRECTORY "${_sdl_java}")
+    file(COPY "${_sdl_java}/" DESTINATION "${SDLSTATIC_ANDROID_JAVA_DIR}"
+         FILES_MATCHING PATTERN "*.java")
+    message(STATUS "SDK: staged SDL3's Java classes into ${SDLSTATIC_ANDROID_JAVA_DIR}")
+  else()
+    message(FATAL_ERROR
+      "SDL3's Android Java sources are missing from ${_sdl_java}. An AAR "
+      "without them aborts on load with ClassNotFoundException.")
+  endif()
+endif()
+
+# ---------------------------------------------------------------------------
 # Android: staging headers into the Prefab package
 #
 # Gradle snapshots a header directory into the AAR, and its own task runs at
