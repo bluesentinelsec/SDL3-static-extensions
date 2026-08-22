@@ -5,13 +5,34 @@
 # and worth it: this is the only check in the suite that would notice the
 # library going hollow, which is exactly what happened for several releases
 # while every other test passed.
+# Not under sanitizers. The archive's objects carry ASan instrumentation and
+# reference its runtime (___asan_init and friends), so an ordinary consumer
+# cannot link them — correctly, because a sanitizer build is not something
+# anyone ships. Propagating -fsanitize into the consumer would make the test
+# pass without checking anything the other configurations do not already.
+# Both spellings: the option, and the flags passed directly — CI uses one,
+# a local sanitizer tree often the other, and the test is equally unlinkable
+# either way.
+set(_sdk_sanitized OFF)
+if(SDL3_STATIC_EXTENSIONS_ENABLE_SANITIZERS
+   OR CMAKE_C_FLAGS MATCHES "-fsanitize"
+   OR CMAKE_CXX_FLAGS MATCHES "-fsanitize")
+  set(_sdk_sanitized ON)
+  message(STATUS "SDK: skipping the install-consumer test in a sanitizer build")
+endif()
+
+if(NOT _sdk_sanitized)
 add_test(NAME sdk_install_consumer
   COMMAND ${CMAKE_COMMAND}
           -DBUILD_DIR=${CMAKE_BINARY_DIR}
           -DSOURCE_DIR=${CMAKE_SOURCE_DIR}
+          # $<CONFIG> resolves when the test runs, which is the only moment
+          # a multi-config generator knows which one it is.
+          -DCONFIG=$<CONFIG>
           -P ${CMAKE_SOURCE_DIR}/scripts/verify_sdk_install.cmake
 )
 set_tests_properties(sdk_install_consumer PROPERTIES TIMEOUT 900)
+endif()
 
 # The runner, doing the thing it exists for: running a game script in either
 # language, with the language inferred from the file's extension.

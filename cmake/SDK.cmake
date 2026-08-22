@@ -188,16 +188,18 @@ endforeach()
 
 # The C++ runtime. The archive holds C++ objects — the C++ wrapper, Box2D's
 # debug draw, parts of the GUI — so a consumer whose own project is C only
-# links with the C driver and fails on a wall of missing std:: symbols, with
-# nothing in the error naming the cause. Saying so here costs one entry and
-# saves that afternoon.
-if(NOT MSVC)
-  if(APPLE OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    list(APPEND SDLSTATIC_SDK_SYSTEM_LIBS "c++")
-  else()
-    list(APPEND SDLSTATIC_SDK_SYSTEM_LIBS "stdc++")
+# links with the C driver and fails on a wall of missing std:: symbols with
+# nothing in the error naming the cause.
+#
+# Which runtime that is cannot be guessed from the compiler: Clang means
+# libc++ on macOS and libstdc++ on a stock Ubuntu, and guessing wrong fails
+# with `cannot find -lc++`, which is a worse error than the one it set out
+# to prevent. Ask the toolchain what it links C++ programs against instead.
+foreach(implicit IN LISTS CMAKE_CXX_IMPLICIT_LINK_LIBRARIES)
+  if(implicit MATCHES "^(std)?c\\+\\+$")
+    list(APPEND SDLSTATIC_SDK_SYSTEM_LIBS "${implicit}")
   endif()
-endif()
+endforeach()
 
 if(SDLSTATIC_SDK_SYSTEM_LIBS)
   list(REMOVE_DUPLICATES SDLSTATIC_SDK_SYSTEM_LIBS)

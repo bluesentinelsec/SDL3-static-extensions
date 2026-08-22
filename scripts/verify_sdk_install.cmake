@@ -10,7 +10,15 @@
 cmake_minimum_required(VERSION 3.20)
 
 if(NOT DEFINED BUILD_DIR OR NOT DEFINED SOURCE_DIR)
-  message(FATAL_ERROR "usage: cmake -DBUILD_DIR=... -DSOURCE_DIR=... -P scripts/verify_sdk_install.cmake")
+  message(FATAL_ERROR "usage: cmake -DBUILD_DIR=... -DSOURCE_DIR=... [-DCONFIG=...] -P scripts/verify_sdk_install.cmake")
+endif()
+
+# The consumer must be built in the same configuration as the archive it
+# links. On MSVC a Release consumer against a Debug SDK fails on
+# __imp__aligned_malloc_dbg — the debug CRT is a different runtime, and the
+# error names none of that.
+if(NOT DEFINED CONFIG OR CONFIG STREQUAL "")
+  set(CONFIG "Release")
 endif()
 
 get_filename_component(BUILD_DIR "${BUILD_DIR}" ABSOLUTE)
@@ -24,9 +32,10 @@ set(consumer "${work}/consumer")
 file(REMOVE_RECURSE "${work}")
 file(MAKE_DIRECTORY "${prefix}")
 
-message(STATUS "installing the SDK to ${prefix}")
+message(STATUS "installing the ${CONFIG} SDK to ${prefix}")
 execute_process(
   COMMAND ${CMAKE_COMMAND} --install "${BUILD_DIR}" --prefix "${prefix}"
+          --config "${CONFIG}"
   RESULT_VARIABLE rc OUTPUT_QUIET
 )
 if(NOT rc EQUAL 0)
@@ -66,7 +75,7 @@ execute_process(
   COMMAND ${CMAKE_COMMAND}
           -S "${SOURCE_DIR}/tests/consumer" -B "${consumer}"
           -DCMAKE_PREFIX_PATH=${prefix}
-          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_BUILD_TYPE=${CONFIG}
   RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE out
 )
 if(NOT rc EQUAL 0)
@@ -74,7 +83,7 @@ if(NOT rc EQUAL 0)
 endif()
 
 execute_process(
-  COMMAND ${CMAKE_COMMAND} --build "${consumer}" --config Release
+  COMMAND ${CMAKE_COMMAND} --build "${consumer}" --config "${CONFIG}"
   RESULT_VARIABLE rc OUTPUT_VARIABLE out ERROR_VARIABLE out
 )
 if(NOT rc EQUAL 0)
@@ -82,7 +91,7 @@ if(NOT rc EQUAL 0)
 endif()
 
 find_program(consumer_exe NAMES sdk_consumer sdk_consumer.exe
-  PATHS "${consumer}" "${consumer}/Debug" "${consumer}/Release" NO_DEFAULT_PATH)
+  PATHS "${consumer}" "${consumer}/${CONFIG}" NO_DEFAULT_PATH)
 if(NOT consumer_exe)
   message(FATAL_ERROR "consumer built but produced no executable")
 endif()
