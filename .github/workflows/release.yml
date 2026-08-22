@@ -296,8 +296,16 @@ jobs:
           test -f "${prefix}/share/doc/${APP_NAME}/SCRIPT_API.md"
 
           # No test binaries. They were the entire download for six releases.
-          if find "${prefix}" -name "*_test*" -o -name "*_bench*" | grep -q .; then
+          #
+          # Scoped to bin/ and lib/, where a binary would land: searching the
+          # whole prefix matches SDL3's own public SDL_test_*.h headers, which
+          # belong there — the first version of this check failed the release
+          # on them.
+          if find "${prefix}/bin" "${prefix}/lib" \
+                  \( -name "*_test*" -o -name "*_bench*" \) 2>/dev/null | grep -q .; then
             echo "Test binaries leaked into the SDK" >&2
+            find "${prefix}/bin" "${prefix}/lib" \
+                 \( -name "*_test*" -o -name "*_bench*" \) >&2
             exit 1
           fi
 
