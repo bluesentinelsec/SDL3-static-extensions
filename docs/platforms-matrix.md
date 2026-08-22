@@ -64,9 +64,15 @@ distinction matters more than it looks:
 
 - Desktop is exercised properly — the full suite, plus a consumer that links
   the installed SDK and runs the engine.
-- Android and iOS run a consumer app that creates a headless engine, spawns
-  an actor, runs frames and loads the Lua bindings. That is a real check, and
-  it is much less than the desktop suite.
+- iOS runs a consumer app that creates a headless engine, spawns an actor,
+  runs frames and loads the Lua bindings. A real check, and much less than
+  the desktop suite.
+- Android runs the same app minus the engine. SDL's Android backend expects
+  to be driven by `org.libsdl.app.SDLActivity`, which owns the surface, the
+  looper and the main thread; a plain Activity calling in over JNI blocks in
+  `SDLStatic_CreateEngine` waiting for plumbing that is not there. A game
+  subclassing `SDLActivity` is unaffected — proving that needs an
+  SDLActivity-based harness, which is its own work.
 - Web runs version, browser-environment and image-decoding tests in headless
   Chrome. The engine's browser main loop is implemented but not yet covered.
 
