@@ -70,6 +70,25 @@ distinction matters more than it looks:
 - Web runs version, browser-environment and image-decoding tests in headless
   Chrome. The engine's browser main loop is implemented but not yet covered.
 
+## Two ways a build can lie
+
+Both were live in this repository, and both passed every check:
+
+**An artifact with the right shape and no contents.** The mobile builds
+compiled one placeholder library, and the checks verified ABIs, slices,
+paths and version — every one of which is true of an archive holding a
+version string. Artifact checks now assert size and symbols.
+
+**A build that succeeds and produces nothing.** A static library assembled
+from `$<TARGET_OBJECTS:...>` compiles nothing of its own, and the Xcode
+generator treats that as a target with no work to do: no archive, no error.
+Relatedly, when two source files share a basename, Xcode disambiguates the
+object names and then omits them from that same aggregation — 803 members
+where there should have been 1606, with half of an HTTP backend missing.
+The SDK is merged with `libtool` under Xcode for that reason.
+
+Neither is caught by an exit code, which is why the checks look inside.
+
 ## Keeping this honest
 
 A hand-written table drifts, and a drifted table is worse than none: it is
