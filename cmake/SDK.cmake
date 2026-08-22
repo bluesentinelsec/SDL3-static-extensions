@@ -659,9 +659,12 @@ if(SDLSTATIC_BUILD_SHARED_SDK)
       if(_which STREQUAL "cxx")
         list(APPEND _def_objects ${_sdk_cxx_objects})
       endif()
-      string(REPLACE ";" "\n" _def_object_lines "${_def_objects}")
+      # $<JOIN> so the newlines go between the *expanded* paths. Replacing
+      # semicolons at configure time joins the generator expressions
+      # themselves, and each one then expands to a whole ;-separated list on
+      # a single line — which __create_def reads as one impossible filename.
       file(GENERATE OUTPUT "${SDLSTATIC_SDK_DEF_OBJECTS_${_which}}"
-           CONTENT "${_def_object_lines}\n")
+           CONTENT "$<JOIN:${_def_objects},\n>\n")
 
       add_custom_command(TARGET ${sdk} PRE_LINK
         COMMAND ${CMAKE_COMMAND} -E __create_def
