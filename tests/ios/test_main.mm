@@ -11,6 +11,7 @@
 #include <SDLStatic/engine.h>
 #include <SDLStatic/engine_actor.h>
 #include <SDLStatic/engine_config.h>
+#include <SDLStatic/bindings.h>
 #include <SDLStatic/lua.h>
 
 #include <SDL3/SDL.h>

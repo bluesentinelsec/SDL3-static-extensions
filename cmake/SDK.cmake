@@ -162,6 +162,48 @@ target_include_directories(SDLStatic_SDK INTERFACE
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
+# ---------------------------------------------------------------------------
+# Xcode: assemble by merging archives instead of collecting objects
+#
+# When two source files in one target share a basename — mog has two
+# prepare.cpp — Xcode disambiguates the object files by hashing the path.
+# Those hashed objects are then missing from a $<TARGET_OBJECTS:...>
+# aggregation, and the resulting archive links for anyone who does not call
+# the code that went missing. Ours had 803 members and no prepare.o, so the
+# HTTP backend was half there.
+#
+# libtool merges archives by content and does not care what the members are
+# called, which is why the platform's own tool is the right answer here. The
+# object list is left in place: it is what every other generator uses, and
+# the merge only adds what Xcode dropped.
+# ---------------------------------------------------------------------------
+if(CMAKE_GENERATOR STREQUAL "Xcode")
+  set(_sdk_archives "")
+  foreach(target IN LISTS SDLSTATIC_SDK_COMPONENTS SDLSTATIC_SDK_VENDORED)
+    if(NOT TARGET ${target})
+      continue()
+    endif()
+    get_target_property(type ${target} TYPE)
+    get_target_property(imported ${target} IMPORTED)
+    if(type STREQUAL "STATIC_LIBRARY" AND NOT imported)
+      list(APPEND _sdk_archives "$<TARGET_FILE:${target}>")
+      add_dependencies(SDLStatic_SDK ${target})
+    endif()
+  endforeach()
+
+  if(_sdk_archives)
+    add_custom_command(TARGET SDLStatic_SDK POST_BUILD
+      COMMAND libtool -static -no_warning_for_no_symbols
+              -o "$<TARGET_FILE:SDLStatic_SDK>.merged"
+              "$<TARGET_FILE:SDLStatic_SDK>" ${_sdk_archives}
+      COMMAND ${CMAKE_COMMAND} -E rename
+              "$<TARGET_FILE:SDLStatic_SDK>.merged" "$<TARGET_FILE:SDLStatic_SDK>"
+      COMMENT "Merging component archives into the SDK (Xcode)"
+      VERBATIM
+    )
+  endif()
+endif()
+
 # SDL3's headers are part of our public surface — <SDLStatic/engine.h> opens
 # with #include <SDL3/SDL.h> — so a consumer needs them whether or not they
 # call SDL3 directly.
